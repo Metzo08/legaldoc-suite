@@ -1,0 +1,615 @@
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNotification } from '../context/NotificationContext';
+
+import {
+    Box,
+    Paper,
+    Button,
+    Typography,
+    IconButton,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
+    MenuItem,
+    Chip,
+    Tooltip,
+    Grid
+} from '@mui/material';
+import {
+    DataGrid,
+    GridActionsCellItem,
+    GridToolbar,
+    frFR
+} from '@mui/x-data-grid';
+import {
+    CloudUpload as UploadIcon,
+    Download as DownloadIcon,
+    Delete as DeleteIcon,
+    TextSnippet as OcrIcon,
+    Visibility as PreviewIcon,
+    Close as CloseIcon,
+    ZoomIn as ZoomInIcon,
+    ZoomOut as ZoomOutIcon,
+    RestartAlt as ResetIcon,
+    Contrast as ContrastIcon,
+    Description as FileIcon,
+    Storage as StorageIcon,
+    FindInPage as FindIcon
+} from '@mui/icons-material';
+import { useDropzone } from 'react-dropzone';
+import { documentsAPI, casesAPI } from '../services/api';
+import jsPDF from 'jspdf';
+import { Document as DocxDocument, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
+import { saveAs } from 'file-saver';
+import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
+import StatCard from '../components/StatCard';
+
+// Version: 1.0.1 (Forced Refresh)
+function Documents() {
+    const { showNotification } = useNotification();
+    const navigate = useNavigate();
+    const [documents, setDocuments] = useState([]);
+    const [cases, setCases] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [openDialog, setOpenDialog] = useState(false);
+    const [uploadFile, setUploadFile] = useState(null);
+
+    const [formData, setFormData] = useState({
+        title: '',
+        description: '',
+        case: '',
+        document_type: 'AUTRE',
+        is_confidential: true,
+        tags: ''
+    });
+
+    // État pour le modal OCR
+    const [ocrDialog, setOcrDialog] = useState(false);
+    const [selectedDoc, setSelectedDoc] = useState(null);
+
+    // État pour la prévisualisation
+    const [previewDialog, setPreviewDialog] = useState(false);
+    const [previewDoc, setPreviewDoc] = useState(null);
+    const [imageZoom, setImageZoom] = useState(null); // null = fit to screen
+    const [imageEnhance, setImageEnhance] = useState(false); // contrast/brightness filter
+
+    // État pour la suppression
+    const [deleteDialog, setDeleteDialog] = useState(false);
+    const [docToDelete, setDocToDelete] = useState(null);
+
+    const loadData = useCallback(async () => {
+        try {
+            setLoading(true);
+            const [docsRes, casesRes] = await Promise.all([
+                documentsAPI.getAll(),
+                casesAPI.getAll()
+            ]);
+            setDocuments(docsRes.data.results || docsRes.data);
+            setCases(casesRes.data.results || casesRes.data);
+        } catch (error) {
+            console.error('Erreur chargement:', error);
+            showNotification("Erreur lors du chargement des documents.", "error");
+        } finally {
+            setLoading(false);
+        }
+    }, [showNotification]);
+
+    const [filterType, setFilterType] = useState('ALL');
+    const [searchParams] = useSearchParams();
+    const initialSearch = searchParams.get('search') || '';
+    const [searchTerm, setSearchTerm] = useState(initialSearch);
+
+    const sortedDocuments = useMemo(() => {
+        let base = documents;
+
+        // Interactive Filter (Stat Cards)
+        if (filterType === 'OCR') {
+            base = base.filter(d => d.ocr_processed);
+        } else if (filterType === 'STORAGE') {
+            base = base.filter(d => d.file_size > 100 * 1024); // Gros fichiers
+        }
+
+        // IMPORTANT: We do NOT filter by search here anymore because DataGrid 
+        // handles it via quickFilter. This avoids double-filtering issues.
+        return base;
+    }, [documents, filterType]);
+
+    useEffect(() => {
+        loadData().then(() => {
+            const caseId = searchParams.get('caseId');
+            const isNew = searchParams.get('new') === 'true';
+            if (caseId && isNew) {
+                setFormData(prev => ({
+                    ...prev,
+                    case: parseInt(caseId)
+                }));
+                setOpenDialog(true);
+            }
+        });
+    }, [loadData, searchParams]);
+
+    // Force DataGrid to sync with searchTerm when it changes (URL or internal)
+    const [filterModel, setFilterModel] = useState({
+        items: [],
+        quickFilterValues: searchTerm ? [searchTerm] : [],
+    });
+
+    useEffect(() => {
+        setFilterModel({
+            items: [],
+            quickFilterValues: searchTerm ? [searchTerm] : [],
+        });
+    }, [searchTerm]);
+
+    const onDrop = useCallback((acceptedFiles) => {
+        if (acceptedFiles.length > 0) {
+            setUploadFile(acceptedFiles[0]);
+            setFormData(prev => ({ ...prev, title: acceptedFiles[0].name }));
+        }
+    }, []);
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop,
+        multiple: false
+    });
+
+    const handleOpenDialog = () => {
+        setUploadFile(null);
+        setFormData({
+            title: '',
+            description: '',
+            case: '',
+            document_type: 'AUTRE',
+            is_confidential: true,
+            tags: ''
+        });
+        setOpenDialog(true);
+    };
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+    };
+
+    const handleSubmit = async () => {
+        if (!uploadFile || !formData.case) {
+            showNotification('Veuillez sélectionner un fichier et un dossier', 'warning');
+            return;
+        }
+
+        const data = new FormData();
+        data.append('file', uploadFile);
+        data.append('title', formData.title);
+        data.append('description', formData.description);
+        data.append('case', formData.case);
+        data.append('document_type', formData.document_type);
+        data.append('is_confidential', formData.is_confidential);
+
+        try {
+            await documentsAPI.upload(data);
+            showNotification("Document uploadé avec succès !");
+            loadData();
+            handleCloseDialog();
+        } catch (error) {
+            console.error('Erreur upload document:', error);
+            showNotification("Erreur lors de l'upload.", "error");
+        }
+    };
+
+    const handleDeleteClick = (doc) => {
+        setDocToDelete(doc);
+        setDeleteDialog(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!docToDelete) return;
+        try {
+            await documentsAPI.delete(docToDelete.id);
+            showNotification("Document supprimé.");
+            setDeleteDialog(false);
+            setDocToDelete(null);
+            loadData();
+        } catch (error) {
+            console.error('Erreur suppression:', error);
+            showNotification("Erreur lors de la suppression.", "error");
+        }
+    };
+
+    const handleViewOcr = (doc) => {
+        setSelectedDoc(doc);
+        setOcrDialog(true);
+    };
+
+    const handlePreview = (doc) => {
+        setPreviewDoc(doc);
+        setImageZoom(null);
+        setImageEnhance(false);
+        setPreviewDialog(true);
+    };
+
+    const handleZoomIn = () => setImageZoom(prev => (prev || 100) + 25);
+    const handleZoomOut = () => setImageZoom(prev => Math.max(25, (prev || 100) - 25));
+    const handleResetZoom = () => {
+        setImageZoom(null);
+        setImageEnhance(false);
+    };
+    const toggleEnhance = () => setImageEnhance(prev => !prev);
+
+    const handleExportPDF = () => {
+        if (!selectedDoc?.ocr_text) {
+            showNotification('Aucun texte à exporter', 'warning');
+            return;
+        }
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 15;
+        const maxWidth = pageWidth - 2 * margin;
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.text(selectedDoc.title, margin, 20);
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        const lines = doc.splitTextToSize(selectedDoc.ocr_text, maxWidth);
+        let y = 35;
+        lines.forEach(line => {
+            if (y > pageHeight - margin) {
+                doc.addPage();
+                y = margin;
+            }
+            doc.text(line, margin, y);
+            y += 7;
+        });
+        const fileName = `OCR_${selectedDoc.title.replace(/[^a-z0-9]/gi, '_')}.pdf`;
+        doc.save(fileName);
+    };
+
+    const handleExportWord = async () => {
+        if (!selectedDoc?.ocr_text) {
+            showNotification('Aucun texte à exporter', 'warning');
+            return;
+        }
+        try {
+            const doc = new DocxDocument({
+                sections: [{
+                    properties: {},
+                    children: [
+                        new Paragraph({
+                            text: selectedDoc.title,
+                            heading: HeadingLevel.HEADING_1,
+                            spacing: { after: 200 }
+                        }),
+                        new Paragraph({
+                            text: '='.repeat(50),
+                            spacing: { after: 200 }
+                        }),
+                        ...selectedDoc.ocr_text.split('\n').map(line =>
+                            new Paragraph({
+                                children: [
+                                    new TextRun({ text: line || ' ', size: 22 })
+                                ],
+                                spacing: { after: 100 }
+                            })
+                        ),
+                    ],
+                }],
+            });
+            const blob = await Packer.toBlob(doc);
+            const fileName = `OCR_${selectedDoc.title.replace(/[^a-z0-9]/gi, '_')}.docx`;
+            saveAs(blob, fileName);
+            showNotification("Fichier Word généré.");
+        } catch (error) {
+            console.error('Erreur export Word:', error);
+            showNotification('Erreur lors de l\'export Word', 'error');
+        }
+    };
+
+    const formatFileSize = (bytes) => {
+        if (bytes === 0) return '0 octets';
+        const k = 1024;
+        const sizes = ['o', 'Ko', 'Mo', 'Go'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    };
+
+    const getDocTypeColor = (type) => {
+        const colors = { 'CONTRAT': 'primary', 'JUGEMENT': 'error', 'PIECE': 'info', 'NOTE': 'warning', 'AUTRE': 'default' };
+        return colors[type] || 'default';
+    };
+
+    const columns = [
+        {
+            field: 'case_reference',
+            headerName: 'Réf. Dossier',
+            width: 130,
+            renderCell: (params) => (
+                <Typography variant="caption" sx={{ fontWeight: 700, fontFamily: 'monospace', bgcolor: 'action.hover', px: 1, py: 0.5, borderRadius: 1 }}>
+                    {params.value}
+                </Typography>
+            )
+        },
+        {
+            field: 'title',
+            headerName: 'Titre',
+            flex: 2,
+            minWidth: 250,
+            renderCell: (params) => (
+                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', overflow: 'hidden' }}>
+                    <FileIcon color="action" sx={{ mr: 1, fontSize: 20, flexShrink: 0 }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {params.value}
+                    </Typography>
+                </Box>
+            )
+        },
+        {
+            field: 'case_title',
+            headerName: 'Dossier',
+            flex: 2,
+            minWidth: 300,
+            renderCell: (params) => {
+                const matchedCase = cases.find(c => c.id === params.row.case);
+                const isCivil = matchedCase?.category === 'CIVIL';
+                return (
+                    <Box sx={{ width: '100%', overflow: 'hidden', py: 1 }}>
+                        <Typography
+                            variant="body2"
+                            onClick={() => navigate(`/cases?search=${encodeURIComponent(params.row.case_title)}`)}
+                            sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer', color: 'primary.main', '&:hover': { textDecoration: 'underline' } }}
+                        >
+                            {params.value}
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, overflow: 'hidden' }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 1 }}>
+                                {params.row.client_name}
+                            </Typography>
+                            {matchedCase?.category && (
+                                <Chip
+                                    label={isCivil ? "Civil" : "Correctionnel"}
+                                    size="small"
+                                    sx={{
+                                        height: 16,
+                                        fontSize: '0.6rem',
+                                        bgcolor: isCivil ? '#fffde7' : '#e3f2fd',
+                                        color: isCivil ? '#fbc02d' : '#1976d2',
+                                        fontWeight: 'bold',
+                                        border: '1px solid',
+                                        borderColor: isCivil ? '#fbc02d' : '#1976d2',
+                                        flexShrink: 0
+                                    }}
+                                />
+                            )}
+                        </Box>
+                    </Box>
+                );
+            }
+        },
+        {
+            field: 'document_type',
+            headerName: 'Type',
+            width: 120,
+            renderCell: (params) => (
+                <Chip label={params.value} color={getDocTypeColor(params.value)} size="small" variant="outlined" />
+            )
+        },
+        {
+            field: 'file_size',
+            headerName: 'Taille',
+            width: 100,
+            valueFormatter: (params) => formatFileSize(params.value)
+        },
+        {
+            field: 'tags_list',
+            headerName: 'Tags',
+            width: 200,
+            renderCell: (params) => (
+                <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                    {params.value?.map((tag, index) => (
+                        <Chip key={index} label={tag} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />
+                    ))}
+                </Box>
+            )
+        },
+        {
+            field: 'ocr_processed',
+            headerName: 'OCR',
+            width: 120,
+            renderCell: (params) => (
+                <Chip
+                    label={params.value ? "Traité" : "Attente"}
+                    color={params.value ? "success" : "warning"}
+                    size="small"
+                    variant={params.value ? "filled" : "outlined"}
+                />
+            )
+        },
+        {
+            field: 'created_at',
+            headerName: 'Date',
+            width: 120,
+            valueFormatter: (params) => new Date(params.value).toLocaleDateString('fr-FR')
+        },
+        {
+            field: 'actions',
+            type: 'actions',
+            headerName: 'Actions',
+            width: 150,
+            getActions: (params) => [
+                <GridActionsCellItem icon={<PreviewIcon />} label="Aperçu" onClick={() => handlePreview(params.row)} color="info" />,
+                <GridActionsCellItem icon={<OcrIcon />} label="OCR" onClick={() => handleViewOcr(params.row)} color="primary" />,
+                <GridActionsCellItem icon={<DeleteIcon />} label="Supprimer" onClick={() => handleDeleteClick(params.row)} color="error" />,
+            ],
+        },
+    ];
+
+    const totalDocs = documents.length;
+    const ocrProcessed = documents.filter(d => d.ocr_processed).length;
+
+    return (
+        <Box sx={{ width: '100%', pb: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'start', sm: 'center' }, gap: 2, mb: 3 }}>
+                <Box>
+                    <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>Documents</Typography>
+                    <Typography variant="body1" color="text.secondary">Centralisez et gérez tous vos documents juridiques.</Typography>
+                </Box>
+                <Button variant="contained" startIcon={<UploadIcon />} onClick={handleOpenDialog} sx={{ borderRadius: 2, px: 3, py: 1, width: { xs: '100%', sm: 'auto' } }}>Uploader un document</Button>
+            </Box>
+
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+                <Grid item xs={12} sm={4}>
+                    <Box onClick={() => setFilterType('ALL')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterType === 'ALL' ? 1 : 0.6 }}>
+                        <StatCard
+                            title="Total documents"
+                            value={totalDocs}
+                            icon={<FileIcon color="primary" />}
+                            color="primary"
+                            sx={{ border: filterType === 'ALL' ? '2px solid' : 'none', borderColor: 'primary.main', borderRadius: 2 }}
+                        />
+                    </Box>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                    <Box onClick={() => setFilterType('OCR')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterType === 'OCR' ? 1 : 0.6 }}>
+                        <StatCard
+                            title="Documents analysés (OCR)"
+                            value={ocrProcessed}
+                            icon={<FindIcon color="info" />}
+                            color="info"
+                            sx={{ border: filterType === 'OCR' ? '2px solid' : 'none', borderColor: 'info.main', borderRadius: 2 }}
+                        />
+                    </Box>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                    <Box onClick={() => setFilterType('STORAGE')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterType === 'STORAGE' ? 1 : 0.6 }}>
+                        <StatCard
+                            title="Gros fichiers (> 100 Ko)"
+                            value={formatFileSize(documents.filter(d => d.file_size > 100 * 1024).reduce((acc, curr) => acc + curr.file_size, 0))}
+                            icon={<StorageIcon color="success" />}
+                            color="success"
+                            sx={{ border: filterType === 'STORAGE' ? '2px solid' : 'none', borderColor: 'success.main', borderRadius: 2 }}
+                        />
+                    </Box>
+                </Grid>
+            </Grid>
+
+            <Paper sx={{ height: 600, width: '100%', borderRadius: 3, overflow: 'hidden', boxShadow: 3 }}>
+                <DataGrid
+                    rows={sortedDocuments}
+                    columns={columns}
+                    loading={loading}
+                    rowHeight={65}
+                    filterModel={filterModel}
+                    onFilterModelChange={(newModel) => {
+                        setFilterModel(newModel);
+                        setSearchTerm(newModel.quickFilterValues?.[0] || '');
+                    }}
+                    initialState={{
+                        pagination: { paginationModel: { page: 0, pageSize: 10 } },
+                    }}
+                    pageSizeOptions={[10, 25, 50]}
+                    disableRowSelectionOnClick
+                    slots={{ toolbar: GridToolbar }}
+                    slotProps={{
+                        toolbar: {
+                            showQuickFilter: true,
+                            quickFilterProps: {
+                                debounceMs: 500,
+                                placeholder: "Rechercher...",
+                                // Ensure search term stays in sync
+                                onChange: (e) => setSearchTerm(e.target.value)
+                            }
+                        }
+                    }}
+                    localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
+                    sx={{
+                        border: 0,
+                        '& .MuiDataGrid-columnHeaders': { backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'background.paper' : '#f8fafc', fontWeight: 700 },
+                        '& .MuiDataGrid-row:hover': { backgroundColor: 'action.hover', cursor: 'pointer' }
+                    }}
+                />
+            </Paper>
+
+            <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+                <DialogTitle>Uploader un document</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Paper {...getRootProps()} sx={{ p: 4, textAlign: 'center', border: '2px dashed', borderColor: isDragActive ? 'primary.main' : 'divider', bgcolor: isDragActive ? 'action.hover' : 'background.paper', cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}>
+                            <input {...getInputProps()} />
+                            <UploadIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
+                            {uploadFile ? <Typography>{uploadFile.name}</Typography> : <Typography>{isDragActive ? 'Déposez le fichier ici...' : 'Glissez-déposez un fichier ou cliquez pour sélectionner'}</Typography>}
+                        </Paper>
+                        <TextField label="Titre" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required fullWidth />
+                        <TextField label="Dossier" select value={formData.case} onChange={(e) => setFormData({ ...formData, case: e.target.value })} required fullWidth>
+                            {cases.map((c) => <MenuItem key={c.id} value={c.id}>{c.reference} - {c.title}</MenuItem>)}
+                        </TextField>
+                        <TextField label="Type de document" select value={formData.document_type} onChange={(e) => setFormData({ ...formData, document_type: e.target.value })} fullWidth>
+                            <MenuItem value="CONTRAT">Contrat</MenuItem>
+                            <MenuItem value="COURRIER">Courrier</MenuItem>
+                            <MenuItem value="JUGEMENT">Jugement</MenuItem>
+                            <MenuItem value="PIECE">Pièce</MenuItem>
+                            <MenuItem value="NOTE">Note</MenuItem>
+                            <MenuItem value="MEMOIRE">Mémoire</MenuItem>
+                            <MenuItem value="ASSIGNATION">Assignation</MenuItem>
+                            <MenuItem value="CONCLUSION">Conclusion</MenuItem>
+                            <MenuItem value="REQUETE">Requête</MenuItem>
+                            <MenuItem value="ACTE_HUISSIER">Acte d’huissier</MenuItem>
+                            <MenuItem value="DOSSIER_ADVERSE">Dossier partie adverse</MenuItem>
+                            <MenuItem value="CITATION">Citation</MenuItem>
+                            <MenuItem value="AUTRE">Autre</MenuItem>
+                        </TextField>
+                        <TextField label="Description" multiline rows={3} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} fullWidth />
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog}>Annuler</Button>
+                    <Button onClick={handleSubmit} variant="contained">Uploader</Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={ocrDialog} onClose={() => setOcrDialog(false)} maxWidth="md" fullWidth>
+                <DialogTitle>Texte OCR - {selectedDoc?.title || 'Document'}</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ mt: 2 }}>
+                        <Box sx={{ mb: 2 }}><Chip label={selectedDoc?.ocr_processed ? "OCR traité" : "OCR non traité"} color={selectedDoc?.ocr_processed ? "success" : "warning"} sx={{ mr: 1 }} /><Chip label={selectedDoc?.document_type || 'N/A'} variant="outlined" /></Box>
+                        {selectedDoc?.ocr_error && <Box sx={{ p: 2, mb: 2, bgcolor: '#ffebee', borderRadius: 1 }}><Typography color="error"><strong>Erreur OCR:</strong> {selectedDoc.ocr_error}</Typography></Box>}
+                        <Typography variant="subtitle2" gutterBottom>Texte extrait :</Typography>
+                        <Box sx={{ p: 2, bgcolor: '#ffffff', border: '1px solid #e0e0e0', borderRadius: 1, maxHeight: 400, overflow: 'auto', color: '#000000' }}>
+                            <Typography variant="body2" component="div" sx={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '0.875rem', lineHeight: 1.6, color: '#000000' }}>
+                                {selectedDoc?.ocr_text || "Aucun texte extrait."}
+                            </Typography>
+                        </Box>
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleExportWord} startIcon={<DownloadIcon />} color="success">Exporter Word</Button>
+                    <Button onClick={handleExportPDF} startIcon={<DownloadIcon />} color="error">Exporter PDF</Button>
+                    <Button onClick={() => setOcrDialog(false)} variant="contained">Fermer</Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={previewDialog} onClose={() => setPreviewDialog(false)} maxWidth="xl" fullWidth PaperProps={{ sx: { height: '90vh' } }}>
+                <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h6" component="div">{previewDoc?.title}</Typography>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        {previewDoc && ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(previewDoc.file_extension?.toLowerCase().replace('.', '')) && (
+                            <><Tooltip title="Zoom arrière"><IconButton onClick={handleZoomOut}><ZoomOutIcon /></IconButton></Tooltip><Tooltip title="Zoom avant"><IconButton onClick={handleZoomIn}><ZoomInIcon /></IconButton></Tooltip><Tooltip title="Réinitialiser"><IconButton onClick={handleResetZoom}><ResetIcon /></IconButton></Tooltip><Tooltip title="Améliorer la lisibilité (Contraste)"><IconButton onClick={toggleEnhance} color={imageEnhance ? "primary" : "default"}><ContrastIcon /></IconButton></Tooltip><Box sx={{ mx: 1, borderLeft: '1px solid #ddd' }} /></>
+                        )}
+                        <IconButton aria-label="close" onClick={() => setPreviewDialog(false)}><CloseIcon /></IconButton>
+                    </Box>
+                </DialogTitle>
+                <DialogContent dividers sx={{ p: 0, bgcolor: '#f5f5f5', display: 'flex', flexDirection: 'column' }}>
+                    {previewDoc && (
+                        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: imageZoom ? 'flex-start' : 'center', overflow: 'auto', p: 2 }}>
+                            {previewDoc.file_extension?.toLowerCase() === '.pdf' ? <iframe src={previewDoc.file_url} width="100%" height="100%" style={{ border: 'none' }} title="PDF Preview" /> : ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(previewDoc.file_extension?.toLowerCase().replace('.', '')) ? <img src={previewDoc.file_url} alt={previewDoc.title} style={{ maxWidth: imageZoom ? 'none' : '100%', maxHeight: imageZoom ? 'none' : '100%', width: imageZoom ? `${imageZoom}%` : 'auto', objectFit: 'contain', filter: imageEnhance ? 'contrast(1.5) brightness(1.05) grayscale(0.2)' : 'none', transition: 'width 0.2s, filter 0.2s' }} /> : <Box sx={{ textAlign: 'center', p: 4 }}><Typography variant="h6" color="text.secondary" gutterBottom>Aperçu non disponible pour ce type de fichier.</Typography></Box>}
+                        </Box>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            <DeleteConfirmDialog open={deleteDialog} onClose={() => setDeleteDialog(false)} onConfirm={handleConfirmDelete} title="ce document" itemName={docToDelete?.title} />
+        </Box>
+    );
+}
+
+export default Documents;
