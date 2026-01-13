@@ -62,6 +62,13 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
         },
         {
             id: 'demo2',
+            name: "Me Khady SENE",
+            role: "Avocate collaboratrice",
+            photo: "/images/team/khady_sene.jpg",
+            email: "khadysene@gmail.com"
+        },
+        {
+            id: 'demo3',
             name: "M. Augustin François NDAO",
             role: "Juriste Interne / Collaborateur",
             photo: "/images/team/augustin_ndao.jpg",
@@ -69,7 +76,7 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
             linkedin_url: "https://www.linkedin.com/in/augustin-f-ndao/"
         },
         {
-            id: 'demo3',
+            id: 'demo4',
             name: "M. Médoune MBENGUE",
             role: "Clerc principal et secrétaire général du cabinet",
             photo: "/images/team/medoune_mbengue_v2.png",
