@@ -45,12 +45,14 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
     };
 
     const isDefault = false;
-    const hasApiData = cabinetInfo?.branding?.name && cabinetInfo.branding.name.trim() !== '';
+    const apiName = cabinetInfo?.branding?.name?.trim() || '';
+    const isDefaultName = apiName === '' || apiName === 'Mon Cabinet';
+    const hasApiData = !isDefaultName;
     const cabinetName = hasApiData ? cabinetInfo.branding.name : demoCabinet.name;
-    const description = (hasApiData && cabinetInfo?.branding?.description) ? cabinetInfo.branding.description : demoCabinet.description;
+    const description = hasApiData ? (cabinetInfo.branding.description || demoCabinet.description) : demoCabinet.description;
     const logoUrl = cabinetInfo?.branding?.logo || null;
-    const primaryColor = (hasApiData && cabinetInfo?.branding?.primary_color) ? cabinetInfo.branding.primary_color : demoCabinet.primary_color;
-    const secondaryColor = (hasApiData && cabinetInfo?.branding?.secondary_color) ? cabinetInfo.branding.secondary_color : demoCabinet.secondary_color;
+    const primaryColor = hasApiData ? (cabinetInfo.branding.primary_color || demoCabinet.primary_color) : demoCabinet.primary_color;
+    const secondaryColor = hasApiData ? (cabinetInfo.branding.secondary_color || demoCabinet.secondary_color) : demoCabinet.secondary_color;
 
     // Fallback team
     const defaultTeam = [
