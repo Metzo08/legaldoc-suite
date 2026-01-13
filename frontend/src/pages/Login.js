@@ -141,7 +141,7 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
                                 <Grid container spacing={2}>
                                     {displayTeam.map((member) => (
                                         <Grid item xs={12} sm={6} key={member.id}>
-                                            <Paper sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', color: 'white', display: 'flex', alignItems: 'center' }}>
+                                            <Paper sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', color: 'white', display: 'flex', alignItems: 'center', minHeight: 80, height: 80 }}>
                                                 {member.photo ? (
                                                     <Box
                                                         component="img"
@@ -153,17 +153,15 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
                                                             objectFit: 'cover',
                                                             mr: 2,
                                                             border: '2px solid rgba(255,255,255,0.5)',
-                                                            transform: member.name.includes('Médoune') ? 'scale(1.15)' : 'none',
-                                                            bgcolor: member.name.includes('Médoune') ? 'rgba(255,255,255,0.2)' : 'transparent',
-                                                            padding: member.name.includes('Médoune') ? '2px' : 0
+                                                            flexShrink: 0
                                                         }}
                                                     />
                                                 ) : (
-                                                    <Person sx={{ width: 50, height: 50, p: 1, bgcolor: 'rgba(255,255,255,0.2)', borderRadius: '50%', mr: 2 }} />
+                                                    <Person sx={{ width: 50, height: 50, p: 1, bgcolor: 'rgba(255,255,255,0.2)', borderRadius: '50%', mr: 2, flexShrink: 0 }} />
                                                 )}
-                                                <Box>
-                                                    <Typography variant="subtitle1" fontWeight="bold" sx={{ color: '#ffffff !important' }}>{member.name}</Typography>
-                                                    <Typography variant="caption" sx={{ opacity: 1, color: '#ffffff !important' }}>{member.role}</Typography>
+                                                <Box sx={{ overflow: 'hidden', flex: 1 }}>
+                                                    <Typography variant="subtitle1" fontWeight="bold" sx={{ color: '#ffffff !important', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{member.name}</Typography>
+                                                    <Typography variant="caption" sx={{ opacity: 1, color: '#ffffff !important', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{member.role}</Typography>
                                                 </Box>
                                             </Paper>
                                         </Grid>
