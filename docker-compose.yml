@@ -37,15 +37,11 @@ services:
       - static_files:/app/staticfiles
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
-      - DATABASE_NAME=legaldoc
-      - DATABASE_USER=legaldoc_user
-      - DATABASE_PASSWORD=legaldoc_password_change_me
       - DATABASE_HOST=db
       - DATABASE_PORT=5432
-      - DEBUG=False
-      - SECRET_KEY=changez-cette-cle-secrete-en-production
-      - ENCRYPTION_KEY=changez-cette-cle-de-32-chars!
     depends_on:
       db:
         condition: service_healthy
