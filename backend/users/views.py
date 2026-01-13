@@ -4,7 +4,7 @@ Vues API pour la gestion des utilisateurs.
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import update_session_auth_hash
 from .models import User
 from .permissions import IsAdminRole
@@ -23,6 +23,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     Vue pour obtenir le token JWT personnalisé.
     """
     serializer_class = CustomTokenObtainPairSerializer
+    permission_classes = [AllowAny]  # Permet l'accès sans authentification
 
 
 class UserViewSet(viewsets.ModelViewSet):
