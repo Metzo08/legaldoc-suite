@@ -127,7 +127,7 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
                         <Box sx={{ mb: 4 }}>
                             <Box
                                 component="img"
-                                src={logoUrl ? getImageUrl(logoUrl) : "/images/logo_cabinet.png"}
+                                src={logoUrl ? getImageUrl(logoUrl) : "/images/logo_v2.png"}
                                 sx={{
                                     height: 100,
                                     maxWidth: 300,

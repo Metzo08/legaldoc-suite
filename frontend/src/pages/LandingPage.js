@@ -202,7 +202,7 @@ function LandingPage() {
                             {/* Logo */}
                             <Box
                                 component="img"
-                                src={displayLogoUrl || "/images/logo_cabinet.png"}
+                                src={displayLogoUrl || "/images/logo_v2.png"}
                                 alt="Logo du Cabinet"
                                 sx={{
                                     height: { xs: 60, md: 90 },
