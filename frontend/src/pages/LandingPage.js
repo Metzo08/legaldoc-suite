@@ -200,20 +200,21 @@ function LandingPage() {
                     <Grid container spacing={6} alignItems="center">
                         <Grid item xs={12} md={7}>
                             {/* Logo */}
-                            component="img"
-                            src={displayLogoUrl || "/images/logo_cabinet.png"}
-                            alt="Logo du Cabinet"
-                            sx={{
-                                height: { xs: 60, md: 90 },
-                                maxWidth: { xs: 200, md: 280 },
-                                objectFit: 'contain',
-                                mb: 4,
-                                imageRendering: 'auto',
-                                transition: 'transform 0.3s ease',
-                                '&:hover': {
-                                    transform: 'scale(1.05)'
-                                }
-                            }}
+                            <Box
+                                component="img"
+                                src={displayLogoUrl || "/images/logo_cabinet.png"}
+                                alt="Logo du Cabinet"
+                                sx={{
+                                    height: { xs: 60, md: 90 },
+                                    maxWidth: { xs: 200, md: 280 },
+                                    objectFit: 'contain',
+                                    mb: 4,
+                                    imageRendering: 'auto',
+                                    transition: 'transform 0.3s ease',
+                                    '&:hover': {
+                                        transform: 'scale(1.05)'
+                                    }
+                                }}
                             />
 
                             <Typography variant="h2" component="h1" fontWeight="800" sx={{ mb: 2, color: '#ffffff !important' }}>
