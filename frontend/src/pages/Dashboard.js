@@ -204,8 +204,6 @@ function Dashboard() {
                         value={stats.clients}
                         icon={<PeopleIcon />}
                         color="primary"
-                        trend="up"
-                        trendValue="12%"
                         onClick={() => navigate('/clients')}
                     />
                 </Grid>
@@ -225,8 +223,6 @@ function Dashboard() {
                         value={stats.documents}
                         icon={<DescriptionIcon />}
                         color="info"
-                        trend="up"
-                        trendValue="8%"
                         onClick={() => navigate('/documents')}
                     />
                 </Grid>
