@@ -18,7 +18,7 @@ sleep 10
 
 # 3. Génération des certificats
 echo "🔐 Demande de certificat via Certbot..."
-docker-compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot --email maitreimbengue@gmail.com --agree-tos --no-eff-email -d cabinetmaitreibrahimambengue.cloud -d www.cabinetmaitreibrahimambengue.cloud
+docker-compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot --email maitreimbengue@gmail.com --agree-tos --no-eff-email -d cabinetmaitreibrahimambengue.cloud
 
 # 4. Activation du SSL
 if [ -d "certbot/conf/live/cabinetmaitreibrahimambengue.cloud" ]; then
