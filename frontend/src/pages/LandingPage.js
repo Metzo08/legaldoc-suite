@@ -70,22 +70,22 @@ function LandingPage() {
 
     // MODE DYNAMIQUE (Utilise l'API, avec fallback sur démo si vide)
     // Si l'API ne répond pas ou ne retourne pas de branding, utiliser les données de démo
-    const hasApiData = cabinet?.branding?.name;
+    const hasApiData = cabinet?.branding?.name && cabinet.branding.name.trim() !== '';
 
     // Branding & Content - TOUJOURS utiliser demoCabinet si les données API sont absentes
-    const name = hasApiData ? cabinet.branding.name : demoCabinet.name;
-    const description = hasApiData ? cabinet.branding.description : demoCabinet.description;
-    const primaryColor = hasApiData ? (cabinet.branding.primary_color || demoCabinet.primary_color) : demoCabinet.primary_color;
-    const secondaryColor = hasApiData ? (cabinet.branding.secondary_color || demoCabinet.secondary_color) : demoCabinet.secondary_color;
+    const name = (hasApiData && cabinet.branding.name) ? cabinet.branding.name : demoCabinet.name;
+    const description = (hasApiData && cabinet.branding.description) ? cabinet.branding.description : demoCabinet.description;
+    const primaryColor = (hasApiData && cabinet.branding.primary_color) ? cabinet.branding.primary_color : demoCabinet.primary_color;
+    const secondaryColor = (hasApiData && cabinet.branding.secondary_color) ? cabinet.branding.secondary_color : demoCabinet.secondary_color;
     const logoUrl = cabinet?.branding?.logo;
 
-    // Contact - TOUJOURS utiliser demoCabinet si les données API sont absentes
-    const address = hasApiData ? cabinet?.contact?.address : demoCabinet.address;
-    const phone = hasApiData ? cabinet?.contact?.phone : demoCabinet.phone;
-    const fax = hasApiData ? cabinet?.contact?.fax : demoCabinet.fax;
-    const cel = hasApiData ? cabinet?.contact?.cel : demoCabinet.cel;
-    const email = hasApiData ? cabinet?.contact?.email : demoCabinet.email;
-    const openingHours = hasApiData ? cabinet?.contact?.opening_hours : demoCabinet.opening_hours;
+    // Contact - TOUJOURS utiliser demoCabinet si les données API sont absentes ou vides
+    const address = (hasApiData && cabinet?.contact?.address && cabinet.contact.address.trim() !== '') ? cabinet.contact.address : demoCabinet.address;
+    const phone = (hasApiData && cabinet?.contact?.phone) ? cabinet.contact.phone : demoCabinet.phone;
+    const fax = (hasApiData && cabinet?.contact?.fax) ? cabinet.contact.fax : demoCabinet.fax;
+    const cel = (hasApiData && cabinet?.contact?.cel) ? cabinet.contact.cel : demoCabinet.cel;
+    const email = (hasApiData && cabinet?.contact?.email) ? cabinet.contact.email : demoCabinet.email;
+    const openingHours = (hasApiData && cabinet?.contact?.opening_hours) ? cabinet.contact.opening_hours : demoCabinet.opening_hours;
 
     // Helper to fix image URLs
     const getImageUrl = (path) => {
