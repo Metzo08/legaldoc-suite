@@ -200,7 +200,7 @@ function LandingPage() {
                             {/* Logo */}
                             <Box
                                 component="img"
-                                src={displayLogoUrl || "https://cdn-icons-png.flaticon.com/512/2237/2237680.png"}
+                                src={displayLogoUrl || "/images/logo.png"}
                                 alt="Logo du Cabinet"
                                 sx={{
                                     height: { xs: 60, md: 90 },
