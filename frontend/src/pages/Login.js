@@ -125,17 +125,17 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
                 <Grid container spacing={4} alignItems="center">
                     <Grid item xs={12} md={7} sx={{ color: 'white' }}>
                         <Box sx={{ mb: 4 }}>
-                            {logoUrl && (
-                                <Box
-                                    component="img"
-                                    src={getImageUrl(logoUrl)}
-                                    sx={{
-                                        maxHeight: 100,
-                                        mb: 2,
-                                        filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))'
-                                    }}
-                                />
-                            )}
+                            <Box
+                                component="img"
+                                src={logoUrl ? getImageUrl(logoUrl) : "/images/logo_cabinet.png"}
+                                sx={{
+                                    height: 100,
+                                    maxWidth: 300,
+                                    objectFit: 'contain',
+                                    mb: 2,
+                                    filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))'
+                                }}
+                            />
                             <Typography variant="h2" fontWeight="800" sx={{ mb: 2, color: '#ffffff !important' }}>{cabinetName}</Typography>
                             <Typography variant="h5" sx={{ opacity: 1, mb: 4, maxWidth: '90%', color: '#ffffff !important' }}>{description}</Typography>
 

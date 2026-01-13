@@ -200,30 +200,20 @@ function LandingPage() {
                     <Grid container spacing={6} alignItems="center">
                         <Grid item xs={12} md={7}>
                             {/* Logo */}
-                            <Box
-                                component="img"
-                                src={displayLogoUrl || "/images/logo.png"}
-                                alt="Logo du Cabinet"
-                                sx={{
-                                    height: { xs: 60, md: 90 },
-                                    maxWidth: { xs: 200, md: 280 },
-                                    objectFit: 'contain',
-                                    mb: 4,
-                                    imageRendering: 'auto',
-                                    WebkitBackfaceVisibility: 'hidden',
-                                    backfaceVisibility: 'hidden',
-                                    transform: 'translateZ(0)',
-                                    filter: displayLogoUrl
-                                        ? 'drop-shadow(0 4px 8px rgba(0,0,0,0.2)) contrast(1.05) saturate(1.1)'
-                                        : 'grayscale(100%) brightness(0.5) sepia(1) hue-rotate(200deg) saturate(3)',
-                                    transition: 'all 0.3s ease',
-                                    '&:hover': {
-                                        transform: 'scale(1.05)',
-                                        filter: displayLogoUrl
-                                            ? 'contrast(1.1) saturate(1.2) drop-shadow(0 6px 15px rgba(0,0,0,0.3))'
-                                            : 'grayscale(100%) brightness(0.5) sepia(1) hue-rotate(200deg) saturate(3)'
-                                    }
-                                }}
+                            component="img"
+                            src={displayLogoUrl || "/images/logo_cabinet.png"}
+                            alt="Logo du Cabinet"
+                            sx={{
+                                height: { xs: 60, md: 90 },
+                                maxWidth: { xs: 200, md: 280 },
+                                objectFit: 'contain',
+                                mb: 4,
+                                imageRendering: 'auto',
+                                transition: 'transform 0.3s ease',
+                                '&:hover': {
+                                    transform: 'scale(1.05)'
+                                }
+                            }}
                             />
 
                             <Typography variant="h2" component="h1" fontWeight="800" sx={{ mb: 2, color: '#ffffff !important' }}>
