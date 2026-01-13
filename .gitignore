@@ -54,11 +54,11 @@ secrets/
 # Uploads et documents (ne pas versionner les fichiers clients)
 uploads/
 /media/documents/
-*.pdf
-*.docx
-*.jpg
-*.jpeg
-*.png
+# *.pdf
+# *.docx
+# *.jpg
+# *.jpeg
+# *.png
 
 # Sauvegardes
 backup/
