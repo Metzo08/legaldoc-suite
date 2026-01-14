@@ -109,7 +109,7 @@ function LandingPage() {
             id: 'member1',
             name: "Maître Ibrahima MBENGUE",
             role: "Avocat à la cour",
-            biography: "Avocat à la cour avec 35 ans d’expérience. Barreau du Sénégal. Conseil inscrit à la Cours Pénale Internationale (CPI). Conseil inscrit à la Cours Africaine des Droits de l’Homme et des Peuples (CADHP). Spécialisé en droit Pénal, Social et Civil.",
+            biography: "Avocat à la cour with 35 ans d’expérience. Barreau du Sénégal. Conseil inscrit à la Cours Pénale Internationale (CPI). Conseil inscrit à la Cours Africaine des Droits de l’Homme et des Peuples (CADHP). Spécialisé en droit Pénal, Social et Civil.",
             photo: "/images/team/ibrahima_mbengue.jpg",
             email: "maitreimbengue@gmail.com"
         },
@@ -126,7 +126,7 @@ function LandingPage() {
             id: 'member2',
             name: "M. Augustin François NDAO",
             role: "Juriste Interne / Collaborateur",
-            biography: "Juriste interne spécialisé en droit des Affaires. Certifié informatique et internet par FORCE-N Sénégal, Certifié informatique et internet par FORCE-N Sénégal. Expert en gestion documentaire et transformation digitale des cabinets juridiques.",
+            biography: "Juriste interne spécialisé en droit des Affaires. Certifié informatique et internet par FORCE-N Sénégal. Expert en gestion documentaire et transformation digitale des cabinets juridiques.",
             photo: "/images/team/augustin_ndao.jpg",
             email: "francoisndao@gmail.com",
             linkedin_url: "https://www.linkedin.com/in/augustin-f-ndao/"
@@ -347,14 +347,14 @@ function LandingPage() {
                         </Typography>
                     </Box>
 
-                    <Grid container spacing={4} justifyContent="center">
+                    <Grid container spacing={3} justifyContent="center">
                         {displayTeam.map((member, index) => (
-                            <Grid item xs={12} sm={6} md={6} key={member.id || index}>
+                            <Grid item xs={12} sm={6} md={3} key={member.id || index}>
                                 <Paper
                                     elevation={4}
                                     sx={{
-                                        p: 4,
-                                        height: 420,
+                                        p: 3,
+                                        height: 520, // Augmented height for readability
                                         display: 'flex',
                                         flexDirection: 'column',
                                         alignItems: 'center',
@@ -362,7 +362,7 @@ function LandingPage() {
                                         borderRadius: 4,
                                         bgcolor: 'white',
                                         border: '2px solid',
-                                        borderColor: 'grey.200',
+                                        borderColor: 'grey.100',
                                         transition: 'all 0.3s ease',
                                         '&:hover': {
                                             transform: 'translateY(-8px)',
@@ -414,7 +414,16 @@ function LandingPage() {
                                         {member.role}
                                     </Typography>
                                     <Divider sx={{ width: 60, mx: 'auto', mb: 2, borderColor: primaryColor }} />
-                                    <Typography variant="body2" sx={{ color: '#444444', mb: 2, flex: 1, lineHeight: 1.6 }}>
+                                    <Typography variant="body2" sx={{
+                                        color: '#444444',
+                                        mb: 2,
+                                        flex: 1,
+                                        lineHeight: 1.6,
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 8, // Limit bio lines to keep vertical alignment
+                                        WebkitBoxOrient: 'vertical',
+                                        overflow: 'hidden'
+                                    }}>
                                         {member.biography}
                                     </Typography>
                                     <Stack direction="row" spacing={1} justifyContent="center">

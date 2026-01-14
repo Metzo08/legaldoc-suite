@@ -38,7 +38,7 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
     // DONNÉES DE DÉMONSTRATION
     const demoCabinet = {
         name: "CABINET DE MAITRE IBRAHIMA MBENGUE",
-        description: "Cabinet d'avocats de référence à Dakar. Nous intervenons avec rigueur et dévouement pour la défense de vos intérêts au Sénégal et dans la sous-région.",
+        description: "L'excellence juridique au cœur de Dakar. Un cabinet de référence alliant rigueur, dévouement et expertise stratégique pour la défense de vos intérêts et l'accompagnement de vos ambitions.",
         primary_color: "#1a237e",
         secondary_color: "#c2185b",
         logo: null
@@ -59,7 +59,7 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
         {
             id: 'demo1',
             name: "Maître Ibrahima MBENGUE",
-            role: "Avocat Associé Gérant - Fondateur",
+            role: "Avocat à la cour",
             photo: "/images/team/ibrahima_mbengue.jpg",
             email: "maitreimbengue@gmail.com"
         },
@@ -81,7 +81,7 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
         {
             id: 'demo4',
             name: "M. Médoune MBENGUE",
-            role: "Clerc principal et secrétaire général du cabinet",
+            role: "Clerc principal et secrétaire général",
             photo: "/images/team/medoune_mbengue_v2.png",
             email: "medounembengue111@icloud.com"
         }
