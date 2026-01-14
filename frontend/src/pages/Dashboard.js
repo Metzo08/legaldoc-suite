@@ -20,7 +20,8 @@ import {
     ListItemIcon,
     ListItemText,
     Checkbox,
-    MenuItem
+    MenuItem,
+    Autocomplete
 } from '@mui/material';
 import {
     People as PeopleIcon,
@@ -71,19 +72,19 @@ function Dashboard() {
     const [diligences, setDiligences] = useState([]);
     const [allCases, setAllCases] = useState([]);
     const [newItemText, setNewItemText] = useState('');
-    const [selectedCase, setSelectedCase] = useState('');
+    const [selectedCase, setSelectedCase] = useState(null);
 
     const addDiligence = async () => {
         if (!newItemText.trim()) return;
         try {
             const data = {
                 title: newItemText.trim(),
-                case: selectedCase || null
+                case: selectedCase ? selectedCase.id : null
             };
             const response = await diligencesAPI.create(data);
             setDiligences([response.data, ...diligences]);
             setNewItemText('');
-            setSelectedCase('');
+            setSelectedCase(null);
         } catch (error) {
             console.error('Erreur creation diligence:', error);
         }
@@ -243,7 +244,7 @@ function Dashboard() {
                 <Grid item xs={12} md={6}>
                     <Paper sx={{
                         p: 3,
-                        height: 420,
+                        height: 480,
                         overflow: 'auto',
                         borderRadius: 4,
                         border: '1px solid',
@@ -327,7 +328,7 @@ function Dashboard() {
                 <Grid item xs={12} md={6}>
                     <Paper sx={{
                         p: 3,
-                        height: 420,
+                        height: 480,
                         overflow: 'auto',
                         borderRadius: 4,
                         border: '1px solid',
@@ -414,124 +415,213 @@ function Dashboard() {
                     </Paper>
                 </Grid>
 
-                {/* Pense-bête (Notes rapides) */}
+                {/* Pense-bête (Diligences) - DESIGN PREMIUM CLOUD */}
                 <Grid item xs={12} md={6}>
                     <Paper sx={{
                         p: 3,
-                        height: 420,
+                        height: 480,
                         display: 'flex',
                         flexDirection: 'column',
                         borderRadius: 4,
                         border: '1px solid',
-                        borderColor: 'divider',
-                        boxShadow: 'none',
-                        bgcolor: '#fff9c4' // Post-it yellow
+                        borderColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(251, 192, 45, 0.3)' : 'rgba(251, 192, 45, 0.2)',
+                        boxShadow: (theme) => `0 4px 20px ${alpha('#fbc02d', 0.05)}`,
+                        bgcolor: (theme) => theme.palette.mode === 'dark' ? alpha('#fbc02d', 0.02) : '#fffdf7',
+                        position: 'relative',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: (theme) => `0 12px 24px -10px ${alpha('#fbc02d', 0.15)}`,
+                        },
+                        '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '5px',
+                            height: '100%',
+                            bgcolor: '#fbc02d',
+                            borderRadius: '4px 0 0 4px'
+                        }
                     }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha('#fbc02d', 0.1), color: '#fbc02d', mr: 2 }}>
-                                <NoteIcon />
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                            <Box sx={{ p: 1, borderRadius: 3, bgcolor: alpha('#fbc02d', 0.15), color: '#fbc02d', mr: 2 }}>
+                                <NoteIcon sx={{ fontSize: 28 }} />
                             </Box>
-                            <Typography variant="h6" sx={{ fontWeight: 700, color: 'black' }}>
-                                Pense-bête (Diligences)
-                            </Typography>
+                            <Box>
+                                <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.01em' }}>Pense-bête</Typography>
+                                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Diligences et rappels stratégiques</Typography>
+                            </Box>
                         </Box>
 
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
-                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                <TextField
-                                    placeholder="Ajouter une nouvelle diligence..."
-                                    value={newItemText}
-                                    onChange={(e) => setNewItemText(e.target.value)}
-                                    onKeyPress={(e) => {
-                                        if (e.key === 'Enter') {
-                                            addDiligence();
-                                        }
-                                    }}
-                                    variant="standard"
-                                    fullWidth
-                                    autoComplete="off"
-                                    InputProps={{
-                                        disableUnderline: true,
-                                        sx: { fontFamily: 'inherit', fontSize: '1rem', color: 'black', bgcolor: alpha('#000', 0.05), px: 1, py: 0.5, borderRadius: 1 }
-                                    }}
-                                />
-                                <IconButton onClick={addDiligence} color="primary" sx={{ color: 'black' }}>
-                                    <AddIcon />
-                                </IconButton>
-                            </Box>
+                        <Box sx={{
+                            p: 2.5,
+                            borderRadius: 3,
+                            bgcolor: 'background.paper',
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            mb: 3,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                        }}>
                             <TextField
-                                select
-                                size="small"
-                                value={selectedCase}
-                                onChange={(e) => setSelectedCase(e.target.value)}
+                                placeholder="Que faut-il faire ?"
+                                value={newItemText}
+                                onChange={(e) => setNewItemText(e.target.value)}
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                        addDiligence();
+                                    }
+                                }}
                                 variant="standard"
                                 fullWidth
                                 InputProps={{
                                     disableUnderline: true,
-                                    sx: { fontSize: '0.75rem', color: 'black', opacity: 0.7 }
+                                    sx: { fontWeight: 700, mb: 1.5, fontSize: '1rem' }
                                 }}
-                                SelectProps={{
-                                    displayEmpty: true,
-                                    sx: { '& .MuiSelect-select': { py: 0.5 } }
-                                }}
-                            >
-                                <MenuItem value=""><em>-- Aucun dossier lié --</em></MenuItem>
-                                {allCases.map((c) => (
-                                    <MenuItem key={c.id} value={c.id}>{c.reference} - {c.title}</MenuItem>
-                                ))}
-                            </TextField>
+                            />
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <Autocomplete
+                                    size="small"
+                                    options={allCases}
+                                    getOptionLabel={(option) => option ? `${option.reference} - ${option.title}` : ''}
+                                    value={selectedCase}
+                                    isOptionEqualToValue={(option, value) => option.id === value?.id}
+                                    onChange={(event, newValue) => {
+                                        setSelectedCase(newValue);
+                                    }}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            placeholder="Lier à un dossier..."
+                                            variant="outlined"
+                                            sx={{
+                                                minWidth: 260,
+                                                '& .MuiOutlinedInput-root': {
+                                                    height: 36,
+                                                    fontSize: '0.8rem',
+                                                    borderRadius: 2.5,
+                                                    bgcolor: 'action.hover',
+                                                    '& fieldset': { border: 'none' },
+                                                    '&:hover fieldset': { border: 'none' },
+                                                    '&.Mui-focused fieldset': { border: '1px solid', borderColor: alpha('#fbc02d', 0.5) }
+                                                }
+                                            }}
+                                        />
+                                    )}
+                                    sx={{ flex: 1 }}
+                                />
+                                <IconButton
+                                    onClick={addDiligence}
+                                    disabled={!newItemText.trim()}
+                                    sx={{
+                                        bgcolor: '#fbc02d',
+                                        color: 'white',
+                                        width: 36,
+                                        height: 36,
+                                        '&:hover': { bgcolor: '#f9a825', transform: 'scale(1.05)' },
+                                        transition: 'all 0.2s',
+                                        '&.Mui-disabled': { bgcolor: 'action.disabledBackground', color: 'action.disabled' }
+                                    }}
+                                >
+                                    <AddIcon fontSize="small" />
+                                </IconButton>
+                            </Box>
                         </Box>
 
-                        <Box sx={{ flex: 1, overflowY: 'auto', pr: 1 }}>
+                        <Box sx={{ flex: 1, overflowY: 'auto', pr: 0.5 }}>
                             {diligences.length > 0 ? (
-                                <List disablePadding>
+                                <List disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                                     {diligences.map((item) => (
-                                        <ListItem
+                                        <Paper
                                             key={item.id}
-                                            disablePadding
-                                            secondaryAction={
-                                                <IconButton edge="end" aria-label="delete" onClick={() => deleteDiligence(item.id)}>
-                                                    <DeleteIcon sx={{ color: 'black', opacity: 0.6 }} />
-                                                </IconButton>
-                                            }
-                                            sx={{ py: 0.5 }}
+                                            elevation={0}
+                                            sx={{
+                                                p: 2,
+                                                borderRadius: 3,
+                                                border: '1px solid',
+                                                borderColor: item.is_completed ? 'divider' : alpha('#fbc02d', 0.15),
+                                                bgcolor: item.is_completed ? alpha('#000', 0.01) : 'background.paper',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                '&:hover': {
+                                                    borderColor: '#fbc02d',
+                                                    transform: 'translateX(6px)',
+                                                    boxShadow: '0 4px 12px rgba(251, 192, 45, 0.1)'
+                                                }
+                                            }}
                                         >
-                                            <ListItemIcon sx={{ minWidth: 32 }}>
-                                                <Checkbox
-                                                    edge="start"
-                                                    checked={item.is_completed}
-                                                    tabIndex={-1}
-                                                    disableRipple
-                                                    onChange={() => toggleDiligence(item.id, item.is_completed)}
-                                                    sx={{ color: 'black', '&.Mui-checked': { color: 'black' } }}
-                                                />
-                                            </ListItemIcon>
-                                            <ListItemText
-                                                primary={item.title}
-                                                secondary={item.case_reference ? `Dossier: ${item.case_reference}` : null}
-                                                secondaryTypographyProps={{ sx: { fontSize: '0.7rem', fontWeight: 700, opacity: 0.8, color: 'black' } }}
+                                            <Checkbox
+                                                checked={item.is_completed}
+                                                onChange={() => toggleDiligence(item.id, item.is_completed)}
                                                 sx={{
-                                                    color: 'black',
-                                                    textDecoration: item.is_completed ? 'line-through' : 'none',
-                                                    opacity: item.is_completed ? 0.6 : 1
+                                                    p: 0,
+                                                    mr: 2.5,
+                                                    color: '#fbc02d',
+                                                    '&.Mui-checked': { color: '#fbc02d' }
                                                 }}
                                             />
-                                        </ListItem>
+                                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                <Typography
+                                                    variant="body2"
+                                                    sx={{
+                                                        fontWeight: 700,
+                                                        textDecoration: item.is_completed ? 'line-through' : 'none',
+                                                        color: item.is_completed ? 'text.secondary' : 'text.primary',
+                                                        display: 'block',
+                                                        noWrap: true,
+                                                        fontSize: '0.9rem'
+                                                    }}
+                                                >
+                                                    {item.title}
+                                                </Typography>
+                                                {item.case_reference && (
+                                                    <Chip
+                                                        label={item.case_reference}
+                                                        size="small"
+                                                        variant="outlined"
+                                                        onClick={() => navigate(`/cases?search=${item.case_reference}`)}
+                                                        sx={{
+                                                            height: 20,
+                                                            fontSize: '0.65rem',
+                                                            fontWeight: 800,
+                                                            mt: 0.8,
+                                                            color: '#fbc02d',
+                                                            borderColor: alpha('#fbc02d', 0.3),
+                                                            bgcolor: alpha('#fbc02d', 0.05),
+                                                            cursor: 'pointer',
+                                                            '&:hover': { bgcolor: alpha('#fbc02d', 0.1), borderColor: '#fbc02d' }
+                                                        }}
+                                                    />
+                                                )}
+                                            </Box>
+                                            <IconButton
+                                                size="small"
+                                                onClick={() => deleteDiligence(item.id)}
+                                                sx={{
+                                                    opacity: 0,
+                                                    color: 'text.disabled',
+                                                    transition: 'all 0.2s',
+                                                    '&:hover': { color: 'error.main', bgcolor: alpha('#dc2626', 0.05) },
+                                                    '.MuiPaper-root:hover &': { opacity: 0.6 }
+                                                }}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                        </Paper>
                                     ))}
                                 </List>
                             ) : (
-                                <Box sx={{ textAlign: 'center', py: 4, opacity: 0.7 }}>
-                                    <NoteAddIcon sx={{ fontSize: 40, color: 'black', mb: 1 }} />
-                                    <Typography variant="body2" sx={{ color: 'black' }}>
-                                        Ajoutez vos premières diligences ici.
-                                    </Typography>
+                                <Box sx={{ textAlign: 'center', py: 6, opacity: 0.4 }}>
+                                    <NoteAddIcon sx={{ fontSize: 56, mb: 1.5, color: '#fbc02d' }} />
+                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Toutes vos diligences sont traitées.</Typography>
                                 </Box>
                             )}
                         </Box>
 
-                        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', opacity: 0.6 }}>
-                            <Typography variant="caption" sx={{ color: 'black', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <SaveIcon fontSize="inherit" /> Synchronisé avec le serveur
+                        <Box sx={{ mt: 2.5, pt: 1.5, borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'center' }}>
+                            <Typography variant="caption" sx={{ color: 'text.disabled', display: 'flex', alignItems: 'center', gap: 0.8, fontWeight: 600 }}>
+                                <SaveIcon sx={{ fontSize: 14 }} /> Synchronisation chiffrée active
                             </Typography>
                         </Box>
                     </Paper>
