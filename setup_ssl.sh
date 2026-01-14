@@ -11,14 +11,14 @@ mkdir -p certbot/www
 
 # 2. Mise à jour de nginx pour le challenge ACME
 echo "🔄 Mise à jour de Nginx..."
-docker-compose up -d nginx
+docker compose up -d nginx
 
 echo "⏳ Attente de 10 secondes pour le démarrage de Nginx..."
 sleep 10
 
 # 3. Génération des certificats
 echo "🔐 Demande de certificat via Certbot..."
-docker-compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot --email maitreimbengue@gmail.com --agree-tos --no-eff-email -d cabinetmaitreibrahimambengue.cloud
+docker compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot --email maitreimbengue@gmail.com --agree-tos --no-eff-email -d cabinetmaitreibrahimambengue.cloud
 
 # 4. Activation du SSL
 if [ -d "certbot/conf/live/cabinetmaitreibrahimambengue.cloud" ]; then
@@ -28,7 +28,7 @@ if [ -d "certbot/conf/live/cabinetmaitreibrahimambengue.cloud" ]; then
     cp nginx/nginx_ssl.conf nginx/nginx.conf
     
     echo "🔄 Redémarrage de Nginx..."
-    docker-compose restart nginx
+    docker compose restart nginx
     
     echo "🎉 Félicitations ! Votre site est maintenant sécurisé (HTTPS)."
     echo "👉 https://cabinetmaitreibrahimambengue.cloud"
