@@ -129,11 +129,11 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
                                 component="img"
                                 src={logoUrl ? getImageUrl(logoUrl) : "/images/logo_v2.png"}
                                 sx={{
-                                    height: 100,
-                                    maxWidth: 300,
+                                    height: 60,
+                                    maxWidth: 250,
                                     objectFit: 'contain',
                                     mb: 2,
-                                    filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))'
+                                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
                                 }}
                             />
                             <Typography variant="h2" fontWeight="800" sx={{ mb: 2, color: '#ffffff !important' }}>{cabinetName}</Typography>
