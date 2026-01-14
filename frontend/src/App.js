@@ -92,7 +92,7 @@ function App() {
             <ThemeProvider theme={theme}>
                 <NotificationProvider>
                     <CssBaseline />
-                    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%' }}>
                         <Suspense fallback={
                             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', width: '100%' }}>
                                 <Loading message="Chargement de LegalDoc Suite..." />

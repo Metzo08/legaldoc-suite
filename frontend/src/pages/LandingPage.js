@@ -215,14 +215,14 @@ function LandingPage() {
                                 component="img"
                                 src={getImageUrl(logoUrl)}
                                 alt={`Logo ${name}`}
-                                sx={{ height: 45, width: 'auto' }}
+                                sx={{ height: 35, width: 'auto' }}
                             />
                         ) : (
                             <Box
                                 component="img"
                                 src="/images/logo_v2.png"
                                 alt={`Logo ${name}`}
-                                sx={{ height: 45, width: 'auto' }}
+                                sx={{ height: 35, width: 'auto' }}
                             />
                         )}
                         <Typography variant="h6" fontWeight="700" sx={{ color: 'white', letterSpacing: '-0.5px' }}>
@@ -231,11 +231,13 @@ function LandingPage() {
                     </Box>
                     <Button
                         variant="outlined"
+                        size="small"
                         onClick={() => navigate('/login')}
                         sx={{
                             color: 'white',
                             borderColor: alpha('#ffffff', 0.5),
                             fontWeight: 600,
+                            px: 3,
                             '&:hover': { borderColor: 'white', bgcolor: alpha('#ffffff', 0.1) }
                         }}
                     >
@@ -258,26 +260,27 @@ function LandingPage() {
                             <Box sx={{ position: 'relative', zIndex: 2 }}>
                                 <Typography
                                     component="h1" // SEO: Main Title
-                                    variant="h2"
+                                    variant="h3"
                                     fontWeight="900"
                                     gutterBottom
                                     sx={{
                                         color: 'white',
-                                        fontSize: { xs: '2.5rem', md: '3.75rem' },
-                                        lineHeight: 1.1,
-                                        mb: 3
+                                        fontSize: { xs: '1.8rem', md: '2.5rem' },
+                                        lineHeight: 1.2,
+                                        mb: 2
                                     }}
                                 >
                                     {name}
                                 </Typography>
                                 <Typography
-                                    variant="h5"
+                                    variant="body1"
                                     sx={{
                                         color: alpha('#ffffff', 0.9),
-                                        mb: 6,
+                                        mb: 4,
                                         lineHeight: 1.6,
                                         fontWeight: 400,
-                                        maxWidth: 600
+                                        fontSize: '1rem',
+                                        maxWidth: 550
                                     }}
                                 >
                                     {description}
@@ -285,15 +288,15 @@ function LandingPage() {
                                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
                                     <Button
                                         variant="contained"
-                                        size="large"
+                                        size="medium"
                                         onClick={() => navigate('/login')}
                                         endIcon={<ArrowForwardIcon />}
                                         sx={{
                                             bgcolor: 'white',
                                             color: primaryColor,
-                                            px: 5,
-                                            py: 2,
-                                            fontSize: '1.1rem',
+                                            px: 4,
+                                            py: 1.5,
+                                            fontSize: '1rem',
                                             fontWeight: 700,
                                             boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
                                             '&:hover': { bgcolor: alpha('#ffffff', 0.9), transform: 'translateY(-2px)' }
@@ -303,13 +306,13 @@ function LandingPage() {
                                     </Button>
                                     <Button
                                         variant="outlined"
-                                        size="large"
+                                        size="medium"
                                         href="#contact"
                                         sx={{
                                             color: 'white',
                                             borderColor: alpha('#ffffff', 0.5),
-                                            px: 5,
-                                            py: 2,
+                                            px: 4,
+                                            py: 1.5,
                                             fontWeight: 700,
                                             borderWidth: 2,
                                             '&:hover': { borderWidth: 2, borderColor: 'white', bgcolor: alpha('#ffffff', 0.1) }
@@ -323,32 +326,21 @@ function LandingPage() {
                         <Grid item xs={12} md={5} sx={{ display: { xs: 'none', md: 'block' } }}>
                             <Box sx={{
                                 position: 'relative',
-                                '&::before': {
-                                    content: '""',
-                                    position: 'absolute',
-                                    top: -20,
-                                    right: -20,
-                                    width: '100%',
-                                    height: '100%',
-                                    border: '2px solid',
-                                    borderColor: alpha('#ffffff', 0.1),
-                                    borderRadius: 4,
-                                    zIndex: 0
-                                }
                             }}>
                                 <Box
                                     component="img"
                                     src="/images/lady_justice_v2.png"
-                                    alt="Dame Justice - Symbole de l'excellence juridique"
+                                    alt="Dame Justice"
                                     sx={{
-                                        width: '120%',
+                                        width: '100%',
+                                        maxWidth: 450,
                                         height: 'auto',
                                         position: 'relative',
                                         zIndex: 1,
-                                        filter: 'contrast(1.1) brightness(1.1) drop-shadow(0 20px 50px rgba(0,0,0,0.3))',
+                                        filter: 'contrast(1.05) brightness(1.05) drop-shadow(0 15px 35px rgba(0,0,0,0.3))',
                                         transition: 'transform 0.5s ease-out',
                                         '&:hover': {
-                                            transform: 'translateY(-15px) scale(1.02)'
+                                            transform: 'translateY(-10px)'
                                         }
                                     }}
                                 />
