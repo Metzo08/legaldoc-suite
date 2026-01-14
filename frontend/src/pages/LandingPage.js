@@ -204,10 +204,9 @@ function LandingPage() {
 
             {/* AppBar / Navigation */}
             <AppBar position="fixed" elevation={0} sx={{
-                bgcolor: alpha(primaryColor.startsWith('#') ? primaryColor : '#0f172a', 0.95),
+                bgcolor: primaryColor.startsWith('#') ? primaryColor : '#0f172a',
                 backdropFilter: 'blur(8px)',
-                borderBottom: '1px solid',
-                borderColor: alpha('#ffffff', 0.1)
+                borderBottom: 'none' // Suppression du trait noir potentiel
             }}>
                 <Toolbar sx={{ justifyContent: 'space-between', py: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -339,7 +338,7 @@ function LandingPage() {
                             }}>
                                 <Box
                                     component="img"
-                                    src="/images/lady_justice.png"
+                                    src="/images/lady_justice_v2.png"
                                     alt="Dame Justice - Symbole de l'excellence juridique"
                                     sx={{
                                         width: '120%',
