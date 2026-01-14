@@ -52,8 +52,6 @@ function LandingPage() {
         }
     };
 
-    if (loading) return null;
-
     // DONNÉES DE DÉMONSTRATION (Vitrine réaliste)
     const demoCabinet = {
         name: "CABINET DE MAITRE IBRAHIMA MBENGUE",
