@@ -161,11 +161,48 @@ function LandingPage() {
         "priceRange": "$$"
     };
 
+    // Use useEffect to inject JSON-LD into the head
+    useEffect(() => {
+        const scriptId = 'json-ld-local-business';
+        let script = document.getElementById(scriptId);
+
+        if (!script) {
+            script = document.createElement('script');
+            script.id = scriptId;
+            script.type = 'application/ld+json';
+            document.head.appendChild(script);
+        }
+
+        script.text = JSON.stringify(jsonLdData);
+
+        return () => {
+            const existingScript = document.getElementById(scriptId);
+            if (existingScript) {
+                document.head.removeChild(existingScript);
+            }
+        };
+    }, [jsonLdData]);
+
+    if (loading) {
+        return (
+            <Box sx={{
+                display: 'flex',
+                height: '100vh',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'column',
+                gap: 2,
+                bgcolor: '#f8faff'
+            }}>
+                <Box component="img" src="/favicon.png" sx={{ width: 64, height: 64, mb: 2, opacity: 0.5 }} />
+                <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>Chargement...</Typography>
+            </Box>
+        );
+    }
+
     return (
         <Box sx={{ bgcolor: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <script type="application/ld+json">
-                {JSON.stringify(jsonLdData)}
-            </script>
+            {/* Header section... */}
 
             {/* AppBar / Navigation */}
             <AppBar position="fixed" elevation={0} sx={{
