@@ -126,7 +126,7 @@ function LandingPage() {
             id: 'member2',
             name: "M. Augustin François NDAO",
             role: "Juriste Interne / Collaborateur",
-            biography: "Juriste interne spécialisé en droit des Affaires. Certifié informatique et internet par FORCE-N Sénégal. Expert en gestion documentaire et transformation digitale des cabinets juridiques.",
+            biography: "Juriste interne spécialisé en droit des Affaires. Certifié informatique et internet par FORCE-N Sénégal.",
             photo: "/images/team/augustin_ndao.jpg",
             email: "francoisndao@gmail.com",
             linkedin_url: "https://www.linkedin.com/in/augustin-f-ndao/"
@@ -354,7 +354,7 @@ function LandingPage() {
                                     elevation={4}
                                     sx={{
                                         p: 3,
-                                        height: 600, // Increased height to prevent truncation
+                                        height: 650, // Increased to 650 for complete safety
                                         display: 'flex',
                                         flexDirection: 'column',
                                         alignItems: 'center',
@@ -410,7 +410,7 @@ function LandingPage() {
                                     <Typography variant="h5" fontWeight="800" sx={{ color: '#1a1a1a', mb: 0.5 }}>
                                         {member.name}
                                     </Typography>
-                                    <Typography variant="subtitle1" sx={{ color: '#333333', fontWeight: 600, mb: 1.5, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Typography variant="subtitle1" sx={{ color: '#333333', fontWeight: 600, mb: 1.5, height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         {member.role}
                                     </Typography>
                                     <Divider sx={{ width: 60, mx: 'auto', mb: 2, borderColor: primaryColor }} />
@@ -418,11 +418,7 @@ function LandingPage() {
                                         color: '#444444',
                                         mb: 2,
                                         flex: 1,
-                                        lineHeight: 1.6,
-                                        display: '-webkit-box',
-                                        WebkitLineClamp: 12, // Increased clamp to show all text
-                                        WebkitBoxOrient: 'vertical',
-                                        overflow: 'hidden'
+                                        lineHeight: 1.6
                                     }}>
                                         {member.biography}
                                     </Typography>
