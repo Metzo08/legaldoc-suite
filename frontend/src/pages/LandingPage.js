@@ -204,10 +204,10 @@ function LandingPage() {
 
             {/* AppBar / Navigation */}
             <AppBar position="fixed" elevation={0} sx={{
-                bgcolor: alpha(primaryColor, 0.95),
+                bgcolor: alpha(primaryColor.startsWith('#') ? primaryColor : '#0f172a', 0.95),
                 backdropFilter: 'blur(8px)',
                 borderBottom: '1px solid',
-                borderColor: alpha('white', 0.1)
+                borderColor: alpha('#ffffff', 0.1)
             }}>
                 <Toolbar sx={{ justifyContent: 'space-between', py: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -235,9 +235,9 @@ function LandingPage() {
                         onClick={() => navigate('/login')}
                         sx={{
                             color: 'white',
-                            borderColor: alpha('white', 0.5),
+                            borderColor: alpha('#ffffff', 0.5),
                             fontWeight: 600,
-                            '&:hover': { borderColor: 'white', bgcolor: alpha('white', 0.1) }
+                            '&:hover': { borderColor: 'white', bgcolor: alpha('#ffffff', 0.1) }
                         }}
                     >
                         Connexion
@@ -297,7 +297,7 @@ function LandingPage() {
                                 <Typography
                                     variant="h5"
                                     sx={{
-                                        color: alpha('white', 0.9),
+                                        color: alpha('#ffffff', 0.9),
                                         mb: 6,
                                         lineHeight: 1.6,
                                         fontWeight: 400,
@@ -320,7 +320,7 @@ function LandingPage() {
                                             fontSize: '1.1rem',
                                             fontWeight: 700,
                                             boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
-                                            '&:hover': { bgcolor: alpha('white', 0.9), transform: 'translateY(-2px)' }
+                                            '&:hover': { bgcolor: alpha('#ffffff', 0.9), transform: 'translateY(-2px)' }
                                         }}
                                     >
                                         Connexion
@@ -331,12 +331,12 @@ function LandingPage() {
                                         href="#contact"
                                         sx={{
                                             color: 'white',
-                                            borderColor: alpha('white', 0.5),
+                                            borderColor: alpha('#ffffff', 0.5),
                                             px: 5,
                                             py: 2,
                                             fontWeight: 700,
                                             borderWidth: 2,
-                                            '&:hover': { borderWidth: 2, borderColor: 'white', bgcolor: alpha('white', 0.1) }
+                                            '&:hover': { borderWidth: 2, borderColor: 'white', bgcolor: alpha('#ffffff', 0.1) }
                                         }}
                                     >
                                         Nous contacter
@@ -355,7 +355,7 @@ function LandingPage() {
                                     width: '100%',
                                     height: '100%',
                                     border: '2px solid',
-                                    borderColor: alpha('white', 0.1),
+                                    borderColor: alpha('#ffffff', 0.1),
                                     borderRadius: 4,
                                     zIndex: 0
                                 }
@@ -480,7 +480,7 @@ function LandingPage() {
                                                 component="a"
                                                 href={member.linkedin_url}
                                                 target="_blank"
-                                                sx={{ color: primaryColor, '&:hover': { bgcolor: alpha(primaryColor, 0.1) } }}
+                                                sx={{ color: primaryColor, '&:hover': { bgcolor: alpha(primaryColor.startsWith('#') ? primaryColor : '#0f172a', 0.1) } }}
                                             >
                                                 <LinkedIn />
                                             </IconButton>
@@ -517,7 +517,7 @@ function LandingPage() {
 
                             <Stack spacing={4}>
                                 <Paper elevation={0} sx={{ p: 3, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 3, alignItems: 'center' }}>
-                                    <Avatar sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}>
+                                    <Avatar sx={{ bgcolor: alpha(primaryColor.startsWith('#') ? primaryColor : '#0f172a', 0.1), color: primaryColor }}>
                                         <LocationIcon />
                                     </Avatar>
                                     <Box>
@@ -527,7 +527,7 @@ function LandingPage() {
                                 </Paper>
 
                                 <Paper elevation={0} sx={{ p: 3, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 3, alignItems: 'center' }}>
-                                    <Avatar sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}>
+                                    <Avatar sx={{ bgcolor: alpha(primaryColor.startsWith('#') ? primaryColor : '#0f172a', 0.1), color: primaryColor }}>
                                         <TimeIcon />
                                     </Avatar>
                                     <Box>
@@ -539,7 +539,7 @@ function LandingPage() {
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
                                         <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
-                                            <Avatar size="small" sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}>
+                                            <Avatar size="small" sx={{ bgcolor: alpha(primaryColor.startsWith('#') ? primaryColor : '#0f172a', 0.1), color: primaryColor }}>
                                                 <PhoneIcon />
                                             </Avatar>
                                             <Box>
@@ -550,7 +550,7 @@ function LandingPage() {
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                         <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
-                                            <Avatar size="small" sx={{ bgcolor: alpha(secondaryColor, 0.1), color: secondaryColor }}>
+                                            <Avatar size="small" sx={{ bgcolor: alpha(secondaryColor.startsWith('#') ? secondaryColor : '#c29b61', 0.1), color: secondaryColor }}>
                                                 <PrintIcon />
                                             </Avatar>
                                             <Box>
