@@ -141,7 +141,25 @@ function LandingPage() {
         }
     ];
 
-    const displayTeam = team.length > 0 ? team : defaultTeam;
+    // JSON-LD LocalBusiness Data for SEO
+    const jsonLdData = {
+        "@context": "https://schema.org",
+        "@type": "LegalService",
+        "name": name,
+        "description": description,
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "35 bis, Avenue Malick SY",
+            "addressLocality": "Dakar",
+            "addressCountry": "SN"
+        },
+        "telephone": phone,
+        "email": email,
+        "openingHours": "Mo-Fr 09:00-17:00",
+        "url": "https://cabinetmaitreibrahimambengue.cloud",
+        "image": "https://cabinetmaitreibrahimambengue.cloud/static/logo_v2.png",
+        "priceRange": "$$"
+    };
 
     return (
         <Box sx={{ bgcolor: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -351,7 +369,7 @@ function LandingPage() {
                                     elevation={4}
                                     sx={{
                                         p: 3,
-                                        height: '100%', // Changed to 100% to allow flexible height
+                                        height: 650, // Fixed height for uniformity
                                         display: 'flex',
                                         flexDirection: 'column',
                                         alignItems: 'center',
@@ -484,140 +502,80 @@ function LandingPage() {
                                 </Paper>
 
                                 <Grid container spacing={2}>
-                                </Box>
+                                    <Grid item xs={12} sm={6}>
+                                        <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
+                                            <Avatar size="small" sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}>
+                                                <PhoneIcon />
+                                            </Avatar>
+                                            <Box>
+                                                <Typography variant="caption" fontWeight="800" sx={{ color: '#4c6180', display: 'block' }}>Téléphone</Typography>
+                                                <Typography variant="body2" component="a" href={`tel:${phone.replace(/\s/g, '')}`} sx={{ color: '#00255c', fontWeight: 700, textDecoration: 'none', '&:hover': { color: primaryColor } }}>{phone}</Typography>
+                                            </Box>
+                                        </Paper>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
+                                            <Avatar size="small" sx={{ bgcolor: alpha(secondaryColor, 0.1), color: secondaryColor }}>
+                                                <PrintIcon />
+                                            </Avatar>
+                                            <Box>
+                                                <Typography variant="caption" fontWeight="800" sx={{ color: '#4c6180', display: 'block' }}>Fax</Typography>
+                                                <Typography variant="body2" sx={{ color: '#00255c', fontWeight: 700 }}>{fax}</Typography>
+                                            </Box>
+                                        </Paper>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
+                                            <Avatar size="small" sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}>
+                                                <MobileIcon />
+                                            </Avatar>
+                                            <Box>
+                                                <Typography variant="caption" fontWeight="800" sx={{ color: '#4c6180', display: 'block' }}>Mobile</Typography>
+                                                <Typography variant="body2" component="a" href={`tel:${cel.replace(/\s/g, '')}`} sx={{ color: '#00255c', fontWeight: 700, textDecoration: 'none', '&:hover': { color: primaryColor } }}>{cel}</Typography>
+                                            </Box>
+                                        </Paper>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
+                                            <Avatar size="small" sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}>
+                                                <MailIcon />
+                                            </Avatar>
+                                            <Box overflow="hidden">
+                                                <Typography variant="caption" fontWeight="800" sx={{ color: '#4c6180', display: 'block' }}>Email</Typography>
+                                                <Typography variant="body2" component="a" href={`mailto:${email}`} sx={{ color: '#00255c', fontWeight: 700, textDecoration: 'none', '&:hover': { color: primaryColor }, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis' }}>{email}</Typography>
+                                            </Box>
+                                        </Paper>
+                                    </Grid>
+                                </Grid>
+                            </Stack>
+                        </Grid>
+
+                        <Grid item xs={12} md={6}>
+                            <Paper elevation={4} sx={{
+                                height: '100%',
+                                minHeight: 450,
+                                borderRadius: 6,
+                                overflow: 'hidden',
+                                border: '8px solid white',
+                                boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
+                            }}>
+                                <iframe
+                                    title="Localisation Cabinet Mbengue"
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3859.3491974753554!2d-17.444747!3d14.664483!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xec1724627d35501!2s35%20Av.%20Malick%20Sy%2C%20Dakar%2010500%2C%20S%C3%A9n%C3%A9gal!5e0!3m2!1sfr!2sfr!4v1715632512345!5m2!1sfr!2sfr"
+                                    width="100%"
+                                    height="100%"
+                                    style={{ border: 0 }}
+                                    allowFullScreen=""
+                                    loading="lazy"
+                                />
                             </Paper>
                         </Grid>
-                                    )}
-
-                        {/* Mobile */}
-                        {cel && (
-                            <Grid item xs={6}>
-                                <Paper
-                                    component="a"
-                                    href={`tel:${cel.replace(/[.\s]/g, '')}`}
-                                    elevation={0}
-                                    sx={{
-                                        p: 2,
-                                        minHeight: 72,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 1.5,
-                                        borderRadius: 3,
-                                        bgcolor: alpha(primaryColor, 0.08),
-                                        textDecoration: 'none',
-                                        color: 'inherit',
-                                        transition: 'all 0.3s',
-                                        '&:hover': {
-                                            bgcolor: alpha(primaryColor, 0.15),
-                                            transform: 'translateY(-2px)'
-                                        }
-                                    }}
-                                >
-                                    <Box sx={{
-                                        p: 1,
-                                        borderRadius: 2,
-                                        bgcolor: 'success.main',
-                                        color: 'white',
-                                        display: 'flex'
-                                    }}>
-                                        <MobileIcon />
-                                    </Box>
-                                    <Box>
-                                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Mobile</Typography>
-                                        <Typography variant="body2" fontWeight={700} color="black">{cel}</Typography>
-                                    </Box>
-                                </Paper>
-                            </Grid>
-                        )}
-
-                        {/* Email */}
-                        {email && (
-                            <Grid item xs={6}>
-                                <Paper
-                                    component="a"
-                                    href={`mailto:${email}`}
-                                    elevation={0}
-                                    sx={{
-                                        p: 2,
-                                        minHeight: 72,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 1.5,
-                                        borderRadius: 3,
-                                        bgcolor: alpha(primaryColor, 0.08),
-                                        textDecoration: 'none',
-                                        color: 'inherit',
-                                        transition: 'all 0.3s',
-                                        overflow: 'hidden',
-                                        '&:hover': {
-                                            bgcolor: alpha(primaryColor, 0.15),
-                                            transform: 'translateY(-2px)'
-                                        }
-                                    }}
-                                >
-                                    <Box sx={{
-                                        p: 1,
-                                        borderRadius: 2,
-                                        bgcolor: 'info.main',
-                                        color: 'white',
-                                        display: 'flex',
-                                        flexShrink: 0
-                                    }}>
-                                        <MailIcon />
-                                    </Box>
-                                    <Box sx={{ overflow: 'hidden', flex: 1 }}>
-                                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Email</Typography>
-                                        <Typography
-                                            variant="body2"
-                                            fontWeight={700}
-                                            color="black"
-                                            sx={{
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap'
-                                            }}
-                                        >
-                                            {email}
-                                        </Typography>
-                                    </Box>
-                                </Paper>
-                            </Grid>
-                        )}
                     </Grid>
-                </Stack>
-            </Grid>
+                </Container>
+            </Box>
 
-            <Grid item xs={12} md={6}>
-                {/* REAL GOOGLE MAPS INTEGRATION */}
-                <Paper
-                    elevation={2}
-                    sx={{
-                        width: '100%',
-                        height: '100%',
-                        minHeight: 400,
-                        borderRadius: 4,
-                        overflow: 'hidden',
-                        border: '1px solid',
-                        borderColor: 'divider'
-                    }}
-                >
-                    <iframe
-                        title="Localisation Cabinet"
-                        width="100%"
-                        height="100%"
-                        style={{ border: 0, minHeight: '400px' }}
-                        loading="lazy"
-                        allowFullScreen
-                        src="https://maps.google.com/maps?q=35+bis+Avenue+Malick+SY,+Dakar,+Senegal&t=&z=15&ie=UTF8&iwloc=&output=embed"
-                    ></iframe>
-                </Paper>
-            </Grid>
-        </Grid>
-                </Container >
-            </Box >
-
-        <Footer variant="dark" />
-        </Box >
+            <Footer />
+        </Box>
     );
 }
 
