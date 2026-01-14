@@ -354,7 +354,7 @@ function LandingPage() {
                                     elevation={4}
                                     sx={{
                                         p: 3,
-                                        height: 520, // Augmented height for readability
+                                        height: 600, // Increased height to prevent truncation
                                         display: 'flex',
                                         flexDirection: 'column',
                                         alignItems: 'center',
@@ -410,7 +410,7 @@ function LandingPage() {
                                     <Typography variant="h5" fontWeight="800" sx={{ color: '#1a1a1a', mb: 0.5 }}>
                                         {member.name}
                                     </Typography>
-                                    <Typography variant="subtitle1" sx={{ color: '#333333', fontWeight: 600, mb: 2 }}>
+                                    <Typography variant="subtitle1" sx={{ color: '#333333', fontWeight: 600, mb: 1.5, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         {member.role}
                                     </Typography>
                                     <Divider sx={{ width: 60, mx: 'auto', mb: 2, borderColor: primaryColor }} />
@@ -420,7 +420,7 @@ function LandingPage() {
                                         flex: 1,
                                         lineHeight: 1.6,
                                         display: '-webkit-box',
-                                        WebkitLineClamp: 8, // Limit bio lines to keep vertical alignment
+                                        WebkitLineClamp: 12, // Increased clamp to show all text
                                         WebkitBoxOrient: 'vertical',
                                         overflow: 'hidden'
                                     }}>
