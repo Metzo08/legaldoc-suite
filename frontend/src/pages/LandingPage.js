@@ -333,14 +333,20 @@ function LandingPage() {
                                     alt="Dame Justice"
                                     sx={{
                                         width: '100%',
-                                        maxWidth: 450,
+                                        maxWidth: 320, // Encore plus petit
                                         height: 'auto',
                                         position: 'relative',
                                         zIndex: 1,
+                                        p: 1.5, // Padding pour l'effet cadre
+                                        bgcolor: 'rgba(255, 255, 255, 0.05)', // Fond très léger
+                                        border: '1px solid rgba(255, 255, 255, 0.2)', // Cadre fin moderne
+                                        borderRadius: 4,
                                         filter: 'contrast(1.05) brightness(1.05) drop-shadow(0 15px 35px rgba(0,0,0,0.3))',
-                                        transition: 'transform 0.5s ease-out',
+                                        transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                                         '&:hover': {
-                                            transform: 'translateY(-10px)'
+                                            transform: 'translateY(-10px) scale(1.02)',
+                                            borderColor: 'rgba(255, 255, 255, 0.4)',
+                                            bgcolor: 'rgba(255, 255, 255, 0.1)'
                                         }
                                     }}
                                 />
@@ -506,7 +512,21 @@ function LandingPage() {
 
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
-                                        <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
+                                        <Paper elevation={0} sx={{
+                                            p: 2,
+                                            bgcolor: '#f5f7fa',
+                                            borderRadius: 4,
+                                            display: 'flex',
+                                            gap: 2,
+                                            alignItems: 'center',
+                                            transition: 'all 0.3s ease',
+                                            cursor: 'pointer',
+                                            '&:hover': {
+                                                bgcolor: '#edf2f7',
+                                                transform: 'translateY(-4px)',
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+                                            }
+                                        }}>
                                             <Avatar size="small" sx={{ bgcolor: alpha(primaryColor.startsWith('#') ? primaryColor : '#0f172a', 0.1), color: primaryColor }}>
                                                 <PhoneIcon />
                                             </Avatar>
@@ -528,8 +548,22 @@ function LandingPage() {
                                         </Paper>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
-                                        <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
-                                            <Avatar size="small" sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}>
+                                        <Paper elevation={0} sx={{
+                                            p: 2,
+                                            bgcolor: '#f5f7fa',
+                                            borderRadius: 4,
+                                            display: 'flex',
+                                            gap: 2,
+                                            alignItems: 'center',
+                                            transition: 'all 0.3s ease',
+                                            cursor: 'pointer',
+                                            '&:hover': {
+                                                bgcolor: '#edf2f7',
+                                                transform: 'translateY(-4px)',
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+                                            }
+                                        }}>
+                                            <Avatar size="small" sx={{ bgcolor: alpha(primaryColor.startsWith('#') ? primaryColor : '#0f172a', 0.1), color: primaryColor }}>
                                                 <MobileIcon />
                                             </Avatar>
                                             <Box>
@@ -539,8 +573,22 @@ function LandingPage() {
                                         </Paper>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
-                                        <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
-                                            <Avatar size="small" sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}>
+                                        <Paper elevation={0} sx={{
+                                            p: 2,
+                                            bgcolor: '#f5f7fa',
+                                            borderRadius: 4,
+                                            display: 'flex',
+                                            gap: 2,
+                                            alignItems: 'center',
+                                            transition: 'all 0.3s ease',
+                                            cursor: 'pointer',
+                                            '&:hover': {
+                                                bgcolor: '#edf2f7',
+                                                transform: 'translateY(-4px)',
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+                                            }
+                                        }}>
+                                            <Avatar size="small" sx={{ bgcolor: alpha(primaryColor.startsWith('#') ? primaryColor : '#0f172a', 0.1), color: primaryColor }}>
                                                 <MailIcon />
                                             </Avatar>
                                             <Box overflow="hidden">
