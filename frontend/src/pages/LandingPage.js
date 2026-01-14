@@ -199,7 +199,7 @@ function LandingPage() {
     }
 
     return (
-        <Box sx={{ bgcolor: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             {/* Header section... */}
 
             {/* AppBar / Navigation */}
@@ -249,7 +249,7 @@ function LandingPage() {
             <Box sx={{
                 pt: { xs: 15, md: 25 },
                 pb: { xs: 15, md: 20 },
-                background: `linear-gradient(135deg, ${primaryColor} 0%, ${alpha(primaryColor, 0.8)} 100%)`,
+                bgcolor: primaryColor.startsWith('#') ? primaryColor : '#0f172a',
                 position: 'relative',
                 overflow: 'hidden'
             }}>
@@ -257,29 +257,6 @@ function LandingPage() {
                     <Grid container spacing={8} alignItems="center">
                         <Grid item xs={12} md={7}>
                             <Box sx={{ position: 'relative', zIndex: 2 }}>
-                                {logoUrl ? (
-                                    <Box
-                                        component="img"
-                                        src={getImageUrl(logoUrl)}
-                                        alt={`Logo Officiel ${name}`}
-                                        sx={{
-                                            height: { xs: 80, md: 100 },
-                                            mb: 4,
-                                            filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.2))'
-                                        }}
-                                    />
-                                ) : (
-                                    <Box
-                                        component="img"
-                                        src="/images/logo_v2.png"
-                                        alt={`Logo Officiel ${name}`}
-                                        sx={{
-                                            height: { xs: 80, md: 100 },
-                                            mb: 4,
-                                            filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.2))'
-                                        }}
-                                    />
-                                )}
                                 <Typography
                                     component="h1" // SEO: Main Title
                                     variant="h2"
@@ -362,7 +339,7 @@ function LandingPage() {
                             }}>
                                 <Box
                                     component="img"
-                                    src="/images/justice_statue_nobg.png"
+                                    src="/images/lady_justice.png"
                                     alt="Dame Justice - Symbole de l'excellence juridique"
                                     sx={{
                                         width: '120%',
