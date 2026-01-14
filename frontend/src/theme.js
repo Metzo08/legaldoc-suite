@@ -22,22 +22,26 @@ const colors = {
     }
 };
 
-export const createCustomTheme = (mode) => {
+export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
     const isLight = mode === 'light';
+
+    // Sécurité sur les couleurs (fallback sur les couleurs premium si invalides)
+    const activePrimary = primaryColor && primaryColor.startsWith('#') ? primaryColor : colors.primary;
+    const activeSecondary = secondaryColor && secondaryColor.startsWith('#') ? secondaryColor : colors.secondary;
 
     return createTheme({
         palette: {
             mode,
             primary: {
-                main: colors.primary,
-                light: '#334155',
-                dark: '#020617',
+                main: activePrimary,
+                light: isLight ? alpha(activePrimary, 0.7) : alpha(activePrimary, 0.8),
+                dark: isLight ? alpha(activePrimary, 1.2) : activePrimary, // MUI gérera les variations si on ne précise pas trop
                 contrastText: '#ffffff',
             },
             secondary: {
-                main: colors.secondary,
-                light: '#d4b483',
-                dark: '#8a6b3e',
+                main: activeSecondary,
+                light: alpha(activeSecondary, 0.7),
+                dark: alpha(activeSecondary, 1.2),
                 contrastText: '#ffffff',
             },
             background: {

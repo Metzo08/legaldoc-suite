@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Box,
@@ -139,8 +139,8 @@ function LandingPage() {
         }
     ];
 
-    // JSON-LD LocalBusiness Data for SEO
-    const jsonLdData = {
+    // JSON-LD LocalBusiness Data for SEO - Memorized to prevent infinite updates
+    const jsonLdData = useMemo(() => ({
         "@context": "https://schema.org",
         "@type": "LegalService",
         "name": name,
@@ -153,11 +153,11 @@ function LandingPage() {
         },
         "telephone": phone,
         "email": email,
-        "openingHours": "Mo-Fr 09:00-17:00",
+        "openingHours": openingHours || "Mo-Fr 09:00-17:00",
         "url": "https://cabinetmaitreibrahimambengue.cloud",
-        "image": "https://cabinetmaitreibrahimambengue.cloud/static/logo_v2.png",
+        "image": "https://cabinetmaitreibrahimambengue.cloud/favicon.png",
         "priceRange": "$$"
-    };
+    }), [name, description, phone, email, openingHours]);
 
     // Use useEffect to inject JSON-LD into the head
     useEffect(() => {

@@ -121,7 +121,11 @@ function App() {
                                             <Layout setIsAuthenticated={setIsAuthenticated}>
                                                 <Suspense fallback={<Loading />}>
                                                     <Routes>
-                                                        <Route path="/dashboard" element={authService.getCurrentUser()?.role === 'CLIENT' ? <ClientDashboard /> : <Dashboard />} />
+                                                        <Route path="/dashboard" element={
+                                                            authService.getCurrentUser()?.role === 'CLIENT'
+                                                                ? <ClientDashboard />
+                                                                : <Dashboard />
+                                                        } />
                                                         <Route path="/clients" element={<Clients />} />
                                                         <Route path="/cases" element={<Cases />} />
                                                         <Route path="/documents" element={<Documents />} />
@@ -131,7 +135,6 @@ function App() {
                                                         <Route path="/search" element={<Search />} />
                                                         <Route path="/users" element={<Users />} />
                                                         <Route path="/audit" element={<AuditLog />} />
-                                                        {/* If user tries to access known protected route but nothing matches, go to dashboard */}
                                                         <Route path="*" element={<Navigate to="/dashboard" />} />
                                                     </Routes>
                                                 </Suspense>
