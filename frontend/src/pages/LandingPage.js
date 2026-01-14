@@ -144,31 +144,47 @@ function LandingPage() {
     const displayTeam = team.length > 0 ? team : defaultTeam;
 
     return (
-        <Box sx={{
-            minHeight: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            bgcolor: 'white',
-            width: '100%',
-            margin: 0,
-            padding: 0,
-            overflowX: 'hidden'
-        }}>
+        <Box sx={{ bgcolor: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <script type="application/ld+json">
+                {JSON.stringify(jsonLdData)}
+            </script>
 
-            {/* Navigation Bar */}
-            <AppBar position="fixed" elevation={0} sx={{ bgcolor: alpha(primaryColor, 0.95), backdropFilter: 'blur(8px)' }}>
-                <Toolbar>
-                    <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 'bold', color: '#ffffff !important' }}>
-                        {name}
-                    </Typography>
+            {/* AppBar / Navigation */}
+            <AppBar position="fixed" elevation={0} sx={{
+                bgcolor: alpha(primaryColor, 0.95),
+                backdropFilter: 'blur(8px)',
+                borderBottom: '1px solid',
+                borderColor: alpha('white', 0.1)
+            }}>
+                <Toolbar sx={{ justifyContent: 'space-between', py: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        {logoUrl ? (
+                            <Box
+                                component="img"
+                                src={getImageUrl(logoUrl)}
+                                alt={`Logo ${name}`}
+                                sx={{ height: 45, width: 'auto' }}
+                            />
+                        ) : (
+                            <Box
+                                component="img"
+                                src="/images/logo_v2.png"
+                                alt={`Logo ${name}`}
+                                sx={{ height: 45, width: 'auto' }}
+                            />
+                        )}
+                        <Typography variant="h6" fontWeight="700" sx={{ color: 'white', letterSpacing: '-0.5px' }}>
+                            {name}
+                        </Typography>
+                    </Box>
                     <Button
                         variant="outlined"
                         onClick={() => navigate('/login')}
                         sx={{
                             color: 'white',
-                            borderColor: 'white',
-                            fontWeight: 'bold',
-                            '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', borderColor: 'white' }
+                            borderColor: alpha('white', 0.5),
+                            fontWeight: 600,
+                            '&:hover': { borderColor: 'white', bgcolor: alpha('white', 0.1) }
                         }}
                     >
                         Connexion
@@ -176,185 +192,166 @@ function LandingPage() {
                 </Toolbar>
             </AppBar>
 
+            {/* Hero Section */}
             <Box sx={{
+                pt: { xs: 15, md: 25 },
+                pb: { xs: 15, md: 20 },
+                background: `linear-gradient(135deg, ${primaryColor} 0%, ${alpha(primaryColor, 0.8)} 100%)`,
                 position: 'relative',
-                bgcolor: primaryColor,
-                color: 'white',
-                pt: { xs: 10, md: 12 },
-                pb: { xs: 6, md: 8 },
                 overflow: 'hidden'
             }}>
-                {/* Background Decor */}
-                <Box sx={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    opacity: 0.1,
-                    background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`,
-                    zIndex: 0
-                }} />
-
-                <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-                    <Grid container spacing={6} alignItems="center">
+                <Container maxWidth="lg">
+                    <Grid container spacing={8} alignItems="center">
                         <Grid item xs={12} md={7}>
-                            {/* Logo */}
-                            <Box
-                                component="img"
-                                src={displayLogoUrl || "/images/logo_v2.png"}
-                                alt="Logo du Cabinet"
-                                sx={{
-                                    height: { xs: 60, md: 90 },
-                                    maxWidth: { xs: 200, md: 280 },
-                                    objectFit: 'contain',
-                                    mb: 4,
-                                    imageRendering: 'auto',
-                                    transition: 'transform 0.3s ease',
-                                    '&:hover': {
-                                        transform: 'scale(1.05)'
-                                    }
-                                }}
-                            />
-
-                            <Typography variant="h2" component="h1" fontWeight="800" sx={{ mb: 2, color: '#ffffff !important' }}>
-                                {name}
-                            </Typography>
-                            <Typography variant="h5" sx={{ mb: 4, opacity: 1, lineHeight: 1.6, color: '#ffffff !important' }}>
-                                {description || "L'excellence juridique au cœur de Dakar."}
-                            </Typography>
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                <Button
-                                    variant="contained"
-                                    size="large"
-                                    onClick={() => navigate('/login')}
-                                    sx={{
-                                        bgcolor: 'white',
-                                        color: primaryColor,
-                                        fontWeight: 'bold',
-                                        '&:hover': { bgcolor: 'grey.100' }
-                                    }}
-                                    endIcon={<ArrowForwardIcon />}
-                                >
-                                    Connexion
-                                </Button>
-                                <Button
-                                    variant="outlined"
-                                    size="large"
-                                    onClick={() => document.getElementById('contact').scrollIntoView({ behavior: 'smooth' })}
+                            <Box sx={{ position: 'relative', zIndex: 2 }}>
+                                {logoUrl ? (
+                                    <Box
+                                        component="img"
+                                        src={getImageUrl(logoUrl)}
+                                        alt={`Logo Officiel ${name}`}
+                                        sx={{
+                                            height: { xs: 80, md: 100 },
+                                            mb: 4,
+                                            filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.2))'
+                                        }}
+                                    />
+                                ) : (
+                                    <Box
+                                        component="img"
+                                        src="/images/logo_v2.png"
+                                        alt={`Logo Officiel ${name}`}
+                                        sx={{
+                                            height: { xs: 80, md: 100 },
+                                            mb: 4,
+                                            filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.2))'
+                                        }}
+                                    />
+                                )}
+                                <Typography
+                                    component="h1" // SEO: Main Title
+                                    variant="h2"
+                                    fontWeight="900"
+                                    gutterBottom
                                     sx={{
                                         color: 'white',
-                                        borderColor: 'white',
-                                        '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)' }
+                                        fontSize: { xs: '2.5rem', md: '3.75rem' },
+                                        lineHeight: 1.1,
+                                        mb: 3
                                     }}
                                 >
-                                    Nous contacter
-                                </Button>
-                            </Stack>
+                                    {name}
+                                </Typography>
+                                <Typography
+                                    variant="h5"
+                                    sx={{
+                                        color: alpha('white', 0.9),
+                                        mb: 6,
+                                        lineHeight: 1.6,
+                                        fontWeight: 400,
+                                        maxWidth: 600
+                                    }}
+                                >
+                                    {description}
+                                </Typography>
+                                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                                    <Button
+                                        variant="contained"
+                                        size="large"
+                                        onClick={() => navigate('/login')}
+                                        endIcon={<ArrowForwardIcon />}
+                                        sx={{
+                                            bgcolor: 'white',
+                                            color: primaryColor,
+                                            px: 5,
+                                            py: 2,
+                                            fontSize: '1.1rem',
+                                            fontWeight: 700,
+                                            boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
+                                            '&:hover': { bgcolor: alpha('white', 0.9), transform: 'translateY(-2px)' }
+                                        }}
+                                    >
+                                        Connexion
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        size="large"
+                                        href="#contact"
+                                        sx={{
+                                            color: 'white',
+                                            borderColor: alpha('white', 0.5),
+                                            px: 5,
+                                            py: 2,
+                                            fontWeight: 700,
+                                            borderWidth: 2,
+                                            '&:hover': { borderWidth: 2, borderColor: 'white', bgcolor: alpha('white', 0.1) }
+                                        }}
+                                    >
+                                        Nous contacter
+                                    </Button>
+                                </Stack>
+                            </Box>
                         </Grid>
                         <Grid item xs={12} md={5} sx={{ display: { xs: 'none', md: 'block' } }}>
-                            <Box
-                                sx={{
-                                    position: 'relative',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    height: 550,
+                            <Box sx={{
+                                position: 'relative',
+                                '&::before': {
+                                    content: '""',
+                                    position: 'absolute',
+                                    top: -20,
+                                    right: -20,
                                     width: '100%',
-                                    perspective: '1000px'
-                                }}
-                            >
-                                {/* Decorative Inner Frame */}
-                                <Box sx={{
-                                    position: 'absolute',
-                                    width: '85%',
-                                    height: '90%',
-                                    border: '1px solid rgba(255,255,255,0.15)',
-                                    borderRadius: '24px',
-                                    boxShadow: 'inset 0 0 20px rgba(255,255,255,0.05)',
+                                    height: '100%',
+                                    border: '2px solid',
+                                    borderColor: alpha('white', 0.1),
+                                    borderRadius: 4,
                                     zIndex: 0
-                                }} />
-
-                                <Box component="img"
-                                    src="/images/lady_justice_statue.jpg"
+                                }
+                            }}>
+                                <Box
+                                    component="img"
+                                    src="/images/justice_statue_nobg.png"
+                                    alt="Dame Justice - Symbole de l'excellence juridique"
                                     sx={{
-                                        maxWidth: '100%',
+                                        width: '120%',
                                         height: 'auto',
-                                        maxHeight: '100%',
-                                        objectFit: 'contain',
-                                        mixBlendMode: 'multiply',
-                                        filter: 'contrast(1.1) saturate(1.1) brightness(1.05) drop-shadow(0 20px 40px rgba(0,0,0,0.5))',
+                                        position: 'relative',
                                         zIndex: 1,
-                                        transform: 'scale(1.08) translateY(-10px)',
-                                        transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                                        filter: 'contrast(1.1) brightness(1.1) drop-shadow(0 20px 50px rgba(0,0,0,0.3))',
+                                        transition: 'transform 0.5s ease-out',
                                         '&:hover': {
-                                            transform: 'scale(1.15) translateY(-20px)'
+                                            transform: 'translateY(-15px) scale(1.02)'
                                         }
-                                    }} />
-
-                                {/* Elegant Corner Accents */}
-                                <Box sx={{
-                                    position: 'absolute',
-                                    bottom: 40,
-                                    right: 40,
-                                    width: 60,
-                                    height: 60,
-                                    borderBottom: '2px solid rgba(255,255,255,0.4)',
-                                    borderRight: '2px solid rgba(255,255,255,0.4)',
-                                    borderRadius: '0 0 12px 0',
-                                    opacity: 0.6
-                                }} />
-                                <Box sx={{
-                                    position: 'absolute',
-                                    top: 40,
-                                    left: 40,
-                                    width: 60,
-                                    height: 60,
-                                    borderTop: '2px solid rgba(255,255,255,0.4)',
-                                    borderLeft: '2px solid rgba(255,255,255,0.4)',
-                                    borderRadius: '12px 0 0 0',
-                                    opacity: 0.6
-                                }} />
+                                    }}
+                                />
                             </Box>
                         </Grid>
                     </Grid>
                 </Container>
             </Box>
 
-            {/* TEAM SECTION */}
-            <Box sx={{ py: 12, bgcolor: alpha(primaryColor, 0.95), position: 'relative', color: 'white' }}>
+            {/* Team Section */}
+            <Box sx={{ py: 15, bgcolor: '#f8faff' }}>
                 <Container maxWidth="lg">
-                    <Box sx={{ textAlign: 'center', mb: 8 }}>
-                        <Typography
-                            variant="overline"
-                            fontWeight="900"
-                            sx={{
-                                letterSpacing: 3,
-                                color: '#ffffff !important',
-                                textTransform: 'uppercase',
-                                display: 'block',
-                                mb: 1,
-                                opacity: 0.95
-                            }}
-                        >
-                            NOTRE ÉQUIPE
+                    <Box sx={{ textAlign: 'center', mb: 10 }}>
+                        <Typography variant="overline" fontWeight="800" sx={{ color: primaryColor, letterSpacing: 3 }}>
+                            Notre équipe
                         </Typography>
-                        <Typography variant="h3" fontWeight="800" sx={{ mb: 2, color: '#ffffff !important' }}>
+                        <Typography component="h2" variant="h3" fontWeight="900" sx={{ color: '#00255c', mt: 1, mb: 3 }}>
                             Des experts à votre écoute
                         </Typography>
-                        <Typography variant="body1" sx={{ maxWidth: 600, mx: 'auto', fontSize: '1.1rem', color: '#ffffff !important', opacity: 0.95 }}>
+                        <Typography variant="h6" sx={{ color: '#4c6180', maxWidth: 700, mx: 'auto', fontWeight: 400 }}>
                             Une équipe pluridisciplinaire dévouée à la réussite de vos projets et à la défense de vos droits.
                         </Typography>
                     </Box>
 
-                    <Grid container spacing={3} justifyContent="center">
-                        {displayTeam.map((member, index) => (
+                    <Grid container spacing={4}>
+                        {(team.length > 0 ? team : defaultTeam).map((member, index) => (
                             <Grid item xs={12} sm={6} md={3} key={member.id || index}>
                                 <Paper
                                     elevation={4}
                                     sx={{
                                         p: 3,
-                                        height: 650, // Increased to 650 for complete safety
+                                        height: '100%', // Changed to 100% to allow flexible height
                                         display: 'flex',
                                         flexDirection: 'column',
                                         alignItems: 'center',
@@ -375,7 +372,7 @@ function LandingPage() {
                                         <Box
                                             component="img"
                                             src={getImageUrl(member.photo)}
-                                            alt={member.name}
+                                            alt={`Portrait de ${member.name} - ${member.role}`}
                                             sx={{
                                                 width: 140,
                                                 height: 140,
@@ -422,29 +419,27 @@ function LandingPage() {
                                     }}>
                                         {member.biography}
                                     </Typography>
-                                    <Stack direction="row" spacing={1} justifyContent="center">
+
+                                    <Stack direction="row" spacing={1}>
                                         {member.linkedin_url && (
                                             <IconButton
                                                 size="small"
-                                                color="primary"
-                                                sx={{ bgcolor: alpha(primaryColor, 0.1) }}
                                                 component="a"
                                                 href={member.linkedin_url}
                                                 target="_blank"
-                                                rel="noopener noreferrer"
+                                                sx={{ color: primaryColor, '&:hover': { bgcolor: alpha(primaryColor, 0.1) } }}
                                             >
-                                                <LinkedIn fontSize="small" />
+                                                <LinkedIn />
                                             </IconButton>
                                         )}
                                         {member.email && (
                                             <IconButton
                                                 size="small"
-                                                color="primary"
-                                                sx={{ bgcolor: alpha(primaryColor, 0.1) }}
                                                 component="a"
                                                 href={`mailto:${member.email}`}
+                                                sx={{ color: primaryColor, '&:hover': { bgcolor: alpha(primaryColor, 0.1) } }}
                                             >
-                                                <EmailIcon fontSize="small" />
+                                                <EmailIcon />
                                             </IconButton>
                                         )}
                                     </Stack>
@@ -455,258 +450,173 @@ function LandingPage() {
                 </Container>
             </Box>
 
-            {/* CONTACT SECTION */}
-            <Box id="contact" sx={{ py: 8, bgcolor: 'white' }}>
+            {/* Contact Section */}
+            <Box id="contact" sx={{ py: 15, bgcolor: 'white' }}>
                 <Container maxWidth="lg">
                     <Grid container spacing={8}>
                         <Grid item xs={12} md={6}>
-                            <Typography variant="overline" color="primary" fontWeight="bold">
+                            <Typography variant="overline" fontWeight="800" sx={{ color: primaryColor, letterSpacing: 2 }}>
                                 Contact
                             </Typography>
-                            <Typography variant="h3" fontWeight="800" sx={{ mb: 4 }} color="black">
+                            <Typography component="h2" variant="h3" fontWeight="900" sx={{ color: '#00255c', mt: 1, mb: 6 }}>
                                 Nous trouver
                             </Typography>
 
                             <Stack spacing={4}>
-                                <Box sx={{ display: 'flex' }}>
-                                    <Box sx={{
-                                        mr: 2,
-                                        p: 1.5,
-                                        borderRadius: 2,
-                                        bgcolor: `${primaryColor}15`,
-                                        color: primaryColor
-                                    }}>
-                                        <LocationIcon fontSize="large" />
-                                    </Box>
+                                <Paper elevation={0} sx={{ p: 3, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 3, alignItems: 'center' }}>
+                                    <Avatar sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}>
+                                        <LocationIcon />
+                                    </Avatar>
                                     <Box>
-                                        <Typography variant="h6" fontWeight="bold" color="black">Adresse</Typography>
-                                        <Typography variant="body1" color="black" fontWeight="500" sx={{ whiteSpace: 'pre-line' }}>
-                                            {address || "Adresse du cabinet non renseignée."}
-                                        </Typography>
+                                        <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#00255c', mb: 0.5 }}>Adresse</Typography>
+                                        <Typography variant="body2" sx={{ color: '#4c6180', whiteSpace: 'pre-line' }}>{address}</Typography>
                                     </Box>
-                                </Box>
+                                </Paper>
 
-                                <Box sx={{ display: 'flex' }}>
-                                    <Box sx={{
-                                        mr: 2,
-                                        p: 1.5,
-                                        borderRadius: 2,
-                                        bgcolor: `${primaryColor}15`,
-                                        color: primaryColor
-                                    }}>
-                                        <TimeIcon fontSize="large" />
-                                    </Box>
+                                <Paper elevation={0} sx={{ p: 3, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 3, alignItems: 'center' }}>
+                                    <Avatar sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}>
+                                        <TimeIcon />
+                                    </Avatar>
                                     <Box>
-                                        <Typography variant="h6" fontWeight="bold" color="black">Horaires d'ouverture</Typography>
-                                        <Typography variant="body1" color="black" fontWeight="500" sx={{ whiteSpace: 'pre-line' }}>
-                                            {openingHours || "Lundi - Vendredi: 9h00 - 18h00"}
-                                        </Typography>
+                                        <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#00255c', mb: 0.5 }}>Horaires d'ouverture</Typography>
+                                        <Typography variant="body2" sx={{ color: '#4c6180', whiteSpace: 'pre-line' }}>{openingHours}</Typography>
                                     </Box>
-                                </Box>
+                                </Paper>
 
-                                {/* Contact Cards Grid */}
                                 <Grid container spacing={2}>
-                                    {/* Téléphone */}
-                                    {phone && (
-                                        <Grid item xs={6}>
-                                            <Paper
-                                                component="a"
-                                                href={`tel:${phone.replace(/\s/g, '')}`}
-                                                elevation={0}
-                                                sx={{
-                                                    p: 2,
-                                                    minHeight: 72,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 1.5,
-                                                    borderRadius: 3,
-                                                    bgcolor: alpha(primaryColor, 0.08),
-                                                    textDecoration: 'none',
-                                                    color: 'inherit',
-                                                    transition: 'all 0.3s',
-                                                    '&:hover': {
-                                                        bgcolor: alpha(primaryColor, 0.15),
-                                                        transform: 'translateY(-2px)'
-                                                    }
-                                                }}
-                                            >
-                                                <Box sx={{
-                                                    p: 1,
-                                                    borderRadius: 2,
-                                                    bgcolor: primaryColor,
-                                                    color: 'white',
-                                                    display: 'flex'
-                                                }}>
-                                                    <PhoneIcon />
-                                                </Box>
-                                                <Box>
-                                                    <Typography variant="caption" color="text.secondary" fontWeight={600}>Téléphone</Typography>
-                                                    <Typography variant="body2" fontWeight={700} color="black">{phone}</Typography>
-                                                </Box>
-                                            </Paper>
-                                        </Grid>
-                                    )}
-
-                                    {/* Fax */}
-                                    {fax && (
-                                        <Grid item xs={6}>
-                                            <Paper
-                                                elevation={0}
-                                                sx={{
-                                                    p: 2,
-                                                    minHeight: 72,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 1.5,
-                                                    borderRadius: 3,
-                                                    bgcolor: alpha(primaryColor, 0.08)
-                                                }}
-                                            >
-                                                <Box sx={{
-                                                    p: 1,
-                                                    borderRadius: 2,
-                                                    bgcolor: 'secondary.main',
-                                                    color: 'white',
-                                                    display: 'flex'
-                                                }}>
-                                                    <PrintIcon />
-                                                </Box>
-                                                <Box>
-                                                    <Typography variant="caption" color="text.secondary" fontWeight={600}>Fax</Typography>
-                                                    <Typography variant="body2" fontWeight={700} color="black">{fax}</Typography>
-                                                </Box>
-                                            </Paper>
-                                        </Grid>
-                                    )}
-
-                                    {/* Mobile */}
-                                    {cel && (
-                                        <Grid item xs={6}>
-                                            <Paper
-                                                component="a"
-                                                href={`tel:${cel.replace(/[.\s]/g, '')}`}
-                                                elevation={0}
-                                                sx={{
-                                                    p: 2,
-                                                    minHeight: 72,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 1.5,
-                                                    borderRadius: 3,
-                                                    bgcolor: alpha(primaryColor, 0.08),
-                                                    textDecoration: 'none',
-                                                    color: 'inherit',
-                                                    transition: 'all 0.3s',
-                                                    '&:hover': {
-                                                        bgcolor: alpha(primaryColor, 0.15),
-                                                        transform: 'translateY(-2px)'
-                                                    }
-                                                }}
-                                            >
-                                                <Box sx={{
-                                                    p: 1,
-                                                    borderRadius: 2,
-                                                    bgcolor: 'success.main',
-                                                    color: 'white',
-                                                    display: 'flex'
-                                                }}>
-                                                    <MobileIcon />
-                                                </Box>
-                                                <Box>
-                                                    <Typography variant="caption" color="text.secondary" fontWeight={600}>Mobile</Typography>
-                                                    <Typography variant="body2" fontWeight={700} color="black">{cel}</Typography>
-                                                </Box>
-                                            </Paper>
-                                        </Grid>
-                                    )}
-
-                                    {/* Email */}
-                                    {email && (
-                                        <Grid item xs={6}>
-                                            <Paper
-                                                component="a"
-                                                href={`mailto:${email}`}
-                                                elevation={0}
-                                                sx={{
-                                                    p: 2,
-                                                    minHeight: 72,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 1.5,
-                                                    borderRadius: 3,
-                                                    bgcolor: alpha(primaryColor, 0.08),
-                                                    textDecoration: 'none',
-                                                    color: 'inherit',
-                                                    transition: 'all 0.3s',
-                                                    overflow: 'hidden',
-                                                    '&:hover': {
-                                                        bgcolor: alpha(primaryColor, 0.15),
-                                                        transform: 'translateY(-2px)'
-                                                    }
-                                                }}
-                                            >
-                                                <Box sx={{
-                                                    p: 1,
-                                                    borderRadius: 2,
-                                                    bgcolor: 'info.main',
-                                                    color: 'white',
-                                                    display: 'flex',
-                                                    flexShrink: 0
-                                                }}>
-                                                    <MailIcon />
-                                                </Box>
-                                                <Box sx={{ overflow: 'hidden', flex: 1 }}>
-                                                    <Typography variant="caption" color="text.secondary" fontWeight={600}>Email</Typography>
-                                                    <Typography
-                                                        variant="body2"
-                                                        fontWeight={700}
-                                                        color="black"
-                                                        sx={{
-                                                            overflow: 'hidden',
-                                                            textOverflow: 'ellipsis',
-                                                            whiteSpace: 'nowrap'
-                                                        }}
-                                                    >
-                                                        {email}
-                                                    </Typography>
-                                                </Box>
-                                            </Paper>
-                                        </Grid>
-                                    )}
-                                </Grid>
-                            </Stack>
-                        </Grid>
-
-                        <Grid item xs={12} md={6}>
-                            {/* REAL GOOGLE MAPS INTEGRATION */}
-                            <Paper
-                                elevation={2}
-                                sx={{
-                                    width: '100%',
-                                    height: '100%',
-                                    minHeight: 400,
-                                    borderRadius: 4,
-                                    overflow: 'hidden',
-                                    border: '1px solid',
-                                    borderColor: 'divider'
-                                }}
-                            >
-                                <iframe
-                                    title="Localisation Cabinet"
-                                    width="100%"
-                                    height="100%"
-                                    style={{ border: 0, minHeight: '400px' }}
-                                    loading="lazy"
-                                    allowFullScreen
-                                    src="https://maps.google.com/maps?q=35+bis+Avenue+Malick+SY,+Dakar,+Senegal&t=&z=15&ie=UTF8&iwloc=&output=embed"
-                                ></iframe>
+                                </Box>
                             </Paper>
                         </Grid>
-                    </Grid>
-                </Container>
-            </Box>
+                                    )}
 
-            <Footer variant="dark" />
+                        {/* Mobile */}
+                        {cel && (
+                            <Grid item xs={6}>
+                                <Paper
+                                    component="a"
+                                    href={`tel:${cel.replace(/[.\s]/g, '')}`}
+                                    elevation={0}
+                                    sx={{
+                                        p: 2,
+                                        minHeight: 72,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1.5,
+                                        borderRadius: 3,
+                                        bgcolor: alpha(primaryColor, 0.08),
+                                        textDecoration: 'none',
+                                        color: 'inherit',
+                                        transition: 'all 0.3s',
+                                        '&:hover': {
+                                            bgcolor: alpha(primaryColor, 0.15),
+                                            transform: 'translateY(-2px)'
+                                        }
+                                    }}
+                                >
+                                    <Box sx={{
+                                        p: 1,
+                                        borderRadius: 2,
+                                        bgcolor: 'success.main',
+                                        color: 'white',
+                                        display: 'flex'
+                                    }}>
+                                        <MobileIcon />
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Mobile</Typography>
+                                        <Typography variant="body2" fontWeight={700} color="black">{cel}</Typography>
+                                    </Box>
+                                </Paper>
+                            </Grid>
+                        )}
+
+                        {/* Email */}
+                        {email && (
+                            <Grid item xs={6}>
+                                <Paper
+                                    component="a"
+                                    href={`mailto:${email}`}
+                                    elevation={0}
+                                    sx={{
+                                        p: 2,
+                                        minHeight: 72,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1.5,
+                                        borderRadius: 3,
+                                        bgcolor: alpha(primaryColor, 0.08),
+                                        textDecoration: 'none',
+                                        color: 'inherit',
+                                        transition: 'all 0.3s',
+                                        overflow: 'hidden',
+                                        '&:hover': {
+                                            bgcolor: alpha(primaryColor, 0.15),
+                                            transform: 'translateY(-2px)'
+                                        }
+                                    }}
+                                >
+                                    <Box sx={{
+                                        p: 1,
+                                        borderRadius: 2,
+                                        bgcolor: 'info.main',
+                                        color: 'white',
+                                        display: 'flex',
+                                        flexShrink: 0
+                                    }}>
+                                        <MailIcon />
+                                    </Box>
+                                    <Box sx={{ overflow: 'hidden', flex: 1 }}>
+                                        <Typography variant="caption" color="text.secondary" fontWeight={600}>Email</Typography>
+                                        <Typography
+                                            variant="body2"
+                                            fontWeight={700}
+                                            color="black"
+                                            sx={{
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap'
+                                            }}
+                                        >
+                                            {email}
+                                        </Typography>
+                                    </Box>
+                                </Paper>
+                            </Grid>
+                        )}
+                    </Grid>
+                </Stack>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+                {/* REAL GOOGLE MAPS INTEGRATION */}
+                <Paper
+                    elevation={2}
+                    sx={{
+                        width: '100%',
+                        height: '100%',
+                        minHeight: 400,
+                        borderRadius: 4,
+                        overflow: 'hidden',
+                        border: '1px solid',
+                        borderColor: 'divider'
+                    }}
+                >
+                    <iframe
+                        title="Localisation Cabinet"
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0, minHeight: '400px' }}
+                        loading="lazy"
+                        allowFullScreen
+                        src="https://maps.google.com/maps?q=35+bis+Avenue+Malick+SY,+Dakar,+Senegal&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                    ></iframe>
+                </Paper>
+            </Grid>
+        </Grid>
+                </Container >
+            </Box >
+
+        <Footer variant="dark" />
         </Box >
     );
 }
