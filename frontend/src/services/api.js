@@ -28,7 +28,9 @@ export const documentsAPI = {
     upload: (formData) => apiClient.post('/documents/documents/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),
-    update: (id, data) => apiClient.put(`/documents/documents/${id}/`, data),
+    update: (id, data) => apiClient.patch(`/documents/documents/${id}/`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
     delete: (id) => apiClient.delete(`/documents/documents/${id}/`),
     download: (id) => apiClient.get(`/documents/documents/${id}/download/`, {
         responseType: 'blob'

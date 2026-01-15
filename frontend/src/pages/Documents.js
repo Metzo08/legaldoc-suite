@@ -37,7 +37,8 @@ import {
     Contrast as ContrastIcon,
     Description as FileIcon,
     Storage as StorageIcon,
-    FindInPage as FindIcon
+    FindInPage as FindIcon,
+    Edit as EditIcon
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { documentsAPI, casesAPI } from '../services/api';
@@ -56,6 +57,8 @@ function Documents() {
     const [loading, setLoading] = useState(true);
     const [openDialog, setOpenDialog] = useState(false);
     const [uploadFile, setUploadFile] = useState(null);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editingDocId, setEditingDocId] = useState(null);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -158,6 +161,8 @@ function Documents() {
 
     const handleOpenDialog = () => {
         setUploadFile(null);
+        setIsEditMode(false);
+        setEditingDocId(null);
         setFormData({
             title: '',
             description: '',
@@ -169,18 +174,35 @@ function Documents() {
         setOpenDialog(true);
     };
 
+    const handleEditClick = (doc) => {
+        setUploadFile(null);
+        setIsEditMode(true);
+        setEditingDocId(doc.id);
+        setFormData({
+            title: doc.title || '',
+            description: doc.description || '',
+            case: doc.case || '',
+            document_type: doc.document_type || 'AUTRE',
+            is_confidential: doc.is_confidential ?? true,
+            tags: doc.tags_list?.join(', ') || ''
+        });
+        setOpenDialog(true);
+    };
+
     const handleCloseDialog = () => {
         setOpenDialog(false);
     };
 
     const handleSubmit = async () => {
-        if (!uploadFile || !formData.case) {
+        if (!isEditMode && (!uploadFile || !formData.case)) {
             showNotification('Veuillez sélectionner un fichier et un dossier', 'warning');
             return;
         }
 
         const data = new FormData();
-        data.append('file', uploadFile);
+        if (uploadFile) {
+            data.append('file', uploadFile);
+        }
         data.append('title', formData.title);
         data.append('description', formData.description);
         data.append('case', formData.case);
@@ -188,13 +210,19 @@ function Documents() {
         data.append('is_confidential', formData.is_confidential);
 
         try {
-            await documentsAPI.upload(data);
-            showNotification("Document uploadé avec succès !");
+            if (isEditMode) {
+                // Utiliser PATCH pour permettre la modification partielle (sans renvoyer le fichier si inchangé)
+                await documentsAPI.update(editingDocId, data);
+                showNotification("Document mis à jour avec succès !");
+            } else {
+                await documentsAPI.upload(data);
+                showNotification("Document uploadé avec succès !");
+            }
             loadData();
             handleCloseDialog();
         } catch (error) {
-            console.error('Erreur upload document:', error);
-            showNotification("Erreur lors de l'upload.", "error");
+            console.error('Erreur soumission document:', error);
+            showNotification(`Erreur lors de ${isEditMode ? 'la mise à jour' : "l'upload"}.`, "error");
         }
     };
 
@@ -438,6 +466,7 @@ function Documents() {
             width: 150,
             getActions: (params) => [
                 <GridActionsCellItem icon={<PreviewIcon />} label="Aperçu" onClick={() => handlePreview(params.row)} color="info" />,
+                <GridActionsCellItem icon={<EditIcon />} label="Modifier" onClick={() => handleEditClick(params.row)} color="warning" />,
                 <GridActionsCellItem icon={<OcrIcon />} label="OCR" onClick={() => handleViewOcr(params.row)} color="primary" />,
                 <GridActionsCellItem icon={<DeleteIcon />} label="Supprimer" onClick={() => handleDeleteClick(params.row)} color="error" />,
             ],
@@ -531,13 +560,23 @@ function Documents() {
             </Paper>
 
             <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-                <DialogTitle>Uploader un document</DialogTitle>
+                <DialogTitle>{isEditMode ? 'Modifier le document' : 'Uploader un document'}</DialogTitle>
                 <DialogContent>
                     <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <Paper {...getRootProps()} sx={{ p: 4, textAlign: 'center', border: '2px dashed', borderColor: isDragActive ? 'primary.main' : 'divider', bgcolor: isDragActive ? 'action.hover' : 'background.paper', cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}>
                             <input {...getInputProps()} />
                             <UploadIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
-                            {uploadFile ? <Typography>{uploadFile.name}</Typography> : <Typography>{isDragActive ? 'Déposez le fichier ici...' : 'Glissez-déposez un fichier ou cliquez pour sélectionner'}</Typography>}
+                            {uploadFile ? (
+                                <Typography sx={{ fontWeight: 600, color: 'success.main' }}>
+                                    Nouveau fichier : {uploadFile.name}
+                                </Typography>
+                            ) : (
+                                <Typography color="text.secondary">
+                                    {isEditMode
+                                        ? 'Glissez-déposez pour remplacer le fichier actuel (optionnel)'
+                                        : 'Glissez-déposez un fichier ou cliquez pour sélectionner'}
+                                </Typography>
+                            )}
                         </Paper>
                         <TextField label="Titre" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required fullWidth />
                         <TextField label="Dossier" select value={formData.case} onChange={(e) => setFormData({ ...formData, case: e.target.value })} required fullWidth>
@@ -561,9 +600,11 @@ function Documents() {
                         <TextField label="Description" multiline rows={3} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} fullWidth />
                     </Box>
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseDialog}>Annuler</Button>
-                    <Button onClick={handleSubmit} variant="contained">Uploader</Button>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={handleCloseDialog} color="inherit">Annuler</Button>
+                    <Button onClick={handleSubmit} variant="contained" sx={{ px: 4 }}>
+                        {isEditMode ? 'Enregistrer les modifications' : 'Uploader'}
+                    </Button>
                 </DialogActions>
             </Dialog>
 

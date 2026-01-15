@@ -311,6 +311,35 @@ class DocumentViewSet(viewsets.ModelViewSet):
                     entity_type='DOCUMENT',
                     entity_id=document.id
                 )
+
+    def perform_update(self, serializer):
+        """
+        Log la modification et relance l'OCR si le fichier a changé.
+        """
+        # Vérifier si le fichier a été modifié
+        file_changed = 'file' in serializer.validated_data
+        
+        document = serializer.save()
+        
+        if file_changed:
+            try:
+                process_document_ocr(document)
+                # Mettre à jour le vecteur de recherche
+                Document.objects.filter(pk=document.pk).update(
+                    search_vector=SearchVector('title', 'description', 'ocr_text', 'file_name')
+                )
+            except Exception as e:
+                logger.error(f"Erreur OCR après modification pour document {document.id}: {str(e)}")
+
+        log_action(
+            user=self.request.user,
+            action='UPDATE',
+            document=document,
+            case=document.case,
+            client=document.case.client,
+            details=f'Document modifié: {document.title}',
+            request=self.request
+        )
     
     def retrieve(self, request, *args, **kwargs):
         """
