@@ -55,7 +55,7 @@ const Footer = ({ variant = 'light' }) => {
                             Contact :
                         </Typography>
                         <Link
-                            href="tel:+221776026283"
+                            href="tel:+221776026783"
                             sx={{
                                 color: (theme) => theme.palette.mode === 'dark' ? 'grey.300' : 'grey.800',
                                 textDecoration: 'none',
@@ -64,7 +64,7 @@ const Footer = ({ variant = 'light' }) => {
                                 '&:hover': { color: 'primary.main' }
                             }}
                         >
-                            77 602 62 83
+                            77 602 67 83
                         </Link>
                         <Box sx={{ width: '1px', height: '16px', bgcolor: 'divider', mx: 1, display: { xs: 'none', sm: 'block' } }} />
                         <Typography variant="body2" sx={{ opacity: 0.8 }}>

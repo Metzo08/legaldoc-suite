@@ -327,7 +327,7 @@ team_data = [
     {
         "name": "Maître Ibrahima MBENGUE",
         "role": "Avocat à la cour",
-        "biography": "Avocat à la cour with 35 ans d’expérience. Barreau du Sénégal. Conseil inscrit à la Cours Pénale Internationale (CPI). Conseil inscrit à la Cours Africaine des Droits de l’Homme et des Peuples (CADHP). Spécialisé en droit Pénal, Social et Civil.",
+        "biography": "Avocat à la Cour, avec 35 ans d’expérience.\nBarreau du Sénégal.\nConseil inscrit à la Cour pénale internationale (CPI).\nConseil inscrit à la Cour africaine des droits de l’homme et des peuples (CADHP).\nSpécialisé en droit pénal, social et civil.",
         "photo": "cabinet/team/ibrahima_mbengue.jpg",
         "email": "maitreimbengue@gmail.com",
         "order": 1
