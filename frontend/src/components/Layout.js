@@ -209,6 +209,12 @@ function Layout({ children, setIsAuthenticated }) {
                         <MenuItem disabled>
                             <Typography variant="body2">{currentUser?.username || 'Utilisateur'}</Typography>
                         </MenuItem>
+                        <MenuItem onClick={() => { handleMenuClick('/profile'); handleProfileMenuClose(); }}>
+                            <ListItemIcon>
+                                <PersonIcon fontSize="small" />
+                            </ListItemIcon>
+                            Mon Profil
+                        </MenuItem>
                         <Divider />
                         <MenuItem onClick={handleLogout}>
                             <ListItemIcon>

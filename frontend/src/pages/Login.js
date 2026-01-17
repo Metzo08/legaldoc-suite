@@ -26,6 +26,10 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    // 2FA states
+    const [is2FARequired, setIs2FARequired] = useState(false);
+    const [otpCode, setOtpCode] = useState('');
+
     // Helper to fix image URLs
     const getImageUrl = (path) => {
         if (!path) return null;
@@ -94,10 +98,25 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
         setLoading(true);
 
         try {
-            await authService.login(username, password);
-            setIsAuthenticated(true);
-            showNotification("Connexion réussie ! Bienvenue.", "success");
-            navigate('/dashboard');
+            if (is2FARequired) {
+                // Étape 2 : Vérification OTP
+                await authService.verifyOTP(username, password, otpCode);
+                setIsAuthenticated(true);
+                showNotification("Connexion réussie ! Bienvenue.", "success");
+                navigate('/dashboard');
+            } else {
+                // Étape 1 : Login standard
+                const result = await authService.login(username, password);
+
+                if (result.two_factor_required) {
+                    setIs2FARequired(true);
+                    showNotification("Authentification à deux facteurs requise.", "info");
+                } else {
+                    setIsAuthenticated(true);
+                    showNotification("Connexion réussie ! Bienvenue.", "success");
+                    navigate('/dashboard');
+                }
+            }
         } catch (err) {
             console.error('Login error:', err);
             let message = 'Erreur de connexion. Veuillez réessayer.';
@@ -105,6 +124,8 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
                 message = 'Identifiants incorrects. Veuillez réessayer.';
             } else if (err.response?.data?.detail) {
                 message = err.response.data.detail;
+            } else if (err.response?.data?.otp_code) {
+                message = "Code de sécurité invalide.";
             }
             showNotification(message, "error");
         } finally {
@@ -183,34 +204,61 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
                                 </Box>
 
                                 <form onSubmit={handleSubmit}>
-                                    <TextField
-                                        fullWidth
-                                        label="Nom d'utilisateur"
-                                        margin="normal"
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
-                                        required
-                                        InputProps={{ startAdornment: <InputAdornment position="start"><Person color="action" /></InputAdornment> }}
-                                    />
-                                    <TextField
-                                        fullWidth
-                                        label="Mot de passe"
-                                        type={showPassword ? 'text' : 'password'}
-                                        margin="normal"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                        InputProps={{
-                                            startAdornment: <InputAdornment position="start"><Lock color="action" /></InputAdornment>,
-                                            endAdornment: (
-                                                <InputAdornment position="end">
-                                                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                                                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                                                    </IconButton>
-                                                </InputAdornment>
-                                            ),
-                                        }}
-                                    />
+                                    {!is2FARequired ? (
+                                        <>
+                                            <TextField
+                                                fullWidth
+                                                label="Nom d'utilisateur"
+                                                margin="normal"
+                                                value={username}
+                                                onChange={(e) => setUsername(e.target.value)}
+                                                required
+                                                InputProps={{ startAdornment: <InputAdornment position="start"><Person color="action" /></InputAdornment> }}
+                                            />
+                                            <TextField
+                                                fullWidth
+                                                label="Mot de passe"
+                                                type={showPassword ? 'text' : 'password'}
+                                                margin="normal"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                required
+                                                InputProps={{
+                                                    startAdornment: <InputAdornment position="start"><Lock color="action" /></InputAdornment>,
+                                                    endAdornment: (
+                                                        <InputAdornment position="end">
+                                                            <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                                                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                            </IconButton>
+                                                        </InputAdornment>
+                                                    ),
+                                                }}
+                                            />
+                                        </>
+                                    ) : (
+                                        <Box sx={{ mt: 2 }}>
+                                            <Typography variant="body2" sx={{ mb: 2, textAlign: 'center' }}>
+                                                Entrez le code à 6 chiffres généré par votre application d'authentification.
+                                            </Typography>
+                                            <TextField
+                                                fullWidth
+                                                label="Code de sécurité"
+                                                autoFocus
+                                                value={otpCode}
+                                                onChange={(e) => setOtpCode(e.target.value)}
+                                                required
+                                                inputProps={{ maxLength: 6, style: { fontSize: '1.5rem', textAlign: 'center', letterSpacing: '0.5rem' } }}
+                                                InputProps={{ startAdornment: <InputAdornment position="start"><Lock color="action" /></InputAdornment> }}
+                                            />
+                                            <Button
+                                                onClick={() => setIs2FARequired(false)}
+                                                sx={{ mt: 1, textTransform: 'none' }}
+                                                size="small"
+                                            >
+                                                Retour au login
+                                            </Button>
+                                        </Box>
+                                    )}
 
                                     <Button
                                         type="submit"

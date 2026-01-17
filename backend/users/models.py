@@ -51,6 +51,19 @@ class User(AbstractUser):
         verbose_name='Dernière modification'
     )
     
+    # Authentification à double facteur (2FA)
+    two_factor_enabled = models.BooleanField(
+        default=False,
+        verbose_name='Authentification 2FA activée'
+    )
+    
+    two_factor_secret = models.CharField(
+        max_length=32,
+        blank=True,
+        null=True,
+        verbose_name='Secret 2FA (Base32)'
+    )
+    
     class Meta:
         verbose_name = 'Utilisateur'
         verbose_name_plural = 'Utilisateurs'

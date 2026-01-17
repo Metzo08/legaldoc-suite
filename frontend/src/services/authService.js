@@ -17,15 +17,44 @@ class AuthService {
         });
 
         if (response.data.access) {
-            localStorage.setItem('access_token', response.data.access);
-            localStorage.setItem('refresh_token', response.data.refresh);
-
-            // Décoder le token pour obtenir les infos utilisateur
-            const decoded = jwtDecode(response.data.access);
-            localStorage.setItem('user', JSON.stringify(decoded));
+            this.setSession(response.data);
         }
 
         return response.data;
+    }
+
+    /**
+     * Vérification OTP (2ème étape 2FA).
+     */
+    async verifyOTP(username, password, otp_code) {
+        const response = await axios.post(`${API_URL}/users/verify_otp/`, {
+            username,
+            password,
+            otp_code
+        });
+
+        if (response.data.access) {
+            this.setSession(response.data);
+        }
+
+        return response.data;
+    }
+
+    /**
+     * Helper pour enregistrer la session.
+     */
+    setSession(data) {
+        localStorage.setItem('access_token', data.access);
+        localStorage.setItem('refresh_token', data.refresh);
+
+        // Décoder le token pour obtenir les infos utilisateur
+        const decoded = jwtDecode(data.access);
+        // On peut aussi stocker l'objet user complet s'il est fourni
+        if (data.user) {
+            localStorage.setItem('user', JSON.stringify({ ...decoded, ...data.user }));
+        } else {
+            localStorage.setItem('user', JSON.stringify(decoded));
+        }
     }
 
     /**

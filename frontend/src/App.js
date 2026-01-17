@@ -21,6 +21,7 @@ const AuditLog = lazy(() => import('./pages/AuditLog'));
 const Audiences = lazy(() => import('./pages/Audiences'));
 const Tags = lazy(() => import('./pages/Tags'));
 const Deadlines = lazy(() => import('./pages/Deadlines'));
+const Profile = lazy(() => import('./pages/Profile'));
 const Layout = lazy(() => import('./components/Layout'));
 
 // Context pour le thème
@@ -135,6 +136,7 @@ function App() {
                                                         <Route path="/search" element={<Search />} />
                                                         <Route path="/users" element={<Users />} />
                                                         <Route path="/audit" element={<AuditLog />} />
+                                                        <Route path="/profile" element={<Profile />} />
                                                         <Route path="*" element={<Navigate to="/dashboard" />} />
                                                     </Routes>
                                                 </Suspense>

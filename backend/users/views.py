@@ -13,9 +13,15 @@ from .serializers import (
     UserCreateSerializer, 
     UserUpdateSerializer,
     ChangePasswordSerializer,
-    CustomTokenObtainPairSerializer
+    CustomTokenObtainPairSerializer,
+    VerifyOTPSerializer
 )
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
+import pyotp
+import qrcode
+import io
+import base64
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -123,3 +129,109 @@ class UserViewSet(viewsets.ModelViewSet):
         user.is_active_user = True
         user.save()
         return Response({'detail': 'Utilisateur activé avec succès.'})
+
+    @action(detail=False, methods=['POST'], permission_classes=[IsAuthenticated])
+    def setup_2fa(self, request):
+        """
+        Génère un secret 2FA et renvoie le QR Code.
+        """
+        user = request.user
+        if not user.two_factor_secret:
+            user.two_factor_secret = pyotp.random_base32()
+            user.save()
+
+        otp_uri = pyotp.totp.TOTP(user.two_factor_secret).provisioning_uri(
+            name=user.email,
+            issuer_name="LegalDoc Suite"
+        )
+
+        # Générer QR Code
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(otp_uri)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        buffered = io.BytesIO()
+        img.save(buffered, format="PNG")
+        qr_code_base64 = base64.b64encode(buffered.getvalue()).decode()
+
+        return Response({
+            'secret': user.two_factor_secret,
+            'qr_code': f"data:image/png;base64,{qr_code_base64}"
+        })
+
+    @action(detail=False, methods=['POST'], permission_classes=[IsAuthenticated])
+    def confirm_2fa(self, request):
+        """
+        Confirme et active la 2FA pour l'utilisateur.
+        """
+        otp_code = request.data.get('otp_code')
+        user = request.user
+        
+        if not user.two_factor_secret:
+            return Response({'detail': '2FA non configurée.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        totp = pyotp.TOTP(user.two_factor_secret)
+        if totp.verify(otp_code):
+            user.two_factor_enabled = True
+            user.save()
+            return Response({'detail': '2FA activée avec succès.'})
+        else:
+            return Response({'detail': 'Code invalide.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['POST'], permission_classes=[AllowAny])
+    def verify_otp(self, request):
+        """
+        Vérifie le code OTP lors du login (2ème étape).
+        """
+        serializer = VerifyOTPSerializer(data=request.data)
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            password = serializer.validated_data['password']
+            otp_code = serializer.validated_data['otp_code']
+            
+            try:
+                user = User.objects.get(username=username)
+                # Re-vérifier le mot de passe par sécurité
+                if not user.check_password(password):
+                    return Response({'detail': 'Identifiants invalides.'}, status=status.HTTP_401_UNAUTHORIZED)
+                
+                if not user.two_factor_enabled:
+                    return Response({'detail': '2FA non activée.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                totp = pyotp.TOTP(user.two_factor_secret)
+                if totp.verify(otp_code):
+                    # Générer les tokens JWT
+                    refresh = RefreshToken.for_user(user)
+                    
+                    # Inclure les infos utilisateur comme dans le CustomTokenObtainPairSerializer
+                    user_data = UserSerializer(user).data
+                    
+                    return Response({
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                        'user': user_data
+                    })
+                else:
+                    return Response({'otp_code': 'Code invalide.'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+            except User.DoesNotExist:
+                return Response({'detail': 'Utilisateur non trouvé.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['POST'], permission_classes=[IsAuthenticated])
+    def disable_2fa(self, request):
+        """
+        Désactive la 2FA.
+        """
+        password = request.data.get('password')
+        user = request.user
+        
+        if not user.check_password(password):
+            return Response({'password': 'Mot de passe incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        user.two_factor_enabled = False
+        user.two_factor_secret = None
+        user.save()
+        return Response({'detail': '2FA désactivée avec succès.'})

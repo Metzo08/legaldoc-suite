@@ -83,6 +83,24 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
     Personnalisation du token JWT pour inclure les infos utilisateur.
     """
+    def validate(self, attrs):
+        # Authentification standard (username/password)
+        data = super().validate(attrs)
+        
+        # Vérifier si la 2FA est activée pour cet utilisateur
+        if self.user.two_factor_enabled:
+            # Si activée, on ne renvoie PAS encore les tokens
+            # On renvoie une réponse spéciale indiquant que la 2FA est requise
+            return {
+                'two_factor_required': True,
+                'email': self.user.email,
+                'username': self.user.username
+            }
+        
+        # Sinon, flux standard : ajouter les infos utilisateur dans la réponse
+        data['user'] = UserSerializer(self.user).data
+        return data
+
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
@@ -94,3 +112,12 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['is_admin'] = user.is_active_user and user.role == 'ADMIN'
 
         return token
+
+
+class VerifyOTPSerializer(serializers.Serializer):
+    """
+    Sérialiseur pour la vérification du code OTP.
+    """
+    username = serializers.CharField()
+    password = serializers.CharField() # Pour re-vérifier ou utiliser un cache
+    otp_code = serializers.CharField(max_length=6, min_length=6)

@@ -50,7 +50,10 @@ export const usersAPI = {
     changePassword: (id, data) => apiClient.post(`/users/${id}/change_password/`, data),
     deactivate: (id) => apiClient.post(`/users/${id}/deactivate/`),
     activate: (id) => apiClient.post(`/users/${id}/activate/`),
-    delete: (id) => apiClient.delete(`/users/${id}/`)
+    delete: (id) => apiClient.delete(`/users/${id}/`),
+    setup2FA: () => apiClient.post('/users/setup_2fa/'),
+    confirm2FA: (data) => apiClient.post('/users/confirm_2fa/', data),
+    disable2FA: (data) => apiClient.post('/users/disable_2fa/', data)
 };
 
 // API Audit Logs
