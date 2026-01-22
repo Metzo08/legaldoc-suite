@@ -2,6 +2,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.db import connection
+from django.conf import settings
 from .models import User
 
 @api_view(['GET'])
@@ -30,9 +31,11 @@ def debug_status(request):
         'status': 'ok' if db_ok else 'error',
         'database': 'ok' if db_ok else f'error: {db_error}',
         'user_metzo08': metzo_status,
-        'host': request.get_host(),
+        'host_requested': request.get_host(), # Ce que Django voit
         'environment': {
-            'DEBUG': connection.settings_dict.get('DEBUG'),
-            'NAME': connection.settings_dict.get('NAME'),
+            'DEBUG': settings.DEBUG,
+            'ALLOWED_HOSTS': settings.ALLOWED_HOSTS,
+            'CSRF_TRUSTED_ORIGINS': settings.CSRF_TRUSTED_ORIGINS,
+            'CORS_ALLOWED_ORIGINS': settings.CORS_ALLOWED_ORIGINS,
         }
     })
