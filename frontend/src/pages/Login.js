@@ -35,7 +35,11 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
         if (!path) return null;
         if (path.startsWith('http')) return path;
         if (path.startsWith('/images/')) return path;
-        const backendBase = (process.env.REACT_APP_API_URL || 'http://localhost:8000/api').replace('/api', '');
+
+        // Use the same dynamic logic as apiClient/authService
+        const apiBase = process.env.REACT_APP_API_URL ||
+            (['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:8000/api' : '/api');
+        const backendBase = apiBase.replace('/api', '');
         return `${backendBase}${path}`;
     };
 
@@ -118,10 +122,15 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
                 }
             }
         } catch (err) {
-            console.error('Login error:', err);
+            console.error('DEBUG - Login Full Error:', err);
+            console.error('DEBUG - Response Data:', err.response?.data);
+            console.error('DEBUG - Response Status:', err.response?.status);
+
             let message = 'Erreur de connexion. Veuillez réessayer.';
             if (err.response?.status === 401) {
                 message = 'Identifiants incorrects. Veuillez réessayer.';
+            } else if (err.response?.status === 403) {
+                message = 'Erreur de protection CSRF ou accès refusé.';
             } else if (err.response?.data?.detail) {
                 message = err.response.data.detail;
             } else if (err.response?.data?.otp_code) {

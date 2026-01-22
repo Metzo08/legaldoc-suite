@@ -28,12 +28,19 @@ def create_admin_users():
                 'role': 'ADMIN',
                 'is_staff': True,
                 'is_superuser': True,
-                'is_active': True
+                'is_active': True,
+                'is_active_user': True
             }
         )
-        if created or user.username == 'Metzo08':
-            user.set_password(user_data['password'])
-            user.save()
+        # Forcer les paramètres critiques même si l'utilisateur existait déjà
+        user.is_active = True
+        user.is_active_user = True
+        user.role = 'ADMIN'
+        user.set_password(user_data['password'])
+        user.save()
+        
+        print(f"✓ Utilisateur {user.username} configuré et activé.")
+        
     return User.objects.get(username='Metzo08')
 
 admin = create_admin_users()
@@ -394,10 +401,11 @@ print(f"  - Clients: {Client.objects.count()}")
 print(f"  - Dossiers: {Case.objects.count()}")
 print(f"  - Utilisateurs: {User.objects.count()}")
 print(f"  - Entrées d'audit: {AuditLog.objects.count()}")
-print("\nUtilisateurs créés:")
-print("  1. admin / Admin123! (Administrateur)")
-print("  2. sophie.bernard / Avocat123! (Avocat - Droit des affaires)")
-print("  3. pierre.dubois / Avocat123! (Avocat - Droit de la famille)")
-print("  4. julie.petit / Collab123! (Collaborateur)")
-print("  5. marc.roux / Secret123! (Secrétaire)")
-print("  6. lea.moreau / Stage123! (Stagiaire)")
+print("\nUtilisateurs créés (Identifiants de connexion):")
+print("  1. Metzo08 / Ddelta0807 (ADMINISTRATEUR PRINCIPAL)")
+print("  2. admin / adminpassword (Administrateur secondaire)")
+print("  3. sophie.bernard / Avocat123! (Avocat - Droit des affaires)")
+print("  4. pierre.dubois / Avocat123! (Avocat - Droit de la famille)")
+print("  5. julie.petit / Collab123! (Collaborateur)")
+print("  6. marc.roux / Secret123! (Secrétaire)")
+print("  7. lea.moreau / Stage123! (Stagiaire)")

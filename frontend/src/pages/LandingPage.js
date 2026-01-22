@@ -93,8 +93,10 @@ function LandingPage() {
         // Local images in public folder (e.g., /images/team/...)
         if (path.startsWith('/images/')) return path;
 
-        // Backend media files
-        const backendBase = (process.env.REACT_APP_API_URL || 'http://localhost:8000/api').replace('/api', '');
+        // Use the same dynamic logic as apiClient/authService
+        const apiBase = process.env.REACT_APP_API_URL ||
+            (['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:8000/api' : '/api');
+        const backendBase = apiBase.replace('/api', '');
         return `${backendBase}${path}`;
     };
 
