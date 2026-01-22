@@ -394,6 +394,7 @@ for m in team_data:
     # Copier l'image vers le dossier média si elle existe dans le frontend
     photo_path = m.get('photo')
     if photo_path and not photo_path.startswith('http'):
+        source_filename = os.path.basename(photo_path)
         # Chemins possibles pour les images sources
         possible_paths = [
             # Chemin dans le container Docker (avec le volume monté)
