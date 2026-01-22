@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SÉCURITÉ
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-change-in-production')
-DEBUG = True # Forcé pour diagnostic sur le VPS
+DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = ['*'] # Autoriser tout pour résoudre le 400 Bad Request sur le VPS
 
 # CSRF & CORS Settings

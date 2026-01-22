@@ -348,6 +348,8 @@ cab.fax = "(00221) 33-821-97-97"
 cab.cel = "(00221) 77.633.88.81"
 cab.email = "maitreimbengue@gmail.com"
 cab.opening_hours = "Lundi - Vendredi : 09h00 - 17h00\nRéception des clients : Lundi - Jeudi : 15h00 - 17h00"
+cab.primary_color = "#0f172a"
+cab.secondary_color = "#c29b61"
 cab.save()
 
 # 8. Créer les membres de l'équipe
