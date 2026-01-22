@@ -14,10 +14,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SÉCURITÉ
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-change-in-production')
 DEBUG = config('DEBUG', default=True, cast=bool)
-ALLOWED_HOSTS = [h.strip() for h in config('ALLOWED_HOSTS', default='localhost,127.0.0.1,backend').split(',') if h.strip()]
+ALLOWED_HOSTS = [h.strip() for h in config('ALLOWED_HOSTS', default='localhost,127.0.0.1,backend,82.29.168.215,cabinetmaitreibrahimambengue.cloud').split(',') if h.strip()]
 
 # CSRF & CORS Settings
-CORS_ALLOWED_ORIGINS = [o.strip() for o in config('CORS_ALLOWED_ORIGINS', default='http://localhost:3000').split(',') if o.strip()]
+CORS_ALLOWED_ORIGINS = [o.strip() for o in config('CORS_ALLOWED_ORIGINS', default='http://localhost:3000,http://82.29.168.215,http://cabinetmaitreibrahimambengue.cloud,https://cabinetmaitreibrahimambengue.cloud').split(',') if o.strip()]
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
 # Applications installées
@@ -147,10 +147,6 @@ SIMPLE_JWT = {
 }
 
 # Configuration CORS
-CORS_ALLOWED_ORIGINS = config(
-    'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001,http://localhost'
-).split(',')
 CORS_ALLOW_CREDENTIALS = True
 
 # Configuration de sécurité pour production
