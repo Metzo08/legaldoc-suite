@@ -8,6 +8,7 @@ import os
 import django
 import shutil
 from pathlib import Path
+from django.conf import settings
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'legaldoc.settings')
 django.setup()
