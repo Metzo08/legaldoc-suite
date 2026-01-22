@@ -394,20 +394,29 @@ for m in team_data:
     # Copier l'image vers le dossier média si elle existe dans le frontend
     photo_path = m.get('photo')
     if photo_path and not photo_path.startswith('http'):
-        # On suppose que les images sources sont dans frontend/public/images/team/
-        source_filename = os.path.basename(photo_path)
-        source_path = os.path.join(os.path.dirname(os.environ['DJANGO_SETTINGS_MODULE']), '..', 'frontend', 'public', 'images', 'team', source_filename)
-        source_path = os.path.abspath(source_path)
+        # Chemins possibles pour les images sources
+        possible_paths = [
+            # Chemin dans le container Docker (avec le volume monté)
+            os.path.join('/app', 'frontend_images', 'team', source_filename),
+            # Chemin local (Windows/Développement)
+            os.path.abspath(os.path.join(os.path.dirname(os.environ['DJANGO_SETTINGS_MODULE']), '..', 'frontend', 'public', 'images', 'team', source_filename))
+        ]
         
-        if os.path.exists(source_path):
+        source_path = None
+        for p in possible_paths:
+            if os.path.exists(p):
+                source_path = p
+                break
+        
+        if source_path:
             media_dest = os.path.join(settings.MEDIA_ROOT, 'cabinet', 'team', source_filename)
             os.makedirs(os.path.dirname(media_dest), exist_ok=True)
             shutil.copy2(source_path, media_dest)
             # S'assurer que le chemin dans la DB est relatif à MEDIA_ROOT
             m['photo'] = f"cabinet/team/{source_filename}"
-            print(f"✓ Photo copiée : {source_filename}")
+            print(f"✓ Photo copiée depuis {source_path}")
         else:
-            print(f"⚠ Photo source non trouvée : {source_path}")
+            print(f"⚠ Photo source non trouvée parmi : {possible_paths}")
 
     TeamMember.objects.create(**m)
 

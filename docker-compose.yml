@@ -35,6 +35,7 @@ services:
              gunicorn legaldoc.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - ./backend:/app
+      - ./frontend/public/images:/app/frontend_images:ro
       - media_files:/app/media
       - static_files:/app/staticfiles
     ports:
