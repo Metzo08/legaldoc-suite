@@ -6,6 +6,8 @@ from django.core.files.base import ContentFile
 from datetime import timedelta, date
 import os
 import django
+import shutil
+from pathlib import Path
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'legaldoc.settings')
 django.setup()
@@ -389,6 +391,24 @@ team_data = [
 ]
 
 for m in team_data:
+    # Copier l'image vers le dossier média si elle existe dans le frontend
+    photo_path = m.get('photo')
+    if photo_path and not photo_path.startswith('http'):
+        # On suppose que les images sources sont dans frontend/public/images/team/
+        source_filename = os.path.basename(photo_path)
+        source_path = os.path.join(os.path.dirname(os.environ['DJANGO_SETTINGS_MODULE']), '..', 'frontend', 'public', 'images', 'team', source_filename)
+        source_path = os.path.abspath(source_path)
+        
+        if os.path.exists(source_path):
+            media_dest = os.path.join(settings.MEDIA_ROOT, 'cabinet', 'team', source_filename)
+            os.makedirs(os.path.dirname(media_dest), exist_ok=True)
+            shutil.copy2(source_path, media_dest)
+            # S'assurer que le chemin dans la DB est relatif à MEDIA_ROOT
+            m['photo'] = f"cabinet/team/{source_filename}"
+            print(f"✓ Photo copiée : {source_filename}")
+        else:
+            print(f"⚠ Photo source non trouvée : {source_path}")
+
     TeamMember.objects.create(**m)
 
 print(f"✓ {TeamMember.objects.count()} membres de l'équipe créés")

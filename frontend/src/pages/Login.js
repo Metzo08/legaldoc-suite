@@ -40,7 +40,16 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
         const apiBase = process.env.REACT_APP_API_URL ||
             (['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:8000/api' : '/api');
         const backendBase = apiBase.replace('/api', '');
-        return `${backendBase}${path}`;
+
+        // Fix: Prepend /media/ if missing for backend paths
+        let finalPath = path;
+        if (!path.startsWith('/media/') && !path.startsWith('media/')) {
+            finalPath = `/media/${path.startsWith('/') ? path.substring(1) : path}`;
+        } else if (path.startsWith('media/')) {
+            finalPath = `/${path}`;
+        }
+
+        return `${backendBase}${finalPath}`;
     };
 
     // DONNÉES DE DÉMONSTRATION

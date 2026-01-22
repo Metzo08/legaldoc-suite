@@ -13,12 +13,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SÉCURITÉ
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-change-in-production')
-DEBUG = True # Forcé pour diagnostic
-ALLOWED_HOSTS = ['*'] # Forcé pour diagnostic
+DEBUG = config('DEBUG', default=False, cast=bool)
+ALLOWED_HOSTS = [h.strip() for h in config('ALLOWED_HOSTS', default='localhost,127.0.0.1,backend,82.29.168.215,cabinetmaitreibrahimambengue.cloud').split(',') if h.strip()]
 
 # CSRF & CORS Settings
 CORS_ALLOWED_ORIGINS = [o.strip() for o in config('CORS_ALLOWED_ORIGINS', default='http://localhost:3000,http://127.0.0.1:3000,http://82.29.168.215,http://cabinetmaitreibrahimambengue.cloud,https://cabinetmaitreibrahimambengue.cloud').split(',') if o.strip()]
-CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+CSRF_TRUSTED_ORIGINS = [o for o in CORS_ALLOWED_ORIGINS if o.startswith('http')]
 
 # Applications installées
 INSTALLED_APPS = [
