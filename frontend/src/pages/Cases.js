@@ -32,12 +32,17 @@ import { casesAPI, clientsAPI } from '../services/api';
 import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
 import WorkflowRedirectDialog from '../components/WorkflowRedirectDialog';
 import StatCard from '../components/StatCard';
+import authService from '../services/authService';
 
 function Cases() {
     const { showNotification } = useNotification();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const initialSearch = searchParams.get('search') || '';
+
+    // Vérifier si l'utilisateur est administrateur
+    const currentUser = authService.getCurrentUser();
+    const isAdmin = currentUser?.is_staff || currentUser?.is_superuser || false;
 
     const [cases, setCases] = useState([]);
     const [clients, setClients] = useState([]);
@@ -46,16 +51,18 @@ function Cases() {
     const [currentCase, setCurrentCase] = useState(null);
     const [formData, setFormData] = useState({
         reference: '',
-        title: '',
         client: '',
-        description: '',
+        contact_name: '',
+        contact_email: '',
+        contact_phone: '',
+        our_lawyers: '',
         category: 'CIVIL',
-        status: 'OUVERT',
-        opened_date: new Date().toISOString().split('T')[0],
-        represented_party: '',
         adverse_party: '',
         adverse_lawyer: '',
-        external_reference: ''
+        description: '',
+        fees: '',
+        status: 'OUVERT',
+        opened_date: new Date().toISOString().split('T')[0]
     });
 
     const [deleteDialog, setDeleteDialog] = useState(false);
@@ -101,31 +108,35 @@ function Cases() {
             setCurrentCase(caseItem);
             setFormData({
                 reference: caseItem.reference,
-                title: caseItem.title,
                 client: caseItem.client,
-                description: caseItem.description || '',
+                contact_name: caseItem.contact_name || '',
+                contact_email: caseItem.contact_email || '',
+                contact_phone: caseItem.contact_phone || '',
+                our_lawyers: caseItem.our_lawyers || '',
                 category: caseItem.category,
-                status: caseItem.status,
-                opened_date: caseItem.opened_date,
-                represented_party: caseItem.represented_party || '',
                 adverse_party: caseItem.adverse_party || '',
                 adverse_lawyer: caseItem.adverse_lawyer || '',
-                external_reference: caseItem.external_reference || ''
+                description: caseItem.description || '',
+                fees: caseItem.fees || '',
+                status: caseItem.status,
+                opened_date: caseItem.opened_date
             });
         } else {
             setCurrentCase(null);
             setFormData({
                 reference: '',
-                title: '',
                 client: '',
-                description: '',
+                contact_name: '',
+                contact_email: '',
+                contact_phone: '',
+                our_lawyers: '',
                 category: 'CIVIL',
-                status: 'OUVERT',
-                opened_date: new Date().toISOString().split('T')[0],
-                represented_party: '',
                 adverse_party: '',
                 adverse_lawyer: '',
-                external_reference: ''
+                description: '',
+                fees: '',
+                status: 'OUVERT',
+                opened_date: new Date().toISOString().split('T')[0]
             });
         }
         setOpenDialog(true);
@@ -137,11 +148,17 @@ function Cases() {
 
     const handleSubmit = async () => {
         try {
+            // Préparer les données à envoyer (exclure les honoraires si non-admin)
+            const dataToSend = { ...formData };
+            if (!isAdmin) {
+                delete dataToSend.fees;
+            }
+
             if (currentCase) {
-                await casesAPI.update(currentCase.id, formData);
+                await casesAPI.update(currentCase.id, dataToSend);
                 showNotification("Dossier mis à jour.");
             } else {
-                const response = await casesAPI.create(formData);
+                const response = await casesAPI.create(dataToSend);
                 const newCase = response.data;
                 showNotification("Dossier créé avec succès !");
 
@@ -176,23 +193,25 @@ function Cases() {
         }
     };
 
+    // Fonction pour obtenir le label et la couleur de catégorie
+    const getCategoryDisplay = (category) => {
+        // Jaune pour civil/commercial/social/pénal, bleu pour correctionnel
+        const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'PENAL'].includes(category);
+        const labels = {
+            'CIVIL': 'Civil',
+            'COMMERCIAL': 'Commercial',
+            'SOCIAL': 'Social',
+            'PENAL': 'Pénal',
+            'CORRECTIONNEL': 'Correctionnel'
+        };
+        return {
+            label: labels[category] || category,
+            isYellow
+        };
+    };
+
     const columns = [
-        { field: 'reference', headerName: 'Référence', width: 120 },
-        {
-            field: 'title',
-            headerName: 'Titre',
-            flex: 1.5,
-            minWidth: 200,
-            renderCell: (params) => (
-                <Typography
-                    variant="body2"
-                    onClick={() => navigate(`/documents?search=${encodeURIComponent(params.row.reference)}`)}
-                    sx={{ fontWeight: 600, cursor: 'pointer', color: 'primary.main', '&:hover': { textDecoration: 'underline' } }}
-                >
-                    {params.value}
-                </Typography>
-            )
-        },
+        { field: 'reference', headerName: 'Numéro dossier', width: 140 },
         {
             field: 'client_name',
             headerName: 'Client',
@@ -212,19 +231,28 @@ function Cases() {
             field: 'category',
             headerName: 'Catégorie',
             width: 130,
-            renderCell: (params) => (
-                <Chip
-                    label={params.value === 'CIVIL' ? 'Civil' : 'Correctionnel'}
-                    size="small"
-                    sx={{
-                        bgcolor: params.value === 'CIVIL' ? '#fff9c4' : '#e3f2fd',
-                        color: params.value === 'CIVIL' ? '#fbc02d' : '#1976d2',
-                        fontWeight: 'bold',
-                        border: '1px solid',
-                        borderColor: params.value === 'CIVIL' ? '#fbc02d' : '#1976d2'
-                    }}
-                />
-            )
+            renderCell: (params) => {
+                const { label, isYellow } = getCategoryDisplay(params.value);
+                return (
+                    <Chip
+                        label={label}
+                        size="small"
+                        sx={{
+                            bgcolor: isYellow ? '#fff9c4' : '#e3f2fd',
+                            color: isYellow ? '#fbc02d' : '#1976d2',
+                            fontWeight: 'bold',
+                            border: '1px solid',
+                            borderColor: isYellow ? '#fbc02d' : '#1976d2'
+                        }}
+                    />
+                );
+            }
+        },
+        {
+            field: 'adverse_party',
+            headerName: 'Partie adverse',
+            flex: 1,
+            minWidth: 150
         },
         {
             field: 'status',
@@ -253,7 +281,8 @@ function Cases() {
 
     const totalCases = cases.length;
     const openCases = cases.filter(c => c.status === 'OUVERT').length;
-    const civilCases = cases.filter(c => c.category === 'CIVIL').length;
+    // Dossiers civils = civil + commercial + social + pénal (jaune)
+    const civilCases = cases.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'PENAL'].includes(c.category)).length;
     const correctionalCases = cases.filter(c => c.category === 'CORRECTIONNEL').length;
 
     const [filterMode, setFilterMode] = useState('ALL');
@@ -278,7 +307,8 @@ function Cases() {
         if (filterMode === 'OUVERT') {
             base = base.filter(c => c.status === 'OUVERT');
         } else if (filterMode === 'CIVIL') {
-            base = base.filter(c => c.category === 'CIVIL');
+            // Jaune = civil, commercial, social, pénal
+            base = base.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'PENAL'].includes(c.category));
         } else if (filterMode === 'CORRECTIONNEL') {
             base = base.filter(c => c.category === 'CORRECTIONNEL');
         }
@@ -322,9 +352,9 @@ function Cases() {
                 <Grid item xs={12} sm={6} md={3}>
                     <Box onClick={() => setFilterMode('CIVIL')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterMode === 'CIVIL' ? 1 : 0.6 }}>
                         <StatCard
-                            title="Dossiers civils"
+                            title="Civil/Commercial/Social/Pénal"
                             value={civilCases}
-                            icon={<FolderIcon color="warning" />}
+                            icon={<FolderIcon sx={{ color: '#fbc02d' }} />}
                             color="warning"
                             sx={{ border: filterMode === 'CIVIL' ? '2px solid' : 'none', borderColor: 'warning.main', borderRadius: 2 }}
                         />
@@ -333,7 +363,7 @@ function Cases() {
                 <Grid item xs={12} sm={6} md={3}>
                     <Box onClick={() => setFilterMode('CORRECTIONNEL')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterMode === 'CORRECTIONNEL' ? 1 : 0.6 }}>
                         <StatCard
-                            title="Dossiers correctionnels"
+                            title="Correctionnel"
                             value={correctionalCases}
                             icon={<FolderIcon color="info" />}
                             color="info"
@@ -378,9 +408,10 @@ function Cases() {
                 <DialogTitle>{currentCase ? 'Modifier le dossier' : 'Nouveau dossier'}</DialogTitle>
                 <DialogContent>
                     <Grid container spacing={2} sx={{ mt: 1 }}>
+                        {/* Colonne gauche */}
                         <Grid item xs={12} sm={6}>
                             <TextField
-                                label="Référence"
+                                label="Numéro dossier"
                                 fullWidth
                                 value={formData.reference}
                                 onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
@@ -388,17 +419,144 @@ function Cases() {
                                 placeholder={!currentCase ? "Auto-généré si vide" : ""}
                             />
                         </Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Titre" fullWidth value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Client" select fullWidth value={formData.client} onChange={(e) => setFormData({ ...formData, client: e.target.value })} required>{clients.map((c) => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}</TextField></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Catégorie" select fullWidth value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} required><MenuItem value="CIVIL">Civil</MenuItem><MenuItem value="CORRECTIONNEL">Correctionnel</MenuItem></TextField></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Référence (Numéro)" fullWidth value={formData.external_reference} onChange={(e) => setFormData({ ...formData, external_reference: e.target.value })} placeholder="ex: 1234, 6778" /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Partie représentée" fullWidth value={formData.represented_party} onChange={(e) => setFormData({ ...formData, represented_party: e.target.value })} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Partie adverse" fullWidth value={formData.adverse_party} onChange={(e) => setFormData({ ...formData, adverse_party: e.target.value })} /></Grid>
-                        <Grid item xs={12} sm={6}><TextField label="Avocat partie adverse" fullWidth value={formData.adverse_lawyer} onChange={(e) => setFormData({ ...formData, adverse_lawyer: e.target.value })} /></Grid>
-                        <Grid item xs={12}><TextField label="Description" fullWidth multiline rows={3} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} /></Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Catégorie"
+                                select
+                                fullWidth
+                                value={formData.category}
+                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                required
+                            >
+                                <MenuItem value="CIVIL">Civil</MenuItem>
+                                <MenuItem value="COMMERCIAL">Commercial</MenuItem>
+                                <MenuItem value="SOCIAL">Social</MenuItem>
+                                <MenuItem value="PENAL">Pénal</MenuItem>
+                                <MenuItem value="CORRECTIONNEL">Correctionnel</MenuItem>
+                            </TextField>
+                        </Grid>
+
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Client"
+                                select
+                                fullWidth
+                                value={formData.client}
+                                onChange={(e) => setFormData({ ...formData, client: e.target.value })}
+                                required
+                            >
+                                {clients.map((c) => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
+                            </TextField>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Partie adverse"
+                                fullWidth
+                                value={formData.adverse_party}
+                                onChange={(e) => setFormData({ ...formData, adverse_party: e.target.value })}
+                            />
+                        </Grid>
+
+                        {/* Personne à contacter */}
+                        <Grid item xs={12}>
+                            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: 'text.secondary' }}>
+                                Personne à contacter
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                            <TextField
+                                label="Nom du contact"
+                                fullWidth
+                                value={formData.contact_name}
+                                onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
+                                placeholder="Nom de la personne à contacter"
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                            <TextField
+                                label="Email du contact"
+                                fullWidth
+                                type="email"
+                                value={formData.contact_email}
+                                onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                                placeholder="email@exemple.com"
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                            <TextField
+                                label="Téléphone du contact"
+                                fullWidth
+                                value={formData.contact_phone}
+                                onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
+                                placeholder="+221 77 XXX XX XX"
+                            />
+                        </Grid>
+
+                        {/* Avocats à mes côtés */}
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Avocats à mes côtés"
+                                fullWidth
+                                multiline
+                                rows={2}
+                                value={formData.our_lawyers}
+                                onChange={(e) => setFormData({ ...formData, our_lawyers: e.target.value })}
+                                placeholder="Noms des avocats collaborant sur ce dossier"
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Avocat(s) partie adverse"
+                                fullWidth
+                                multiline
+                                rows={2}
+                                value={formData.adverse_lawyer}
+                                onChange={(e) => setFormData({ ...formData, adverse_lawyer: e.target.value })}
+                                placeholder="Avocat(s) de la partie adverse"
+                            />
+                        </Grid>
+
+                        {/* Description */}
+                        <Grid item xs={12}>
+                            <TextField
+                                label="Description"
+                                fullWidth
+                                multiline
+                                rows={3}
+                                value={formData.description}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            />
+                        </Grid>
+
+                        {/* Honoraires - visible uniquement par l'administrateur */}
+                        {isAdmin && (
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Honoraires"
+                                    fullWidth
+                                    multiline
+                                    rows={2}
+                                    value={formData.fees}
+                                    onChange={(e) => setFormData({ ...formData, fees: e.target.value })}
+                                    placeholder="Montant des honoraires et conditions"
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            bgcolor: 'rgba(255, 193, 7, 0.05)',
+                                            '& fieldset': {
+                                                borderColor: 'warning.main'
+                                            }
+                                        }
+                                    }}
+                                    helperText="Visible uniquement par les administrateurs"
+                                />
+                            </Grid>
+                        )}
                     </Grid>
                 </DialogContent>
-                <DialogActions><Button onClick={handleCloseDialog}>Annuler</Button><Button onClick={handleSubmit} variant="contained">Enregistrer</Button></DialogActions>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog}>Annuler</Button>
+                    <Button onClick={handleSubmit} variant="contained">Enregistrer</Button>
+                </DialogActions>
             </Dialog>
 
             <DeleteConfirmDialog

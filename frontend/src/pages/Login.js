@@ -77,7 +77,7 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
         {
             id: 'demo3',
             name: "M. Augustin François NDAO",
-            role: "Juriste Interne / Collaborateur",
+            role: "Juriste Interne",
             photo: "/images/team/augustin_ndao.jpg",
             email: "francoisndao@gmail.com",
             linkedin_url: "https://www.linkedin.com/in/augustin-f-ndao/"
@@ -86,7 +86,7 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
             id: 'demo4',
             name: "M. Médoune MBENGUE",
             role: "Clerc principal et secrétaire général",
-            photo: "/images/team/medoune_mbengue_v2.png",
+            photo: "/images/team/medoune_mbengue_v3.jpg",
             email: "medounembengue111@icloud.com"
         }
     ];

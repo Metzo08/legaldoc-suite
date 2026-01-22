@@ -77,6 +77,9 @@ class Case(models.Model):
     
     class CaseCategory(models.TextChoices):
         CIVIL = 'CIVIL', 'Civil'
+        COMMERCIAL = 'COMMERCIAL', 'Commercial'
+        SOCIAL = 'SOCIAL', 'Social'
+        PENAL = 'PENAL', 'Pénal'
         CORRECTIONNEL = 'CORRECTIONNEL', 'Correctionnel'
     
     title = models.CharField(max_length=255, verbose_name='Intitulé de l\'affaire')
@@ -116,8 +119,19 @@ class Case(models.Model):
     # Nouveaux champs demandés
     represented_party = models.CharField(max_length=255, blank=True, verbose_name='Partie représentée')
     adverse_party = models.CharField(max_length=255, blank=True, verbose_name='Partie adverse')
-    adverse_lawyer = models.CharField(max_length=255, blank=True, verbose_name='Avocat adverse')
+    adverse_lawyer = models.TextField(blank=True, verbose_name='Avocat(s) partie adverse')
     external_reference = models.CharField(max_length=100, blank=True, verbose_name='Référence (Numéro)')
+    
+    # Personne à contacter
+    contact_name = models.CharField(max_length=255, blank=True, verbose_name='Nom du contact')
+    contact_email = models.EmailField(blank=True, verbose_name='Email du contact')
+    contact_phone = models.CharField(max_length=20, blank=True, verbose_name='Téléphone du contact')
+    
+    # Avocats à mes côtés
+    our_lawyers = models.TextField(blank=True, verbose_name='Avocats à mes côtés')
+    
+    # Honoraires (visible uniquement par l'administrateur)
+    fees = models.TextField(blank=True, verbose_name='Honoraires')
     parent_case = models.ForeignKey(
         'self',
         on_delete=models.SET_NULL,
@@ -162,7 +176,15 @@ class Case(models.Model):
         Format sous-dossier : CIV1234.1 (Réf Principal + . + incrément)
         """
         if not self.reference:
-            prefix = 'CIV' if self.category == 'CIVIL' else 'COR'
+            # Préfixes par catégorie: jaune (CIV/COM/SOC/PEN) et bleu (COR)
+            prefix_map = {
+                'CIVIL': 'CIV',
+                'COMMERCIAL': 'COM',
+                'SOCIAL': 'SOC',
+                'PENAL': 'PEN',
+                'CORRECTIONNEL': 'COR'
+            }
+            prefix = prefix_map.get(self.category, 'CIV')
             
             # 1. Vérifier si le client a déjà un dossier "principal" dans cette catégorie
             # Un dossier principal est celui qui n'a pas de parent_case ou qui est le premier créé.

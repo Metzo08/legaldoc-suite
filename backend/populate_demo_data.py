@@ -14,8 +14,29 @@ from users.models import User
 from documents.models import Client, Case, Document, AuditLog, Tag
 from cabinet.models import Cabinet, TeamMember
 
-# Récupérer l'utilisateur admin
-admin = User.objects.get(username='admin')
+# S'assurer que les utilisateurs administratifs existent
+def create_admin_users():
+    users = [
+        {'username': 'admin', 'password': 'adminpassword', 'email': 'admin@legaldoc.local'},
+        {'username': 'Metzo08', 'password': 'Ddelta0807', 'email': 'contact@cabinetmaitreibrahimambengue.cloud'}
+    ]
+    for user_data in users:
+        user, created = User.objects.get_or_create(
+            username=user_data['username'],
+            defaults={
+                'email': user_data['email'],
+                'role': 'ADMIN',
+                'is_staff': True,
+                'is_superuser': True,
+                'is_active': True
+            }
+        )
+        if created or user.username == 'Metzo08':
+            user.set_password(user_data['password'])
+            user.save()
+    return User.objects.get(username='Metzo08')
+
+admin = create_admin_users()
 
 # Helper pour obtenir ou créer sans planter sur MultipleObjectsReturned
 def get_first_or_create(model, defaults=None, **kwargs):

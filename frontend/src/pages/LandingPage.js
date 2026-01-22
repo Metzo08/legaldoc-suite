@@ -56,12 +56,11 @@ function LandingPage() {
     const demoCabinet = {
         name: "CABINET DE MAITRE IBRAHIMA MBENGUE",
         description: "L'excellence juridique au cœur de Dakar. Un cabinet de référence alliant rigueur, dévouement et expertise stratégique pour la défense de vos intérêts et l'accompagnement de vos ambitions.",
-        address: "35 bis, Avenue Malick SY\nDakar - Sénégal\nB.P: 14887 Dakar Peytavin",
+        address: "35, Avenue Malick SY\nBP: 14887 Dakar Peytavin\nDakar - Sénégal",
         phone: "(+221) 33 821 97 97",
-        fax: "(00221) 33-821-97-97",
         cel: "(00221) 77.633.88.81",
         email: "maitreimbengue@gmail.com",
-        opening_hours: "Lundi - Vendredi : 09h00 - 17h00\nRéception des clients : Lundi - Jeudi : 15h00 - 17h00",
+        opening_hours: "Lundi au Jeudi : 09h00 - 17h00\nRéception des clients : Lundi au Jeudi : 15h00 - 17h00",
         primary_color: "#1a237e", // Deep Blue professional
         secondary_color: "#c2185b" // Elegant accented red/pink
     };
@@ -123,7 +122,7 @@ function LandingPage() {
         {
             id: 'member2',
             name: "M. Augustin François NDAO",
-            role: "Juriste Interne / Collaborateur",
+            role: "Juriste Interne",
             biography: "Juriste interne spécialisé en droit des Affaires. Certifié informatique et internet par FORCE-N Sénégal.",
             photo: "/images/team/augustin_ndao.jpg",
             email: "francoisndao@gmail.com",
@@ -134,7 +133,7 @@ function LandingPage() {
             name: "M. Médoune MBENGUE",
             role: "Clerc principal et secrétaire général",
             biography: "M. Médoune Mbengue apporte une expertise solide au cabinet, fort de 15 ans d'expérience en tant que clerc principal. Il assure également, avec rigueur et dévouement, les fonctions stratégiques de secrétaire général.",
-            photo: "/images/team/medoune_mbengue_v2.png",
+            photo: "/images/team/medoune_mbengue_v3.jpg",
             email: "medounembengue111@icloud.com"
         }
     ];
@@ -537,17 +536,7 @@ function LandingPage() {
                                             </Box>
                                         </Paper>
                                     </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                        <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
-                                            <Avatar size="small" sx={{ bgcolor: alpha(secondaryColor.startsWith('#') ? secondaryColor : '#c29b61', 0.1), color: secondaryColor }}>
-                                                <PrintIcon />
-                                            </Avatar>
-                                            <Box>
-                                                <Typography variant="caption" fontWeight="800" sx={{ color: '#4c6180', display: 'block' }}>Fax</Typography>
-                                                <Typography variant="body2" sx={{ color: '#00255c', fontWeight: 700 }}>{fax}</Typography>
-                                            </Box>
-                                        </Paper>
-                                    </Grid>
+
                                     <Grid item xs={12} sm={6}>
                                         <Paper elevation={0} sx={{
                                             p: 2,
@@ -613,7 +602,7 @@ function LandingPage() {
                             }}>
                                 <iframe
                                     title="Localisation Cabinet Mbengue"
-                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3859.3491974753554!2d-17.444747!3d14.664483!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xec1724627d35501!2s35%20Av.%20Malick%20Sy%2C%20Dakar%2010500%2C%20S%C3%A9n%C3%A9gal!5e0!3m2!1sfr!2sfr!4v1715632512345!5m2!1sfr!2sfr"
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3859.213238612!2d-17.4501382!3d14.6766894!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xec1737c7160d643%3A0xbabdee0b3635e123!2sCabinet%20maitre%20Ibrahima%20MBENGUE!5e0!3m2!1sfr!2sfr!4v1737157600000!5m2!1sfr!2sfr"
                                     width="100%"
                                     height="100%"
                                     style={{ border: 0 }}
