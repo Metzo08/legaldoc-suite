@@ -387,7 +387,7 @@ team_data = [
         "name": "M. Médoune MBENGUE",
         "role": "Clerc principal et secrétaire général",
         "biography": "M. Médoune Mbengue apporte une expertise solide au cabinet, fort de 15 ans d'expérience en tant que clerc principal. Il assure également, avec rigueur et dévouement, les fonctions stratégiques de secrétaire général.",
-        "photo": "cabinet/team/medoune_mbengue_v2.png",
+        "photo": "cabinet/team/medoune_mbengue_v3.jpg",
         "email": "medounembengue111@icloud.com",
         "order": 4
     }

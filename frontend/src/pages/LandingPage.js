@@ -61,8 +61,8 @@ function LandingPage() {
         cel: "(00221) 77.633.88.81",
         email: "maitreimbengue@gmail.com",
         opening_hours: "Lundi au Jeudi : 09h00 - 17h00\nRéception des clients : Lundi au Jeudi : 15h00 - 17h00",
-        primary_color: "#1a237e", // Deep Blue professional
-        secondary_color: "#c2185b" // Elegant accented red/pink
+        primary_color: "#0f172a", // Navy sombre premium
+        secondary_color: "#c29b61" // Bronze Or prestige
     };
 
     // MODE DYNAMIQUE (Utilise l'API, avec fallback sur démo si vide)
