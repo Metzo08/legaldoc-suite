@@ -14,6 +14,7 @@ const LandingPage = lazy(() => import('./pages/LandingPage'));
 const ClientDashboard = lazy(() => import('./pages/ClientDashboard'));
 const Clients = lazy(() => import('./pages/Clients'));
 const Cases = lazy(() => import('./pages/Cases'));
+const CaseDetail = lazy(() => import('./pages/CaseDetail'));
 const Documents = lazy(() => import('./pages/Documents'));
 const Search = lazy(() => import('./pages/Search'));
 const Users = lazy(() => import('./pages/Users'));
@@ -129,6 +130,7 @@ function App() {
                                                         } />
                                                         <Route path="/clients" element={<Clients />} />
                                                         <Route path="/cases" element={<Cases />} />
+                                                        <Route path="/cases/:id" element={<CaseDetail />} />
                                                         <Route path="/documents" element={<Documents />} />
                                                         <Route path="/audiences" element={<Audiences />} />
                                                         <Route path="/deadlines" element={<Deadlines />} />

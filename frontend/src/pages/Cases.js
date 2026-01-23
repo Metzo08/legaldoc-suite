@@ -26,7 +26,8 @@ import {
     Edit as EditIcon,
     Delete as DeleteIcon,
     Folder as FolderIcon,
-    CloudUpload as UploadIcon
+    CloudUpload as UploadIcon,
+    Visibility as ViewIcon
 } from '@mui/icons-material';
 import { casesAPI, clientsAPI } from '../services/api';
 import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
@@ -211,6 +212,18 @@ function Cases() {
     };
 
     const columns = [
+        {
+            field: 'actions',
+            type: 'actions',
+            headerName: 'Actions',
+            width: 160,
+            getActions: (params) => [
+                <GridActionsCellItem icon={<ViewIcon color="primary" />} label="Détails" onClick={() => navigate(`/cases/${params.id}`)} />,
+                <GridActionsCellItem icon={<UploadIcon color="info" />} label="Ajouter un document" onClick={() => navigate(`/documents?caseId=${params.id}&new=true`)} />,
+                <GridActionsCellItem icon={<EditIcon />} label="Modifier" onClick={() => handleOpenDialog(params.row)} color="primary" />,
+                <GridActionsCellItem icon={<DeleteIcon />} label="Supprimer" onClick={() => handleDeleteClick(params.row)} color="error" />,
+            ],
+        },
         { field: 'reference', headerName: 'Numéro dossier', width: 140 },
         {
             field: 'client_name',
@@ -265,17 +278,6 @@ function Cases() {
                     size="small"
                 />
             )
-        },
-        {
-            field: 'actions',
-            type: 'actions',
-            headerName: 'Actions',
-            width: 100,
-            getActions: (params) => [
-                <GridActionsCellItem icon={<UploadIcon color="info" />} label="Ajouter un document" onClick={() => navigate(`/documents?caseId=${params.id}&new=true`)} />,
-                <GridActionsCellItem icon={<EditIcon />} label="Modifier" onClick={() => handleOpenDialog(params.row)} color="primary" />,
-                <GridActionsCellItem icon={<DeleteIcon />} label="Supprimer" onClick={() => handleDeleteClick(params.row)} color="error" />,
-            ],
         },
     ];
 

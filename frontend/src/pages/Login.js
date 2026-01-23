@@ -38,7 +38,7 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
 
         // Use the same dynamic logic as apiClient/authService
         const apiBase = process.env.REACT_APP_API_URL ||
-            (['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:8000/api' : '/api');
+            (['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:8001/api' : '/api');
         const backendBase = apiBase.replace('/api', '');
 
         // Fix: Prepend /media/ if missing for backend paths
@@ -293,7 +293,7 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
                             </CardContent>
                             <Box sx={{ pb: 3, textAlign: 'center' }}>
                                 <Button color="secondary" onClick={() => navigate('/')} sx={{ textTransform: 'none' }}>← Retour au site vitrine</Button>
-                                <Typography variant="caption" sx={{ display: 'block', mt: 1, opacity: 0.5 }}>
+                                <Typography variant="caption" sx={{ display: 'block', mt: 1, opacity: 1, fontWeight: 'bold' }}>
                                     version {APP_VERSION}
                                 </Typography>
                             </Box>

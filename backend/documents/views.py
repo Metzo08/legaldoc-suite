@@ -748,7 +748,11 @@ class DiligenceViewSet(viewsets.ModelViewSet):
         """
         Retourne seulement les diligences créées par l'utilisateur connecté.
         """
-        return Diligence.objects.filter(created_by=self.request.user).select_related('case')
+        queryset = Diligence.objects.filter(created_by=self.request.user).select_related('case')
+        case_id = self.request.query_params.get('case', None)
+        if case_id:
+            queryset = queryset.filter(case_id=case_id)
+        return queryset
 
     def perform_create(self, serializer):
         """

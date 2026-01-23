@@ -6,7 +6,9 @@ import {
     Button,
     Typography,
     Grid,
-    Chip
+    Chip,
+    Tabs,
+    Tab
 } from '@mui/material';
 import {
     DataGrid,
@@ -21,12 +23,15 @@ import {
     Person as UserIcon,
     AdminPanelSettings as AdminIcon,
     ToggleOn as ActiveIcon,
-    ToggleOff as InactiveIcon
+    ToggleOff as InactiveIcon,
+    Security as SecurityIcon
 } from '@mui/icons-material';
 import { usersAPI } from '../services/api';
 import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
 import StatCard from '../components/StatCard';
 import UserDialog from '../components/UserDialog';
+import RolePermissionsTable from '../components/RolePermissionsTable';
+import authService from '../services/authService';
 
 function Users() {
     const { showNotification } = useNotification();
@@ -42,6 +47,12 @@ function Users() {
 
     // État pour le filtrage
     const [filterRole, setFilterRole] = useState('ALL');
+
+    // État pour les onglets
+    const [tabValue, setTabValue] = useState(0);
+
+    const currentUser = authService.getCurrentUser();
+    const isAdmin = currentUser?.role === 'ADMIN';
 
     const loadData = useCallback(async () => {
         try {
@@ -213,6 +224,7 @@ function Users() {
                     label={params.row.is_active ? "Désactiver" : "Activer"}
                     onClick={() => handleToggleStatus(params.row)}
                     color="warning"
+                    disabled={!isAdmin && params.row.role === 'ADMIN'}
                 />,
                 <GridActionsCellItem
                     icon={<DeleteIcon />}
@@ -246,12 +258,13 @@ function Users() {
             }}>
                 <Box>
                     <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>
-                        Utilisateurs
+                        Utilisateurs & Rôles
                     </Typography>
                     <Typography variant="body1" color="text.secondary">
-                        Gérez les membres de votre cabinet et leurs accès.
+                        Gérez les membres de votre cabinet, leurs accès et leurs permissions.
                     </Typography>
                 </Box>
+                {/* Seul l'admin peut ajouter des utilisateurs directement */}
                 <Button
                     variant="contained"
                     startIcon={<AddIcon />}
@@ -262,77 +275,101 @@ function Users() {
                 </Button>
             </Box>
 
-            {/* Summary Cards */}
-            <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} sm={4}>
-                    <Box onClick={() => setFilterRole('ALL')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterRole === 'ALL' ? 1 : 0.6 }}>
-                        <StatCard
-                            title="Total utilisateurs"
-                            value={totalUsers}
-                            icon={<UserIcon color="primary" />}
-                            color="primary"
-                            sx={{ border: filterRole === 'ALL' ? '2px solid' : 'none', borderColor: 'primary.main', borderRadius: 2 }}
-                        />
-                    </Box>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                    <Box onClick={() => setFilterRole('ACTIVE')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterRole === 'ACTIVE' ? 1 : 0.6 }}>
-                        <StatCard
-                            title="Membres actifs"
-                            value={activeUsersCount}
-                            icon={<ActiveIcon color="success" />}
-                            color="success"
-                            sx={{ border: filterRole === 'ACTIVE' ? '2px solid' : 'none', borderColor: 'success.main', borderRadius: 2 }}
-                        />
-                    </Box>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                    <Box onClick={() => setFilterRole('ADMIN')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterRole === 'ADMIN' ? 1 : 0.6 }}>
-                        <StatCard
-                            title="Administrateurs"
-                            value={adminUsersCount}
-                            icon={<AdminIcon color="error" />}
-                            color="error"
-                            sx={{ border: filterRole === 'ADMIN' ? '2px solid' : 'none', borderColor: 'error.main', borderRadius: 2 }}
-                        />
-                    </Box>
-                </Grid>
-            </Grid>
-
-
-            <Paper sx={{ height: 600, width: '100%', borderRadius: 3, overflow: 'hidden', boxShadow: 3 }}>
-                <DataGrid
-                    rows={filteredUsers}
-                    columns={columns}
-                    loading={loading}
-                    initialState={{
-                        pagination: {
-                            paginationModel: { page: 0, pageSize: 10 },
-                        },
-                    }}
-                    pageSizeOptions={[10, 25, 50]}
-                    disableRowSelectionOnClick
-                    slots={{ toolbar: GridToolbar }}
-                    slotProps={{
-                        toolbar: {
-                            showQuickFilter: true,
-                            quickFilterProps: { debounceMs: 500 },
-                        },
-                    }}
-                    localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
-                    sx={{
-                        border: 0,
-                        '& .MuiDataGrid-columnHeaders': {
-                            backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'background.paper' : '#f8fafc',
-                            color: 'text.primary',
-                            fontWeight: 700,
-                        },
-                        '& .MuiDataGrid-row:hover': {
-                            backgroundColor: 'action.hover',
-                        }
-                    }}
-                />
+            {/* Onglets de navigation */}
+            <Paper sx={{ mb: 3, borderRadius: 2 }}>
+                <Tabs
+                    value={tabValue}
+                    onChange={(e, v) => setTabValue(v)}
+                    indicatorColor="primary"
+                    textColor="primary"
+                    sx={{ px: 2 }}
+                >
+                    <Tab label="Liste des Utilisateurs" icon={<UserIcon />} iconPosition="start" />
+                    <Tab label="Gestion des Permissions" icon={<SecurityIcon />} iconPosition="start" />
+                </Tabs>
             </Paper>
+
+            {/* Contenu - Onglet Utilisateurs */}
+            {tabValue === 0 && (
+                <>
+                    {/* Summary Cards */}
+                    <Grid container spacing={3} sx={{ mb: 4 }}>
+                        <Grid item xs={12} sm={4}>
+                            <Box onClick={() => setFilterRole('ALL')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterRole === 'ALL' ? 1 : 0.6 }}>
+                                <StatCard
+                                    title="Total utilisateurs"
+                                    value={totalUsers}
+                                    icon={<UserIcon color="primary" />}
+                                    color="primary"
+                                    sx={{ border: filterRole === 'ALL' ? '2px solid' : 'none', borderColor: 'primary.main', borderRadius: 2 }}
+                                />
+                            </Box>
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                            <Box onClick={() => setFilterRole('ACTIVE')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterRole === 'ACTIVE' ? 1 : 0.6 }}>
+                                <StatCard
+                                    title="Membres actifs"
+                                    value={activeUsersCount}
+                                    icon={<ActiveIcon color="success" />}
+                                    color="success"
+                                    sx={{ border: filterRole === 'ACTIVE' ? '2px solid' : 'none', borderColor: 'success.main', borderRadius: 2 }}
+                                />
+                            </Box>
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                            <Box onClick={() => setFilterRole('ADMIN')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterRole === 'ADMIN' ? 1 : 0.6 }}>
+                                <StatCard
+                                    title="Administrateurs"
+                                    value={adminUsersCount}
+                                    icon={<AdminIcon color="error" />}
+                                    color="error"
+                                    sx={{ border: filterRole === 'ADMIN' ? '2px solid' : 'none', borderColor: 'error.main', borderRadius: 2 }}
+                                />
+                            </Box>
+                        </Grid>
+                    </Grid>
+
+
+                    <Paper sx={{ height: 600, width: '100%', borderRadius: 3, overflow: 'hidden', boxShadow: 3 }}>
+                        <DataGrid
+                            rows={filteredUsers}
+                            columns={columns}
+                            loading={loading}
+                            initialState={{
+                                pagination: {
+                                    paginationModel: { page: 0, pageSize: 10 },
+                                },
+                            }}
+                            pageSizeOptions={[10, 25, 50]}
+                            disableRowSelectionOnClick
+                            slots={{ toolbar: GridToolbar }}
+                            slotProps={{
+                                toolbar: {
+                                    showQuickFilter: true,
+                                    quickFilterProps: { debounceMs: 500 },
+                                },
+                            }}
+                            localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
+                            sx={{
+                                border: 0,
+                                '& .MuiDataGrid-columnHeaders': {
+                                    backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'background.paper' : '#f8fafc',
+                                    color: 'text.primary',
+                                    fontWeight: 700,
+                                },
+                                '& .MuiDataGrid-row:hover': {
+                                    backgroundColor: 'action.hover',
+                                }
+                            }}
+                        />
+                    </Paper>
+                </>
+            )}
+
+            {/* Contenu - Onglet Permissions */}
+            {tabValue === 1 && (
+                <RolePermissionsTable />
+            )}
 
             <UserDialog
                 open={dialogOpen}

@@ -53,7 +53,9 @@ export const usersAPI = {
     delete: (id) => apiClient.delete(`/users/${id}/`),
     setup2FA: () => apiClient.post('/users/setup_2fa/'),
     confirm2FA: (data) => apiClient.post('/users/confirm_2fa/', data),
-    disable2FA: (data) => apiClient.post('/users/disable_2fa/', data)
+    disable2FA: (data) => apiClient.post('/users/disable_2fa/', data),
+    getRolePermissions: () => apiClient.get('/users/roles/'),
+    updateRolePermissions: (role, data) => apiClient.patch(`/users/roles/${role}/`, data)
 };
 
 // API Audit Logs
@@ -123,7 +125,7 @@ export const notificationsAPI = {
 };
 
 export const diligencesAPI = {
-    getAll: () => apiClient.get('/documents/diligences/'),
+    getAll: (params) => apiClient.get('/documents/diligences/', { params }),
     create: (data) => apiClient.post('/documents/diligences/', data),
     update: (id, data) => apiClient.patch(`/documents/diligences/${id}/`, data),
     delete: (id) => apiClient.delete(`/documents/diligences/${id}/`)

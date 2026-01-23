@@ -14,8 +14,14 @@ from .serializers import (
     UserUpdateSerializer,
     ChangePasswordSerializer,
     CustomTokenObtainPairSerializer,
+    UserCreateSerializer, 
+    UserUpdateSerializer,
+    ChangePasswordSerializer,
+    CustomTokenObtainPairSerializer,
     VerifyOTPSerializer
 )
+from .role_serializers import RolePermissionSerializer
+from .models import RolePermission
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 import pyotp
@@ -231,7 +237,77 @@ class UserViewSet(viewsets.ModelViewSet):
         if not user.check_password(password):
             return Response({'password': 'Mot de passe incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
             
-        user.two_factor_enabled = False
-        user.two_factor_secret = None
-        user.save()
-        return Response({'detail': '2FA désactivée avec succès.'})
+class RolePermissionViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet pour gérer les permissions par rôle.
+    Seul l'admin peut modifier.
+    """
+    queryset = RolePermission.objects.all()
+    serializer_class = RolePermissionSerializer
+    permission_classes = [IsAuthenticated, IsAdminRole]
+
+    @action(detail=False, methods=['POST'], url_path='init-defaults')
+    def init_defaults(self, request):
+        """Initialise les permissions par défaut si elles n'existent pas."""
+        defaults = {
+            'ADMIN': {
+                'can_manage_users': True,
+                'can_view_fees': True,
+                'can_manage_cases': True,
+                'can_delete_cases': True,
+                'can_manage_documents': True, # Tout voir et modifier
+                'can_delete_documents': True,
+                'can_view_dashboard_stats': True,
+                'can_access_audit_log': True
+            },
+            'AVOCAT': {
+                'can_manage_users': False,
+                'can_view_fees': True,
+                'can_manage_cases': True,
+                'can_delete_cases': False,
+                'can_manage_documents': True,
+                'can_delete_documents': True,
+                'can_view_dashboard_stats': True,
+                'can_access_audit_log': False
+            },
+            'COLLABORATEUR': {
+                'can_manage_users': False,
+                'can_view_fees': False, # Par défaut masqué
+                'can_manage_cases': True,
+                'can_delete_cases': False,
+                'can_manage_documents': True,
+                'can_delete_documents': False,
+                'can_view_dashboard_stats': False,
+                'can_access_audit_log': False
+            },
+            'SECRETAIRE': {
+                'can_manage_users': False,
+                'can_view_fees': False,
+                'can_manage_cases': True, # Peut créer/modifier dossiers
+                'can_delete_cases': False,
+                'can_manage_documents': True, # Peut ajouter docs
+                'can_delete_documents': False,
+                'can_view_dashboard_stats': False,
+                'can_access_audit_log': False
+            },
+            'CLIENT': {
+                'can_manage_users': False,
+                'can_view_fees': False,
+                'can_manage_cases': False, # Lecture seule
+                'can_delete_cases': False,
+                'can_manage_documents': False, # Lecture seule
+                'can_delete_documents': False,
+                'can_view_dashboard_stats': False,
+                'can_access_audit_log': False
+            }
+        }
+
+        created_count = 0
+        for role, perms in defaults.items():
+            obj, created = RolePermission.objects.get_or_create(role=role)
+            if created or not obj.permissions:
+                obj.permissions = perms
+                obj.save()
+                created_count += 1
+        
+        return Response({'detail': f'{created_count} rôles initialisés.'})
