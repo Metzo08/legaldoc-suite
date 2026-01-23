@@ -75,6 +75,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./frontend/public/images:/var/www/frontend_images:ro
       - static_files:/var/www/static:ro
       - media_files:/var/www/media:ro
       - ./certbot/conf:/etc/letsencrypt
