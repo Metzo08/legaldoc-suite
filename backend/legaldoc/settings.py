@@ -19,6 +19,7 @@ ALLOWED_HOSTS = ['*'] # Autoriser tout pour résoudre le 400 Bad Request sur le 
 # CSRF & CORS Settings
 CORS_ALLOWED_ORIGINS = [o.strip() for o in config('CORS_ALLOWED_ORIGINS', default='http://localhost:3000,http://127.0.0.1:3000,http://82.29.168.215,http://cabinetmaitreibrahimambengue.cloud,https://cabinetmaitreibrahimambengue.cloud').split(',') if o.strip()]
 CSRF_TRUSTED_ORIGINS = [o for o in CORS_ALLOWED_ORIGINS if o.startswith('http')]
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Applications installées
 INSTALLED_APPS = [
