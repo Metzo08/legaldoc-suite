@@ -109,7 +109,8 @@ function Dashboard() {
                 tags: tagsRes.data.count || tagsRes.data.length
             });
 
-            const civilCases = allCasesData.filter(c => c.category === 'CIVIL');
+            // Groupe Civil & Autres (Civil, Commercial, Social, Pénal)
+            const civilCases = allCasesData.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'PENAL'].includes(c.category));
             const correctionnelCases = allCasesData.filter(c => c.category === 'CORRECTIONNEL');
             setCasesByCategory({
                 civil: civilCases.length,
@@ -166,14 +167,59 @@ function Dashboard() {
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                    <StatCard
-                        title="Dossiers"
-                        value={stats.cases}
-                        icon={<FolderIcon />}
-                        color="secondary"
-                        secondaryValue={`${casesByCategory.civil} Civil / ${casesByCategory.correctionnel} Corr.`}
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            height: '100%',
+                            p: 3,
+                            borderRadius: 4,
+                            border: '1px solid',
+                            borderColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                            transition: 'all 0.3s',
+                            cursor: 'pointer',
+                            '&:hover': {
+                                transform: 'translateY(-4px)',
+                                boxShadow: (theme) => theme.palette.mode === 'dark' ? '0 12px 24px -10px rgba(0,0,0,0.5)' : '0 12px 24px -10px rgba(0,0,0,0.1)'
+                            },
+                            position: 'relative',
+                            overflow: 'hidden'
+                        }}
                         onClick={() => navigate('/cases')}
-                    />
+                    >
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                            <Box sx={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', width: 48, height: 48, borderRadius: 3,
+                                bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.1),
+                                color: 'secondary.main'
+                            }}>
+                                <FolderIcon fontSize="medium" />
+                            </Box>
+                        </Box>
+
+                        <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, mb: 0.5 }}>Dossiers</Typography>
+                        <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.02em', mb: 2 }}>{stats.cases}</Typography>
+
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                            <Chip
+                                label={`Civil & Autres: ${casesByCategory.civil}`}
+                                size="small"
+                                onClick={(e) => { e.stopPropagation(); navigate('/cases?filter=CIVIL'); }}
+                                sx={{
+                                    bgcolor: '#fff9c4', color: '#fbc02d', fontWeight: 800, border: '1px solid #fbc02d',
+                                    '&:hover': { bgcolor: '#fff59d' }
+                                }}
+                            />
+                            <Chip
+                                label={`Correctionnel: ${casesByCategory.correctionnel}`}
+                                size="small"
+                                onClick={(e) => { e.stopPropagation(); navigate('/cases?filter=CORRECTIONNEL'); }}
+                                sx={{
+                                    bgcolor: '#e3f2fd', color: '#1976d2', fontWeight: 800, border: '1px solid #1976d2',
+                                    '&:hover': { bgcolor: '#bbdefb' }
+                                }}
+                            />
+                        </Box>
+                    </Paper>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <StatCard

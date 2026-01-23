@@ -318,6 +318,14 @@ function Cases() {
         return base;
     }, [cases, filterMode]);
 
+    // Initialiser le filtre depuis l'URL si présent
+    useEffect(() => {
+        const filterParam = searchParams.get('filter');
+        if (filterParam && ['OUVERT', 'CIVIL', 'CORRECTIONNEL'].includes(filterParam)) {
+            setFilterMode(filterParam);
+        }
+    }, [searchParams]);
+
     return (
         <Box sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -354,7 +362,7 @@ function Cases() {
                 <Grid item xs={12} sm={6} md={3}>
                     <Box onClick={() => setFilterMode('CIVIL')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterMode === 'CIVIL' ? 1 : 0.6 }}>
                         <StatCard
-                            title="Civil/Commercial/Social/Pénal"
+                            title="Civil & Autres"
                             value={civilCases}
                             icon={<FolderIcon sx={{ color: '#fbc02d' }} />}
                             color="warning"

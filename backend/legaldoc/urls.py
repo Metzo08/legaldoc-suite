@@ -8,8 +8,12 @@ from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenRefreshView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from users.views import CustomTokenObtainPairView
+from django.views.generic import RedirectView
 
 urlpatterns = [
+    # Redirection de la racine vers l'admin
+    path('', RedirectView.as_view(url='admin/', permanent=False)),
+    
     # Administration Django
     path('admin/', admin.site.urls),
     
