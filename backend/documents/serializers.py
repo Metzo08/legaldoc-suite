@@ -47,6 +47,13 @@ class CaseListSerializer(serializers.ModelSerializer):
             'contact_phone', 'our_lawyers', 'fees'
         )
     
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request = self.context.get('request')
+        if request and not (request.user.is_superuser or (hasattr(request.user, 'role') and request.user.role == 'ADMIN')):
+            representation.pop('fees', None)
+        return representation
+
     def get_assigned_to_names(self, obj):
         return [user.get_full_name() for user in obj.assigned_to.all()]
     
@@ -73,6 +80,13 @@ class CaseDetailSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
     
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request = self.context.get('request')
+        if request and not (request.user.is_superuser or (hasattr(request.user, 'role') and request.user.role == 'ADMIN')):
+            representation.pop('fees', None)
+        return representation
+
     def get_created_by_name(self, obj):
         return obj.created_by.get_full_name() if obj.created_by else None
 

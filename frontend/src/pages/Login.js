@@ -70,6 +70,7 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
     const logoUrl = cabinetInfo?.branding?.logo || null;
     const primaryColor = hasApiData ? (cabinetInfo.branding.primary_color || demoCabinet.primary_color) : demoCabinet.primary_color;
     const secondaryColor = hasApiData ? (cabinetInfo.branding.secondary_color || demoCabinet.secondary_color) : demoCabinet.secondary_color;
+    const APP_VERSION = "v1.2";
 
     // Fallback team
     const defaultTeam = [
@@ -292,6 +293,9 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
                             </CardContent>
                             <Box sx={{ pb: 3, textAlign: 'center' }}>
                                 <Button color="secondary" onClick={() => navigate('/')} sx={{ textTransform: 'none' }}>← Retour au site vitrine</Button>
+                                <Typography variant="caption" sx={{ display: 'block', mt: 1, opacity: 0.5 }}>
+                                    version {APP_VERSION}
+                                </Typography>
                             </Box>
                         </Card>
                     </Grid>

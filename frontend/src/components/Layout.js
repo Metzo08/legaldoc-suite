@@ -45,7 +45,7 @@ const drawerWidth = 260;
 
 const menuItems = [
     { text: 'Tableau de bord', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Clients', icon: <PeopleIcon />, path: '/clients', adminOnly: true, excludeClient: true },
+    { text: 'Clients', icon: <PeopleIcon />, path: '/clients' },
     { text: 'Dossiers', icon: <FolderIcon />, path: '/cases' },
     { text: 'Documents', icon: <DescriptionIcon />, path: '/documents' },
     { text: 'Échéances', icon: <EventIcon />, path: '/deadlines' },

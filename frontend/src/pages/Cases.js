@@ -42,7 +42,7 @@ function Cases() {
 
     // Vérifier si l'utilisateur est administrateur
     const currentUser = authService.getCurrentUser();
-    const isAdmin = currentUser?.is_staff || currentUser?.is_superuser || false;
+    const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.is_staff || currentUser?.is_superuser || false;
 
     const [cases, setCases] = useState([]);
     const [clients, setClients] = useState([]);
@@ -150,7 +150,7 @@ function Cases() {
         try {
             // Préparer les données à envoyer (exclure les honoraires si non-admin)
             const dataToSend = { ...formData };
-            if (!isAdmin) {
+            if (!(isAdmin || currentUser?.role === 'ADMIN')) {
                 delete dataToSend.fees;
             }
 
@@ -529,16 +529,16 @@ function Cases() {
                         </Grid>
 
                         {/* Honoraires - visible uniquement par l'administrateur */}
-                        {isAdmin && (
+                        {(isAdmin || currentUser?.role === 'ADMIN') && (
                             <Grid item xs={12}>
                                 <TextField
-                                    label="Honoraires"
+                                    label="Honoraires (FCFA)"
                                     fullWidth
                                     multiline
                                     rows={2}
                                     value={formData.fees}
                                     onChange={(e) => setFormData({ ...formData, fees: e.target.value })}
-                                    placeholder="Montant des honoraires et conditions"
+                                    placeholder="Montant des honoraires en Francs CFA"
                                     sx={{
                                         '& .MuiOutlinedInput-root': {
                                             bgcolor: 'rgba(255, 193, 7, 0.05)',
@@ -547,7 +547,7 @@ function Cases() {
                                             }
                                         }
                                     }}
-                                    helperText="Visible uniquement par les administrateurs"
+                                    helperText="Visible uniquement par l'administrateur"
                                 />
                             </Grid>
                         )}

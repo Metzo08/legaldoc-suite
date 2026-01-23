@@ -72,6 +72,12 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.get_full_name()} ({self.get_role_display()})"
     
+    def save(self, *args, **kwargs):
+        """Assure que les super-utilisateurs ont toujours le rôle ADMIN."""
+        if self.is_superuser and self.role != self.Role.ADMIN:
+            self.role = self.Role.ADMIN
+        super().save(*args, **kwargs)
+    
     @property
     def is_admin(self):
         """Vérifie si l'utilisateur est administrateur."""

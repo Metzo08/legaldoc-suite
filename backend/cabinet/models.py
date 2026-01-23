@@ -17,8 +17,8 @@ class Cabinet(models.Model):
         blank=True,
         validators=[FileExtensionValidator(['png', 'jpg', 'jpeg', 'svg'])]
     )
-    primary_color = models.CharField("Couleur principale", max_length=7, default="#6366f1", help_text="Format HEX (ex: #6366f1)")
-    secondary_color = models.CharField("Couleur secondaire", max_length=7, default="#ec4899", help_text="Format HEX (ex: #ec4899)")
+    primary_color = models.CharField("Couleur principale", max_length=7, default="#1a237e", help_text="Format HEX (ex: #1a237e)")
+    secondary_color = models.CharField("Couleur secondaire", max_length=7, default="#c2185b", help_text="Format HEX (ex: #c2185b)")
     
     # Contact
     address = models.TextField("Adresse", blank=True)

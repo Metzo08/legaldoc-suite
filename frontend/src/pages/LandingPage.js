@@ -41,7 +41,6 @@ function LandingPage() {
 
     const loadData = async () => {
         try {
-            // Only call public info which includes branding AND team
             const response = await cabinetAPI.getPublicInfo();
             setCabinet(response.data);
             setTeam(response.data.team || []);
@@ -52,7 +51,6 @@ function LandingPage() {
         }
     };
 
-    // DONNÉES DE DÉMONSTRATION (Vitrine réaliste)
     const demoCabinet = {
         name: "CABINET DE MAITRE IBRAHIMA MBENGUE",
         description: "L'excellence juridique au cœur de Dakar. Un cabinet de référence alliant rigueur, dévouement et expertise stratégique pour la défense de vos intérêts et l'accompagnement de vos ambitions.",
@@ -61,44 +59,35 @@ function LandingPage() {
         cel: "(00221) 77.633.88.81",
         email: "maitreimbengue@gmail.com",
         opening_hours: "Lundi au Jeudi : 09h00 - 17h00\nRéception des clients : Lundi au Jeudi : 15h00 - 17h00",
-        primary_color: "#0f172a", // Navy sombre premium
-        secondary_color: "#c29b61" // Bronze Or prestige
+        primary_color: "#1a237e",
+        secondary_color: "#c2185b"
     };
 
-    // MODE DYNAMIQUE (Utilise l'API, avec fallback sur démo si vide)
-    // Si l'API ne répond pas ou si le nom est 'Mon Cabinet' (valeur par défaut), utiliser les données de démo
     const apiName = cabinet?.branding?.name?.trim() || '';
     const isDefaultName = apiName === '' || apiName === 'Mon Cabinet';
     const hasApiData = !isDefaultName;
 
-    // Branding & Content - TOUJOURS utiliser demoCabinet si les données API sont absentes ou par défaut
     const name = hasApiData ? cabinet.branding.name : demoCabinet.name;
     const description = hasApiData ? (cabinet.branding.description || demoCabinet.description) : demoCabinet.description;
     const primaryColor = hasApiData ? (cabinet.branding.primary_color || demoCabinet.primary_color) : demoCabinet.primary_color;
     const secondaryColor = hasApiData ? (cabinet.branding.secondary_color || demoCabinet.secondary_color) : demoCabinet.secondary_color;
     const logoUrl = cabinet?.branding?.logo;
 
-    // Contact - TOUJOURS utiliser demoCabinet si les données API sont absentes ou vides
     const address = (hasApiData && cabinet?.contact?.address && cabinet.contact.address.trim() !== '' && !cabinet.contact.address.includes('non renseignée')) ? cabinet.contact.address : demoCabinet.address;
     const phone = (hasApiData && cabinet?.contact?.phone) ? cabinet.contact.phone : demoCabinet.phone;
-    const fax = (hasApiData && cabinet?.contact?.fax) ? cabinet.contact.fax : demoCabinet.fax;
     const cel = (hasApiData && cabinet?.contact?.cel) ? cabinet.contact.cel : demoCabinet.cel;
     const email = (hasApiData && cabinet?.contact?.email) ? cabinet.contact.email : demoCabinet.email;
     const openingHours = (hasApiData && cabinet?.contact?.opening_hours) ? cabinet.contact.opening_hours : demoCabinet.opening_hours;
 
-    // Helper to fix image URLs
     const getImageUrl = (path) => {
         if (!path) return null;
         if (path.startsWith('http')) return path;
-        // Local images in public folder (e.g., /images/team/...)
         if (path.startsWith('/images/')) return path;
 
-        // Use the same dynamic logic as apiClient/authService
         const apiBase = process.env.REACT_APP_API_URL ||
             (['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:8000/api' : '/api');
         const backendBase = apiBase.replace('/api', '');
 
-        // Fix: Prepend /media/ if missing for backend paths
         let finalPath = path;
         if (!path.startsWith('/media/') && !path.startsWith('media/')) {
             finalPath = `/media/${path.startsWith('/') ? path.substring(1) : path}`;
@@ -109,9 +98,6 @@ function LandingPage() {
         return `${backendBase}${finalPath}`;
     };
 
-    const displayLogoUrl = getImageUrl(logoUrl);
-
-    // Fusionner l'équipe de l'API avec les données de démonstration si nécessaire
     const defaultTeam = [
         {
             id: 'member1',
@@ -149,7 +135,6 @@ function LandingPage() {
         }
     ];
 
-    // JSON-LD LocalBusiness Data for SEO - Memorized to prevent infinite updates
     const jsonLdData = useMemo(() => ({
         "@context": "https://schema.org",
         "@type": "LegalService",
@@ -169,7 +154,6 @@ function LandingPage() {
         "priceRange": "$$"
     }), [name, description, phone, email, openingHours]);
 
-    // Use useEffect to inject JSON-LD into the head
     useEffect(() => {
         const scriptId = 'json-ld-local-business';
         let script = document.getElementById(scriptId);
@@ -210,13 +194,10 @@ function LandingPage() {
 
     return (
         <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-            {/* Header section... */}
-
-            {/* AppBar / Navigation */}
             <AppBar position="fixed" elevation={0} sx={{
-                bgcolor: primaryColor.startsWith('#') ? primaryColor : '#0f172a',
+                bgcolor: primaryColor,
                 backdropFilter: 'blur(8px)',
-                borderBottom: 'none' // Suppression du trait noir potentiel
+                borderBottom: 'none'
             }}>
                 <Toolbar sx={{ justifyContent: 'space-between', py: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -256,11 +237,10 @@ function LandingPage() {
                 </Toolbar>
             </AppBar>
 
-            {/* Hero Section */}
             <Box sx={{
                 pt: { xs: 15, md: 25 },
                 pb: { xs: 15, md: 20 },
-                bgcolor: primaryColor.startsWith('#') ? primaryColor : '#0f172a',
+                background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`,
                 position: 'relative',
                 overflow: 'hidden'
             }}>
@@ -269,7 +249,7 @@ function LandingPage() {
                         <Grid item xs={12} md={7}>
                             <Box sx={{ position: 'relative', zIndex: 2 }}>
                                 <Typography
-                                    component="h1" // SEO: Main Title
+                                    component="h1"
                                     variant="h3"
                                     fontWeight="900"
                                     gutterBottom
@@ -334,22 +314,20 @@ function LandingPage() {
                             </Box>
                         </Grid>
                         <Grid item xs={12} md={5} sx={{ display: { xs: 'none', md: 'block' } }}>
-                            <Box sx={{
-                                position: 'relative',
-                            }}>
+                            <Box sx={{ position: 'relative' }}>
                                 <Box
                                     component="img"
                                     src="/images/lady_justice_v2.png"
                                     alt="Dame Justice"
                                     sx={{
                                         width: '100%',
-                                        maxWidth: 320, // Encore plus petit
+                                        maxWidth: 320,
                                         height: 'auto',
                                         position: 'relative',
                                         zIndex: 1,
-                                        p: 1.5, // Padding pour l'effet cadre
-                                        bgcolor: 'rgba(255, 255, 255, 0.05)', // Fond très léger
-                                        border: '1px solid rgba(255, 255, 255, 0.2)', // Cadre fin moderne
+                                        p: 1.5,
+                                        bgcolor: 'rgba(255, 255, 255, 0.05)',
+                                        border: '1px solid rgba(255, 255, 255, 0.2)',
                                         borderRadius: 4,
                                         filter: 'contrast(1.05) brightness(1.05) drop-shadow(0 15px 35px rgba(0,0,0,0.3))',
                                         transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
@@ -366,7 +344,6 @@ function LandingPage() {
                 </Container>
             </Box>
 
-            {/* Team Section */}
             <Box sx={{ py: 15, bgcolor: '#f8faff' }}>
                 <Container maxWidth="lg">
                     <Box sx={{ textAlign: 'center', mb: 10 }}>
@@ -388,7 +365,7 @@ function LandingPage() {
                                     elevation={4}
                                     sx={{
                                         p: 3,
-                                        height: 650, // Fixed height for uniformity
+                                        height: 650,
                                         display: 'flex',
                                         flexDirection: 'column',
                                         alignItems: 'center',
@@ -409,7 +386,7 @@ function LandingPage() {
                                         <Box
                                             component="img"
                                             src={getImageUrl(member.photo)}
-                                            alt={`Portrait de ${member.name} - ${member.role}`}
+                                            alt={`Portrait de ${member.name}`}
                                             sx={{
                                                 width: 140,
                                                 height: 140,
@@ -418,10 +395,7 @@ function LandingPage() {
                                                 mb: 2,
                                                 border: '4px solid',
                                                 borderColor: primaryColor,
-                                                boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
-                                                transform: member.name.includes('Médoune') ? 'scale(1.15)' : 'none',
-                                                bgcolor: member.name.includes('Médoune') ? 'grey.50' : 'transparent',
-                                                padding: member.name.includes('Médoune') ? '5px' : 0
+                                                boxShadow: '0 6px 20px rgba(0,0,0,0.15)'
                                             }}
                                         />
                                     ) : (
@@ -434,8 +408,7 @@ function LandingPage() {
                                                 fontSize: '3rem',
                                                 fontWeight: 'bold',
                                                 border: '4px solid',
-                                                borderColor: 'grey.300',
-                                                boxShadow: '0 6px 20px rgba(0,0,0,0.15)'
+                                                borderColor: 'grey.300'
                                             }}
                                         >
                                             {member.name.charAt(0)}
@@ -457,7 +430,6 @@ function LandingPage() {
                                     }}>
                                         {member.biography}
                                     </Typography>
-
                                     <Stack direction="row" spacing={1}>
                                         {member.linkedin_url && (
                                             <IconButton
@@ -465,7 +437,7 @@ function LandingPage() {
                                                 component="a"
                                                 href={member.linkedin_url}
                                                 target="_blank"
-                                                sx={{ color: primaryColor, '&:hover': { bgcolor: alpha(primaryColor.startsWith('#') ? primaryColor : '#0f172a', 0.1) } }}
+                                                sx={{ color: primaryColor }}
                                             >
                                                 <LinkedIn />
                                             </IconButton>
@@ -475,7 +447,7 @@ function LandingPage() {
                                                 size="small"
                                                 component="a"
                                                 href={`mailto:${member.email}`}
-                                                sx={{ color: primaryColor, '&:hover': { bgcolor: alpha(primaryColor, 0.1) } }}
+                                                sx={{ color: primaryColor }}
                                             >
                                                 <EmailIcon />
                                             </IconButton>
@@ -488,7 +460,6 @@ function LandingPage() {
                 </Container>
             </Box>
 
-            {/* Contact Section */}
             <Box id="contact" sx={{ py: 15, bgcolor: 'white' }}>
                 <Container maxWidth="lg">
                     <Grid container spacing={8}>
@@ -499,10 +470,9 @@ function LandingPage() {
                             <Typography component="h2" variant="h3" fontWeight="900" sx={{ color: '#00255c', mt: 1, mb: 6 }}>
                                 Nous trouver
                             </Typography>
-
                             <Stack spacing={4}>
                                 <Paper elevation={0} sx={{ p: 3, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 3, alignItems: 'center' }}>
-                                    <Avatar sx={{ bgcolor: alpha(primaryColor.startsWith('#') ? primaryColor : '#0f172a', 0.1), color: primaryColor }}>
+                                    <Avatar sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}>
                                         <LocationIcon />
                                     </Avatar>
                                     <Box>
@@ -510,9 +480,8 @@ function LandingPage() {
                                         <Typography variant="body2" sx={{ color: '#4c6180', whiteSpace: 'pre-line' }}>{address}</Typography>
                                     </Box>
                                 </Paper>
-
                                 <Paper elevation={0} sx={{ p: 3, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 3, alignItems: 'center' }}>
-                                    <Avatar sx={{ bgcolor: alpha(primaryColor.startsWith('#') ? primaryColor : '#0f172a', 0.1), color: primaryColor }}>
+                                    <Avatar sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}>
                                         <TimeIcon />
                                     </Avatar>
                                     <Box>
@@ -520,97 +489,39 @@ function LandingPage() {
                                         <Typography variant="body2" sx={{ color: '#4c6180', whiteSpace: 'pre-line' }}>{openingHours}</Typography>
                                     </Box>
                                 </Paper>
-
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
-                                        <Paper elevation={0} sx={{
-                                            p: 2,
-                                            bgcolor: '#f5f7fa',
-                                            borderRadius: 4,
-                                            display: 'flex',
-                                            gap: 2,
-                                            alignItems: 'center',
-                                            transition: 'all 0.3s ease',
-                                            cursor: 'pointer',
-                                            '&:hover': {
-                                                bgcolor: '#edf2f7',
-                                                transform: 'translateY(-4px)',
-                                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-                                            }
-                                        }}>
-                                            <Avatar size="small" sx={{ bgcolor: alpha(primaryColor.startsWith('#') ? primaryColor : '#0f172a', 0.1), color: primaryColor }}>
-                                                <PhoneIcon />
-                                            </Avatar>
+                                        <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
+                                            <Avatar size="small" sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}><PhoneIcon /></Avatar>
                                             <Box>
                                                 <Typography variant="caption" fontWeight="800" sx={{ color: '#4c6180', display: 'block' }}>Téléphone</Typography>
-                                                <Typography variant="body2" component="a" href={`tel:${phone.replace(/\s/g, '')}`} sx={{ color: '#00255c', fontWeight: 700, textDecoration: 'none', '&:hover': { color: primaryColor } }}>{phone}</Typography>
+                                                <Typography variant="body2" sx={{ color: '#00255c', fontWeight: 700 }}>{phone}</Typography>
                                             </Box>
                                         </Paper>
                                     </Grid>
-
                                     <Grid item xs={12} sm={6}>
-                                        <Paper elevation={0} sx={{
-                                            p: 2,
-                                            bgcolor: '#f5f7fa',
-                                            borderRadius: 4,
-                                            display: 'flex',
-                                            gap: 2,
-                                            alignItems: 'center',
-                                            transition: 'all 0.3s ease',
-                                            cursor: 'pointer',
-                                            '&:hover': {
-                                                bgcolor: '#edf2f7',
-                                                transform: 'translateY(-4px)',
-                                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-                                            }
-                                        }}>
-                                            <Avatar size="small" sx={{ bgcolor: alpha(primaryColor.startsWith('#') ? primaryColor : '#0f172a', 0.1), color: primaryColor }}>
-                                                <MobileIcon />
-                                            </Avatar>
+                                        <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
+                                            <Avatar size="small" sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}><MobileIcon /></Avatar>
                                             <Box>
                                                 <Typography variant="caption" fontWeight="800" sx={{ color: '#4c6180', display: 'block' }}>Mobile</Typography>
-                                                <Typography variant="body2" component="a" href={`tel:${cel.replace(/\s/g, '')}`} sx={{ color: '#00255c', fontWeight: 700, textDecoration: 'none', '&:hover': { color: primaryColor } }}>{cel}</Typography>
+                                                <Typography variant="body2" sx={{ color: '#00255c', fontWeight: 700 }}>{cel}</Typography>
                                             </Box>
                                         </Paper>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
-                                        <Paper elevation={0} sx={{
-                                            p: 2,
-                                            bgcolor: '#f5f7fa',
-                                            borderRadius: 4,
-                                            display: 'flex',
-                                            gap: 2,
-                                            alignItems: 'center',
-                                            transition: 'all 0.3s ease',
-                                            cursor: 'pointer',
-                                            '&:hover': {
-                                                bgcolor: '#edf2f7',
-                                                transform: 'translateY(-4px)',
-                                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-                                            }
-                                        }}>
-                                            <Avatar size="small" sx={{ bgcolor: alpha(primaryColor.startsWith('#') ? primaryColor : '#0f172a', 0.1), color: primaryColor }}>
-                                                <MailIcon />
-                                            </Avatar>
+                                        <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
+                                            <Avatar size="small" sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}><MailIcon /></Avatar>
                                             <Box overflow="hidden">
                                                 <Typography variant="caption" fontWeight="800" sx={{ color: '#4c6180', display: 'block' }}>Email</Typography>
-                                                <Typography variant="body2" component="a" href={`mailto:${email}`} sx={{ color: '#00255c', fontWeight: 700, textDecoration: 'none', '&:hover': { color: primaryColor }, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis' }}>{email}</Typography>
+                                                <Typography variant="body2" sx={{ color: '#00255c', fontWeight: 700, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis' }}>{email}</Typography>
                                             </Box>
                                         </Paper>
                                     </Grid>
                                 </Grid>
                             </Stack>
                         </Grid>
-
                         <Grid item xs={12} md={6}>
-                            <Paper elevation={4} sx={{
-                                height: '100%',
-                                minHeight: 450,
-                                borderRadius: 6,
-                                overflow: 'hidden',
-                                border: '8px solid white',
-                                boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
-                            }}>
+                            <Paper elevation={4} sx={{ height: '100%', minHeight: 450, borderRadius: 6, overflow: 'hidden', border: '8px solid white' }}>
                                 <iframe
                                     title="Localisation Cabinet Mbengue"
                                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3859.213238612!2d-17.4501382!3d14.6766894!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xec1737c7160d643%3A0xbabdee0b3635e123!2sCabinet%20maitre%20Ibrahima%20MBENGUE!5e0!3m2!1sfr!2sfr!4v1737157600000!5m2!1sfr!2sfr"
@@ -625,7 +536,6 @@ function LandingPage() {
                     </Grid>
                 </Container>
             </Box>
-
             <Footer />
         </Box>
     );
