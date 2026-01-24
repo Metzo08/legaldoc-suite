@@ -59,8 +59,8 @@ function LandingPage() {
         cel: "(00221) 77.633.88.81",
         email: "maitreimbengue@gmail.com",
         opening_hours: "Lundi au Jeudi : 09h00 - 17h00\nRéception des clients : Lundi au Jeudi : 15h00 - 17h00",
-        primary_color: "#0f172a", // Premium Navy
-        secondary_color: "#c29b61" // Premium Gold
+        primary_color: "#1a237e", // Bleu
+        secondary_color: "#c2185b" // Violet
     };
 
     const apiName = cabinet?.branding?.name?.trim() || '';
@@ -532,6 +532,8 @@ function LandingPage() {
                                     <Grid item xs={12} sm={6}>
                                         <Paper
                                             elevation={0}
+                                            component="a"
+                                            href={`tel:${phone.replace(/\s/g, '')}`}
                                             sx={{
                                                 p: 2,
                                                 bgcolor: '#f5f7fa',
@@ -542,6 +544,7 @@ function LandingPage() {
                                                 transition: 'all 0.3s ease',
                                                 cursor: 'pointer',
                                                 border: '1px solid transparent',
+                                                textDecoration: 'none',
                                                 '&:hover': {
                                                     transform: 'translateY(-5px)',
                                                     bgcolor: 'white',
@@ -560,6 +563,8 @@ function LandingPage() {
                                     <Grid item xs={12} sm={6}>
                                         <Paper
                                             elevation={0}
+                                            component="a"
+                                            href={`tel:${cel.replace(/\s/g, '').replace(/\./g, '')}`}
                                             sx={{
                                                 p: 2,
                                                 bgcolor: '#f5f7fa',
@@ -570,6 +575,7 @@ function LandingPage() {
                                                 transition: 'all 0.3s ease',
                                                 cursor: 'pointer',
                                                 border: '1px solid transparent',
+                                                textDecoration: 'none',
                                                 '&:hover': {
                                                     transform: 'translateY(-5px)',
                                                     bgcolor: 'white',
@@ -588,6 +594,8 @@ function LandingPage() {
                                     <Grid item xs={12} sm={6}>
                                         <Paper
                                             elevation={0}
+                                            component="a"
+                                            href={`mailto:${email}`}
                                             sx={{
                                                 p: 2,
                                                 bgcolor: '#f5f7fa',
@@ -598,6 +606,7 @@ function LandingPage() {
                                                 transition: 'all 0.3s ease',
                                                 cursor: 'pointer',
                                                 border: '1px solid transparent',
+                                                textDecoration: 'none',
                                                 '&:hover': {
                                                     transform: 'translateY(-5px)',
                                                     bgcolor: 'white',
