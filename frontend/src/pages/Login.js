@@ -54,7 +54,7 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
 
     // DONNÉES DE DÉMONSTRATION
     const demoCabinet = {
-        name: "CABINET DE MAITRE IBRAHIMA MBENGUE",
+        name: "Cabinet de Maître Ibrahima Mbengue",
         description: "L'excellence juridique au cœur de Dakar. Un cabinet de référence alliant rigueur, dévouement et expertise stratégique pour la défense de vos intérêts et l'accompagnement de vos ambitions.",
         primary_color: "#1a237e",
         secondary_color: "#c2185b",

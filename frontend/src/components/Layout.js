@@ -98,10 +98,10 @@ function Layout({ children, setIsAuthenticated }) {
             }}>
                 {/* Logo removed as it was causing 404 */}
                 <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: '-0.02em', color: '#fff' }}>
-                    LEGALDOC
+                    LegalDoc
                 </Typography>
-                <Typography variant="overline" sx={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.2em', fontSize: '0.7rem' }}>
-                    SUITE
+                <Typography variant="overline" sx={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.2em', fontSize: '0.7rem', textTransform: 'none' }}>
+                    Suite
                 </Typography>
             </Box>
 

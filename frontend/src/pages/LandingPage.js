@@ -52,7 +52,7 @@ function LandingPage() {
     };
 
     const demoCabinet = {
-        name: "CABINET DE MAITRE IBRAHIMA MBENGUE",
+        name: "Cabinet de Maître Ibrahima Mbengue",
         description: "L'excellence juridique au cœur de Dakar. Un cabinet de référence alliant rigueur, dévouement et expertise stratégique pour la défense de vos intérêts et l'accompagnement de vos ambitions.",
         address: "35, Avenue Malick SY\nBP: 14887 Dakar Peytavin\nDakar - Sénégal",
         phone: "(+221) 33 821 97 97",

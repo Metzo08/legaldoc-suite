@@ -158,9 +158,10 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
                         backgroundColor: isLight ? '#f8fafc' : '#0f172a',
                         borderBottom: `1px solid ${isLight ? '#e2e8f0' : '#334155'}`,
                         color: isLight ? '#475569' : '#94a3b8',
-                        textTransform: 'uppercase',
-                        fontSize: '0.75rem',
-                        letterSpacing: '0.05em',
+                        textTransform: 'none',
+                        fontSize: '0.875rem',
+                        fontWeight: 600,
+                        letterSpacing: '0.01em',
                     },
                     row: {
                         '&:hover': {
