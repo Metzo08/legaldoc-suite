@@ -171,7 +171,7 @@ function AuditLog() {
         <Box sx={{ width: '100%', pb: 3 }}>
             <Box sx={{ mb: 3 }}>
                 <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>
-                    Journal d'Audit
+                    Journal d'audit
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
                     Suivi complet des activités et de la sécurité de la plateforme.

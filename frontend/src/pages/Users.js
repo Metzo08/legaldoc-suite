@@ -258,7 +258,7 @@ function Users() {
             }}>
                 <Box>
                     <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>
-                        Utilisateurs & Rôles
+                        Utilisateurs & rôles
                     </Typography>
                     <Typography variant="body1" color="text.secondary">
                         Gérez les membres de votre cabinet, leurs accès et leurs permissions.
@@ -284,8 +284,8 @@ function Users() {
                     textColor="primary"
                     sx={{ px: 2 }}
                 >
-                    <Tab label="Liste des Utilisateurs" icon={<UserIcon />} iconPosition="start" />
-                    <Tab label="Gestion des Permissions" icon={<SecurityIcon />} iconPosition="start" />
+                    <Tab label="Liste des utilisateurs" icon={<UserIcon />} iconPosition="start" />
+                    <Tab label="Gestion des permissions" icon={<SecurityIcon />} iconPosition="start" />
                 </Tabs>
             </Paper>
 
