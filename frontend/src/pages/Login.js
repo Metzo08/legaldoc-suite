@@ -56,8 +56,8 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
     const demoCabinet = {
         name: "Cabinet de Maître Ibrahima Mbengue",
         description: "L'excellence juridique au cœur de Dakar. Un cabinet de référence alliant rigueur, dévouement et expertise stratégique pour la défense de vos intérêts et l'accompagnement de vos ambitions.",
-        primary_color: "#1a237e",
-        secondary_color: "#c2185b",
+        primary_color: "#0f172a",
+        secondary_color: "#c29b61",
         logo: null
     };
 
@@ -176,7 +176,7 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
                                     filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))'
                                 }}
                             />
-                            <Typography variant="h2" fontWeight="800" sx={{ mb: 2, color: '#ffffff !important' }}>{cabinetName}</Typography>
+                            <Typography variant="h2" fontWeight="800" sx={{ mb: 2, color: '#ffffff !important', textTransform: 'none' }}>{cabinetName}</Typography>
                             <Typography variant="h5" sx={{ opacity: 1, mb: 4, maxWidth: '90%', color: '#ffffff !important' }}>{description}</Typography>
 
                             <Box sx={{ mt: 6 }}>
