@@ -471,7 +471,26 @@ function LandingPage() {
                                 Nous trouver
                             </Typography>
                             <Stack spacing={4}>
-                                <Paper elevation={0} sx={{ p: 3, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 3, alignItems: 'center' }}>
+                                <Paper
+                                    elevation={0}
+                                    sx={{
+                                        p: 3,
+                                        bgcolor: '#f5f7fa',
+                                        borderRadius: 4,
+                                        display: 'flex',
+                                        gap: 3,
+                                        alignItems: 'center',
+                                        transition: 'all 0.3s ease',
+                                        cursor: 'pointer',
+                                        border: '1px solid transparent',
+                                        '&:hover': {
+                                            transform: 'translateY(-5px)',
+                                            bgcolor: 'white',
+                                            boxShadow: '0 10px 20px rgba(0,0,0,0.05)',
+                                            borderColor: alpha(primaryColor, 0.2)
+                                        }
+                                    }}
+                                >
                                     <Avatar sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}>
                                         <LocationIcon />
                                     </Avatar>
@@ -480,7 +499,26 @@ function LandingPage() {
                                         <Typography variant="body2" sx={{ color: '#4c6180', whiteSpace: 'pre-line' }}>{address}</Typography>
                                     </Box>
                                 </Paper>
-                                <Paper elevation={0} sx={{ p: 3, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 3, alignItems: 'center' }}>
+                                <Paper
+                                    elevation={0}
+                                    sx={{
+                                        p: 3,
+                                        bgcolor: '#f5f7fa',
+                                        borderRadius: 4,
+                                        display: 'flex',
+                                        gap: 3,
+                                        alignItems: 'center',
+                                        transition: 'all 0.3s ease',
+                                        cursor: 'pointer',
+                                        border: '1px solid transparent',
+                                        '&:hover': {
+                                            transform: 'translateY(-5px)',
+                                            bgcolor: 'white',
+                                            boxShadow: '0 10px 20px rgba(0,0,0,0.05)',
+                                            borderColor: alpha(primaryColor, 0.2)
+                                        }
+                                    }}
+                                >
                                     <Avatar sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}>
                                         <TimeIcon />
                                     </Avatar>
@@ -491,7 +529,26 @@ function LandingPage() {
                                 </Paper>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
-                                        <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
+                                        <Paper
+                                            elevation={0}
+                                            sx={{
+                                                p: 2,
+                                                bgcolor: '#f5f7fa',
+                                                borderRadius: 4,
+                                                display: 'flex',
+                                                gap: 2,
+                                                alignItems: 'center',
+                                                transition: 'all 0.3s ease',
+                                                cursor: 'pointer',
+                                                border: '1px solid transparent',
+                                                '&:hover': {
+                                                    transform: 'translateY(-5px)',
+                                                    bgcolor: 'white',
+                                                    boxShadow: '0 10px 20px rgba(0,0,0,0.05)',
+                                                    borderColor: alpha(primaryColor, 0.2)
+                                                }
+                                            }}
+                                        >
                                             <Avatar size="small" sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}><PhoneIcon /></Avatar>
                                             <Box>
                                                 <Typography variant="caption" fontWeight="800" sx={{ color: '#4c6180', display: 'block' }}>Téléphone</Typography>
@@ -500,7 +557,26 @@ function LandingPage() {
                                         </Paper>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
-                                        <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
+                                        <Paper
+                                            elevation={0}
+                                            sx={{
+                                                p: 2,
+                                                bgcolor: '#f5f7fa',
+                                                borderRadius: 4,
+                                                display: 'flex',
+                                                gap: 2,
+                                                alignItems: 'center',
+                                                transition: 'all 0.3s ease',
+                                                cursor: 'pointer',
+                                                border: '1px solid transparent',
+                                                '&:hover': {
+                                                    transform: 'translateY(-5px)',
+                                                    bgcolor: 'white',
+                                                    boxShadow: '0 10px 20px rgba(0,0,0,0.05)',
+                                                    borderColor: alpha(primaryColor, 0.2)
+                                                }
+                                            }}
+                                        >
                                             <Avatar size="small" sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}><MobileIcon /></Avatar>
                                             <Box>
                                                 <Typography variant="caption" fontWeight="800" sx={{ color: '#4c6180', display: 'block' }}>Mobile</Typography>
@@ -509,7 +585,26 @@ function LandingPage() {
                                         </Paper>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
-                                        <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f7fa', borderRadius: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
+                                        <Paper
+                                            elevation={0}
+                                            sx={{
+                                                p: 2,
+                                                bgcolor: '#f5f7fa',
+                                                borderRadius: 4,
+                                                display: 'flex',
+                                                gap: 2,
+                                                alignItems: 'center',
+                                                transition: 'all 0.3s ease',
+                                                cursor: 'pointer',
+                                                border: '1px solid transparent',
+                                                '&:hover': {
+                                                    transform: 'translateY(-5px)',
+                                                    bgcolor: 'white',
+                                                    boxShadow: '0 10px 20px rgba(0,0,0,0.05)',
+                                                    borderColor: alpha(primaryColor, 0.2)
+                                                }
+                                            }}
+                                        >
                                             <Avatar size="small" sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}><MailIcon /></Avatar>
                                             <Box overflow="hidden">
                                                 <Typography variant="caption" fontWeight="800" sx={{ color: '#4c6180', display: 'block' }}>Email</Typography>
