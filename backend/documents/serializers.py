@@ -33,7 +33,7 @@ class CaseListSerializer(serializers.ModelSerializer):
     """
     Sérialiseur simplifié pour la liste des dossiers.
     """
-    client_name = serializers.CharField(source='client.name', read_only=True)
+    client_name = serializers.SerializerMethodField()
     assigned_to_names = serializers.SerializerMethodField()
     total_documents = serializers.SerializerMethodField()
     
@@ -59,6 +59,9 @@ class CaseListSerializer(serializers.ModelSerializer):
     
     def get_total_documents(self, obj):
         return obj.documents.count()
+
+    def get_client_name(self, obj):
+        return obj.client.name if obj.client else None
 
 
 class CaseDetailSerializer(serializers.ModelSerializer):
@@ -99,9 +102,9 @@ class DocumentSerializer(serializers.ModelSerializer):
     """
     Sérialiseur pour le modèle Document.
     """
-    case_title = serializers.CharField(source='case.title', read_only=True)
-    case_reference = serializers.CharField(source='case.reference', read_only=True)
-    client_name = serializers.CharField(source='case.client.name', read_only=True)
+    case_title = serializers.SerializerMethodField()
+    case_reference = serializers.SerializerMethodField()
+    client_name = serializers.SerializerMethodField()
     uploaded_by_name = serializers.SerializerMethodField()
     file_url = serializers.SerializerMethodField()
     tags_list = serializers.SlugRelatedField(
@@ -133,6 +136,16 @@ class DocumentSerializer(serializers.ModelSerializer):
         if obj.file and request:
             return request.build_absolute_uri(obj.file.url)
         return None
+
+
+    def get_case_title(self, obj):
+        return obj.case.title if obj.case else None
+
+    def get_case_reference(self, obj):
+        return obj.case.reference if obj.case else None
+
+    def get_client_name(self, obj):
+        return obj.case.client.name if obj.case and obj.case.client else None
 
 
 class DocumentUploadSerializer(serializers.ModelSerializer):
