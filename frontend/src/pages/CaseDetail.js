@@ -31,7 +31,7 @@ import {
     Edit as EditIcon,
     CloudUpload as UploadIcon
 } from '@mui/icons-material';
-import { casesAPI, documentsAPI } from '../services/api';
+import { casesAPI, documentsAPI, deadlinesAPI } from '../services/api';
 import authService from '../services/authService';
 import DiligenceManager from '../components/DiligenceManager';
 
@@ -40,6 +40,7 @@ const CaseDetail = () => {
     const navigate = useNavigate();
     const [caseData, setCaseData] = useState(null);
     const [documents, setDocuments] = useState([]);
+    const [hearings, setHearings] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const currentUser = authService.getCurrentUser();
@@ -48,12 +49,14 @@ const CaseDetail = () => {
     const loadCaseData = useCallback(async () => {
         try {
             setLoading(true);
-            const [caseRes, docsRes] = await Promise.all([
+            const [caseRes, docsRes, hearingsRes] = await Promise.all([
                 casesAPI.getOne(id),
-                documentsAPI.getAll({ case: id })
+                documentsAPI.getAll({ case: id }),
+                deadlinesAPI.getAll({ case: id, type: 'AUDIENCE' })
             ]);
             setCaseData(caseRes.data);
             setDocuments(docsRes.data.results || docsRes.data);
+            setHearings(hearingsRes.data.results || hearingsRes.data);
         } catch (error) {
             console.error('Erreur chargement détail dossier:', error);
             if (error.response?.status === 404) {
@@ -168,6 +171,72 @@ const CaseDetail = () => {
                                         <Typography variant="body2">{caseData.adverse_lawyer || 'Aucun information'}</Typography>
                                     </Grid>
                                 </Grid>
+                            </Paper>
+                        </Grid>
+
+                        {/* Audiences */}
+                        <Grid item xs={12}>
+                            <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center' }}>
+                                        <GavelIcon sx={{ mr: 1, color: 'primary.main' }} /> Audiences
+                                    </Typography>
+                                    <Button variant="outlined" size="small" startIcon={<EventIcon />} onClick={() => navigate(`/deadlines?caseId=${id}&type=AUDIENCE`)}>
+                                        Gérer
+                                    </Button>
+                                </Box>
+
+                                {hearings.length > 0 ? (
+                                    <List disablePadding>
+                                        {hearings.map((hearing) => (
+                                            <ListItem key={hearing.id} divider sx={{ px: 0 }}>
+                                                <ListItemText
+                                                    primary={
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                            <Typography variant="subtitle2" fontWeight={700}>
+                                                                {new Date(hearing.due_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                                                            </Typography>
+                                                            <Chip
+                                                                label={new Date(hearing.due_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                                                size="small"
+                                                                variant="outlined"
+                                                                color="primary"
+                                                            />
+                                                        </Box>
+                                                    }
+                                                    secondary={
+                                                        <Box sx={{ mt: 0.5 }}>
+                                                            <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
+                                                                {hearing.title}
+                                                            </Typography>
+                                                            <Typography variant="caption" color="text.secondary" display="block">
+                                                                {hearing.jurisdiction || 'Juridiction non définie'} {hearing.courtroom ? ` - Salle ${hearing.courtroom}` : ''}
+                                                            </Typography>
+                                                            {hearing.result && (
+                                                                <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 600, mt: 0.5, display: 'block' }}>
+                                                                    Résultat: {hearing.result}
+                                                                </Typography>
+                                                            )}
+                                                        </Box>
+                                                    }
+                                                />
+                                                <Chip
+                                                    label={hearing.is_completed ? "Terminée" : "À venir"}
+                                                    color={hearing.is_completed ? "success" : "warning"}
+                                                    size="small"
+                                                    sx={{ fontWeight: 700 }}
+                                                />
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                ) : (
+                                    <Box sx={{ textAlign: 'center', py: 3, opacity: 0.7 }}>
+                                        <Typography variant="body2">Aucune audience programmée pour ce dossier.</Typography>
+                                        <Button sx={{ mt: 1 }} size="small" onClick={() => navigate(`/deadlines?caseId=${id}&new=true&type=AUDIENCE`)}>
+                                            Ajouter une audience
+                                        </Button>
+                                    </Box>
+                                )}
                             </Paper>
                         </Grid>
 

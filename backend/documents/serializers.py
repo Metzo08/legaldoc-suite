@@ -250,8 +250,8 @@ class DeadlineSerializer(serializers.ModelSerializer):
     """
     Sérialiseur pour les échéances.
     """
-    case_reference = serializers.CharField(source='case.reference', read_only=True)
-    case_title = serializers.CharField(source='case.title', read_only=True)
+    case_reference = serializers.SerializerMethodField()
+    case_title = serializers.SerializerMethodField()
     created_by_name = serializers.SerializerMethodField()
     completed_by_name = serializers.SerializerMethodField()
     is_overdue = serializers.BooleanField(read_only=True)
@@ -268,6 +268,12 @@ class DeadlineSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('id', 'created_by', 'completed_by', 'completed_at', 'created_at', 'updated_at')
     
+    def get_case_reference(self, obj):
+        return obj.case.reference if obj.case else None
+
+    def get_case_title(self, obj):
+        return obj.case.title if obj.case else None
+
     def get_created_by_name(self, obj):
         return obj.created_by.get_full_name() if obj.created_by else None
     
