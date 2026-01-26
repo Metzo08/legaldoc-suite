@@ -51,6 +51,7 @@ function Cases() {
     const [openDialog, setOpenDialog] = useState(false);
     const [currentCase, setCurrentCase] = useState(null);
     const [formData, setFormData] = useState({
+        title: '',
         reference: '',
         client: '',
         contact_name: '',
@@ -58,8 +59,10 @@ function Cases() {
         contact_phone: '',
         our_lawyers: '',
         category: 'CIVIL',
+        represented_party: '',
         adverse_party: '',
         adverse_lawyer: '',
+        external_reference: '',
         description: '',
         fees: '',
         status: 'OUVERT',
@@ -108,6 +111,7 @@ function Cases() {
         if (caseItem) {
             setCurrentCase(caseItem);
             setFormData({
+                title: caseItem.title || '',
                 reference: caseItem.reference,
                 client: caseItem.client,
                 contact_name: caseItem.contact_name || '',
@@ -115,8 +119,10 @@ function Cases() {
                 contact_phone: caseItem.contact_phone || '',
                 our_lawyers: caseItem.our_lawyers || '',
                 category: caseItem.category,
+                represented_party: caseItem.represented_party || '',
                 adverse_party: caseItem.adverse_party || '',
                 adverse_lawyer: caseItem.adverse_lawyer || '',
+                external_reference: caseItem.external_reference || '',
                 description: caseItem.description || '',
                 fees: caseItem.fees || '',
                 status: caseItem.status,
@@ -125,6 +131,7 @@ function Cases() {
         } else {
             setCurrentCase(null);
             setFormData({
+                title: '',
                 reference: '',
                 client: '',
                 contact_name: '',
@@ -132,8 +139,10 @@ function Cases() {
                 contact_phone: '',
                 our_lawyers: '',
                 category: 'CIVIL',
+                represented_party: '',
                 adverse_party: '',
                 adverse_lawyer: '',
+                external_reference: '',
                 description: '',
                 fees: '',
                 status: 'OUVERT',
@@ -419,6 +428,16 @@ function Cases() {
                 <DialogContent>
                     <Grid container spacing={2} sx={{ mt: 1 }}>
                         {/* Colonne gauche */}
+                        <Grid item xs={12}>
+                            <TextField
+                                label="Intitulé de l'affaire"
+                                fullWidth
+                                required
+                                value={formData.title}
+                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                placeholder="Ex: Divorce Epoux X, Litige Commercial Y..."
+                            />
+                        </Grid>
                         <Grid item xs={12} sm={6}>
                             <TextField
                                 label="Numéro dossier"
@@ -460,10 +479,28 @@ function Cases() {
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <TextField
+                                label="Partie représentée"
+                                fullWidth
+                                value={formData.represented_party}
+                                onChange={(e) => setFormData({ ...formData, represented_party: e.target.value })}
+                                placeholder="Le client ou une autre entité"
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
                                 label="Partie adverse"
                                 fullWidth
                                 value={formData.adverse_party}
                                 onChange={(e) => setFormData({ ...formData, adverse_party: e.target.value })}
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Référence externe (Numéro)"
+                                fullWidth
+                                value={formData.external_reference}
+                                onChange={(e) => setFormData({ ...formData, external_reference: e.target.value })}
+                                placeholder="Numéro de procédure, etc."
                             />
                         </Grid>
 

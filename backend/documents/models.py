@@ -82,7 +82,7 @@ class Case(models.Model):
         PENAL = 'PENAL', 'Pénal'
         CORRECTIONNEL = 'CORRECTIONNEL', 'Correctionnel'
     
-    title = models.CharField(max_length=255, verbose_name='Intitulé de l\'affaire')
+    title = models.CharField(max_length=255, blank=True, verbose_name='Intitulé de l\'affaire')
     reference = models.CharField(
         max_length=50,
         unique=True,
@@ -187,33 +187,25 @@ class Case(models.Model):
             prefix = prefix_map.get(self.category, 'CIV')
             
             # 1. Vérifier si le client a déjà un dossier "principal" dans cette catégorie
-            # Un dossier principal est celui qui n'a pas de parent_case ou qui est le premier créé.
-            # On cherche le tout premier dossier du client dans cette catégorie.
             root_case = Case.objects.filter(
                 client=self.client, 
                 category=self.category
             ).order_by('created_at').first()
             
             if root_case:
-                # C'est un sous-dossier (affaire récurrente du même client)
-                # On récupère la référence du root (sans le suffixe si c'est déjà un sous-dossier, 
-                # mais normalement le root n'en a pas)
+                # C'est un sous-dossier
                 base_ref = root_case.reference.split('.')[0]
-                
-                # Compter combien de dossiers ce client a déjà dans cette catégorie
                 count = Case.objects.filter(
                     client=self.client, 
                     category=self.category
                 ).count()
-                
                 self.reference = f"{base_ref}.{count}"
             else:
-                # C'est le premier dossier du client dans cette catégorie -> Dossier Principal
-                # Trouver le numéro maximum utilisé globalement pour ce préfixe parmi les dossiers principaux
+                # Dossier Principal
                 import re
                 principal_cases = Case.objects.filter(
                     category=self.category,
-                    reference__regex=rf'^{prefix}\d+$' # Uniquement prefix + chiffres (pas de point)
+                    reference__regex=rf'^{prefix}\d+$'
                 )
                 
                 max_num = 0
@@ -224,9 +216,15 @@ class Case(models.Model):
                         if num > max_num:
                             max_num = num
                 
-                # Prochain numéro, minimum 1000 pour avoir 4 chiffres comme dans l'exemple
                 next_num = max(1000, max_num + 1)
                 self.reference = f"{prefix}{next_num:04d}"
+        
+        # Fallback pour le titre s'il est vide
+        if not self.title:
+            if self.reference:
+                self.title = self.reference
+            else:
+                self.title = "Dossier sans intitulé"
                 
         super().save(*args, **kwargs)
 
