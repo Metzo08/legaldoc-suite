@@ -66,7 +66,7 @@ class CaseDetailSerializer(serializers.ModelSerializer):
     Sérialiseur détaillé pour un dossier.
     """
     client_details = ClientSerializer(source='client', read_only=True)
-    client_name = serializers.CharField(source='client.name', read_only=True)
+    client_name = serializers.SerializerMethodField()
     assigned_to_details = UserSerializer(source='assigned_to', many=True, read_only=True)
     created_by_name = serializers.SerializerMethodField()
     
@@ -90,6 +90,9 @@ class CaseDetailSerializer(serializers.ModelSerializer):
 
     def get_created_by_name(self, obj):
         return obj.created_by.get_full_name() if obj.created_by else None
+
+    def get_client_name(self, obj):
+        return obj.client.name if obj.client else None
 
 
 class DocumentSerializer(serializers.ModelSerializer):
