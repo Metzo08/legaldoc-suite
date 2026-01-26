@@ -37,8 +37,7 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
         if (path.startsWith('/images/')) return path;
 
         // Use the same dynamic logic as apiClient/authService
-        const apiBase = process.env.REACT_APP_API_URL ||
-            (['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:8001/api' : '/api');
+        const apiBase = process.env.REACT_APP_API_URL || '/api';
         const backendBase = apiBase.replace('/api', '');
 
         // Fix: Prepend /media/ if missing for backend paths

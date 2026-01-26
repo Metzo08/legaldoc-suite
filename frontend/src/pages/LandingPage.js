@@ -84,8 +84,7 @@ function LandingPage() {
         if (path.startsWith('http')) return path;
         if (path.startsWith('/images/')) return path;
 
-        const apiBase = process.env.REACT_APP_API_URL ||
-            (['localhost', '127.0.0.1'].includes(window.location.hostname) ? 'http://localhost:8001/api' : '/api');
+        const apiBase = process.env.REACT_APP_API_URL || '/api';
         const backendBase = apiBase.replace('/api', '');
 
         let finalPath = path;
