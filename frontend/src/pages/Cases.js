@@ -466,7 +466,7 @@ function Cases() {
                             </TextField>
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item xs={12}>
                             <TextField
                                 label="Client"
                                 select
@@ -493,15 +493,6 @@ function Cases() {
                                 fullWidth
                                 value={formData.adverse_party}
                                 onChange={(e) => setFormData({ ...formData, adverse_party: e.target.value })}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Référence externe (Numéro)"
-                                fullWidth
-                                value={formData.external_reference}
-                                onChange={(e) => setFormData({ ...formData, external_reference: e.target.value })}
-                                placeholder="Numéro de procédure, etc."
                             />
                         </Grid>
 
