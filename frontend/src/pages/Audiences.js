@@ -321,7 +321,11 @@ function Audiences() {
                     </Typography>
                     <Grid container spacing={2}>
                         {groupedAudiences[date].map((audience) => {
-                            const isCivil = getCaseCategory(audience.case) === 'CIVIL';
+                            const category = getCaseCategory(audience.case);
+                            const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(category);
+                            const isBlue = ['PENAL', 'CORRECTIONNEL'].includes(category);
+                            const categoryLabel = category.charAt(0) + category.slice(1).toLowerCase();
+
                             return (
                                 <Grid item xs={12} md={6} key={audience.id}>
                                     <Card sx={{
@@ -329,13 +333,13 @@ function Audiences() {
                                         position: 'relative', overflow: 'hidden',
                                         '&:before': {
                                             content: '""', position: 'absolute', left: 0, top: 0, bottom: 0, width: 4,
-                                            bgcolor: isCivil ? '#fbc02d' : '#1976d2'
+                                            bgcolor: isYellow ? '#fbc02d' : '#1976d2'
                                         }
                                     }}>
                                         <CardContent>
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                                <Typography variant="caption" sx={{ color: isCivil ? '#fbc02d' : '#1976d2', fontWeight: 800, textTransform: 'uppercase' }}>
-                                                    {isCivil ? 'Civil' : 'Correctionnel'} • {new Date(audience.due_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                                <Typography variant="caption" sx={{ color: isYellow ? '#fbc02d' : '#1976d2', fontWeight: 800, textTransform: 'uppercase' }}>
+                                                    {categoryLabel} • {new Date(audience.due_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                                                 </Typography>
                                                 <Box>
                                                     <Tooltip title="Terminée"><IconButton size="small" onClick={() => handleToggleComplete(audience)} color={audience.is_completed ? "success" : "default"}><CheckIcon fontSize="small" /></IconButton></Tooltip>

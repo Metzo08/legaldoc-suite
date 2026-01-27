@@ -60,7 +60,7 @@ function Dashboard() {
     const [topTags, setTopTags] = useState([]);
     const [casesByCategory, setCasesByCategory] = useState({
         civil: 0,
-        correctionnel: 0
+        penal: 0
     });
 
     // État pour la prévisualisation
@@ -109,12 +109,13 @@ function Dashboard() {
                 tags: tagsRes.data.count || tagsRes.data.length
             });
 
-            // Groupe Civil & Autres (Civil, Commercial, Social, Pénal)
-            const civilCases = allCasesData.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'PENAL'].includes(c.category));
-            const correctionnelCases = allCasesData.filter(c => c.category === 'CORRECTIONNEL');
+            // Groupe Civil & Autres (Civil, Commercial, Social)
+            const civilCases = allCasesData.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(c.category));
+            // Groupe Pénal & Correctionnel
+            const penalCases = allCasesData.filter(c => ['PENAL', 'CORRECTIONNEL'].includes(c.category));
             setCasesByCategory({
                 civil: civilCases.length,
-                correctionnel: correctionnelCases.length
+                penal: penalCases.length
             });
 
             setRecentDocuments(documentsRes.data.results || documentsRes.data);
@@ -210,7 +211,7 @@ function Dashboard() {
                                 }}
                             />
                             <Chip
-                                label={`Correctionnel: ${casesByCategory.correctionnel}`}
+                                label={`Pénal & Corr.: ${casesByCategory.penal}`}
                                 size="small"
                                 onClick={(e) => { e.stopPropagation(); navigate('/cases?filter=CORRECTIONNEL'); }}
                                 sx={{

@@ -205,8 +205,8 @@ function Cases() {
 
     // Fonction pour obtenir le label et la couleur de catégorie
     const getCategoryDisplay = (category) => {
-        // Jaune pour civil/commercial/social/pénal, bleu pour correctionnel
-        const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'PENAL'].includes(category);
+        // Jaune pour civil/commercial/social, Bleu pour pénal/correctionnel
+        const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(category);
         const labels = {
             'CIVIL': 'Civil',
             'COMMERCIAL': 'Commercial',
@@ -292,9 +292,9 @@ function Cases() {
 
     const totalCases = cases.length;
     const openCases = cases.filter(c => c.status === 'OUVERT').length;
-    // Dossiers civils = civil + commercial + social + pénal (jaune)
-    const civilCases = cases.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'PENAL'].includes(c.category)).length;
-    const correctionalCases = cases.filter(c => c.category === 'CORRECTIONNEL').length;
+    // Dossiers civils = civil + commercial + social (jaune)
+    const civilCases = cases.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(c.category)).length;
+    const penalCases = cases.filter(c => ['PENAL', 'CORRECTIONNEL'].includes(c.category)).length;
 
     const [filterMode, setFilterMode] = useState('ALL');
     const [searchTerm, setSearchTerm] = useState(initialSearch);
@@ -318,10 +318,11 @@ function Cases() {
         if (filterMode === 'OUVERT') {
             base = base.filter(c => c.status === 'OUVERT');
         } else if (filterMode === 'CIVIL') {
-            // Jaune = civil, commercial, social, pénal
-            base = base.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'PENAL'].includes(c.category));
+            // Jaune = civil, commercial, social
+            base = base.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(c.category));
         } else if (filterMode === 'CORRECTIONNEL') {
-            base = base.filter(c => c.category === 'CORRECTIONNEL');
+            // Bleu = pénal, correctionnel
+            base = base.filter(c => ['PENAL', 'CORRECTIONNEL'].includes(c.category));
         }
 
         return base;
@@ -382,8 +383,8 @@ function Cases() {
                 <Grid item xs={12} sm={6} md={3}>
                     <Box onClick={() => setFilterMode('CORRECTIONNEL')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterMode === 'CORRECTIONNEL' ? 1 : 0.6 }}>
                         <StatCard
-                            title="Correctionnel"
-                            value={correctionalCases}
+                            title="Pénal & Correctionnel"
+                            value={penalCases}
                             icon={<FolderIcon color="info" />}
                             color="info"
                             sx={{ border: filterMode === 'CORRECTIONNEL' ? '2px solid' : 'none', borderColor: 'info.main', borderRadius: 2 }}

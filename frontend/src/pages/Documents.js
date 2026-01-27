@@ -379,7 +379,10 @@ function Documents() {
             minWidth: 300,
             renderCell: (params) => {
                 const matchedCase = cases.find(c => c.id === params.row.case);
-                const isCivil = matchedCase?.category === 'CIVIL';
+                const category = matchedCase?.category || 'AUTRE';
+                const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(category);
+                const categoryLabel = category.charAt(0) + category.slice(1).toLowerCase();
+
                 return (
                     <Box sx={{ width: '100%', overflow: 'hidden', py: 1 }}>
                         <Typography
@@ -395,16 +398,16 @@ function Documents() {
                             </Typography>
                             {matchedCase?.category && (
                                 <Chip
-                                    label={isCivil ? "Civil" : "Correctionnel"}
+                                    label={categoryLabel}
                                     size="small"
                                     sx={{
                                         height: 16,
                                         fontSize: '0.6rem',
-                                        bgcolor: isCivil ? '#fffde7' : '#e3f2fd',
-                                        color: isCivil ? '#fbc02d' : '#1976d2',
+                                        bgcolor: isYellow ? '#fffde7' : '#e3f2fd',
+                                        color: isYellow ? '#fbc02d' : '#1976d2',
                                         fontWeight: 'bold',
                                         border: '1px solid',
-                                        borderColor: isCivil ? '#fbc02d' : '#1976d2',
+                                        borderColor: isYellow ? '#fbc02d' : '#1976d2',
                                         flexShrink: 0
                                     }}
                                 />

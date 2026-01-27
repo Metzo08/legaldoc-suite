@@ -125,11 +125,11 @@ const CaseDetail = () => {
                                                 label={caseData.category}
                                                 size="small"
                                                 sx={{
-                                                    bgcolor: ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'PENAL'].includes(caseData.category) ? '#fff9c4' : '#e3f2fd',
-                                                    color: ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'PENAL'].includes(caseData.category) ? '#fbc02d' : '#1976d2',
+                                                    bgcolor: ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(caseData.category) ? '#fff9c4' : '#e3f2fd',
+                                                    color: ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(caseData.category) ? '#fbc02d' : '#1976d2',
                                                     fontWeight: 700,
                                                     border: '1px solid',
-                                                    borderColor: ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'PENAL'].includes(caseData.category) ? '#fbc02d' : '#1976d2'
+                                                    borderColor: ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(caseData.category) ? '#fbc02d' : '#1976d2'
                                                 }}
                                             />
                                         </Box>
