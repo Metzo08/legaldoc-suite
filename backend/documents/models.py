@@ -600,6 +600,7 @@ class Notification(models.Model):
         CASE = 'CASE', 'Dossier'
         DOCUMENT = 'DOCUMENT', 'Document'
         DEADLINE = 'DEADLINE', 'Échéance'
+        TASK = 'TASK', 'Tâche'
         SYSTEM = 'SYSTEM', 'Système'
 
     user = models.ForeignKey(
@@ -676,3 +677,76 @@ class Diligence(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Task(models.Model):
+    """
+    Tâches assignées aux membres du cabinet.
+    """
+    class Priority(models.TextChoices):
+        LOW = 'LOW', 'Basse'
+        MEDIUM = 'MEDIUM', 'Moyenne'
+        HIGH = 'HIGH', 'Haute'
+        URGENT = 'URGENT', 'Urgente'
+
+    class Status(models.TextChoices):
+        TODO = 'TODO', 'À faire'
+        IN_PROGRESS = 'IN_PROGRESS', 'En cours'
+        REVIEW = 'REVIEW', 'En révision'
+        DONE = 'DONE', 'Terminé'
+
+    title = models.CharField(max_length=255, verbose_name='Titre')
+    description = models.TextField(blank=True, verbose_name='Description')
+    
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='assigned_tasks',
+        verbose_name='Assigné à'
+    )
+    assigned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='created_tasks',
+        verbose_name='Assigné par'
+    )
+    
+    case = models.ForeignKey(
+        Case,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='tasks',
+        verbose_name='Dossier lié'
+    )
+    
+    due_date = models.DateTimeField(null=True, blank=True, verbose_name='Date d\'échéance')
+    priority = models.CharField(
+        max_length=20,
+        choices=Priority.choices,
+        default=Priority.MEDIUM,
+        verbose_name='Priorité'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.TODO,
+        verbose_name='Statut'
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Date de création')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Dernière modification')
+
+    class Meta:
+        verbose_name = 'Tâche'
+        verbose_name_plural = 'Tâches'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['assigned_to', 'status']),
+            models.Index(fields=['priority']),
+        ]
+    
+    def __str__(self):
+        return f"{self.title} ({self.get_status_display()})"

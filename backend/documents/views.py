@@ -7,12 +7,12 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from django.db.models import Q
-from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence
+from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence, Task
 from .serializers import (
     ClientSerializer, CaseListSerializer, CaseDetailSerializer,
     DocumentSerializer, DocumentUploadSerializer, DocumentPermissionSerializer,
     AuditLogSerializer, TagSerializer, DeadlineSerializer, DocumentVersionSerializer,
-    NotificationSerializer, DiligenceSerializer
+    NotificationSerializer, DiligenceSerializer, TaskSerializer
 )
 from .permissions import IsAdminOrReadOnly, CanDeleteDocuments, HasDocumentPermission
 from .ocr import process_document_ocr
@@ -759,3 +759,64 @@ class DiligenceViewSet(viewsets.ModelViewSet):
         Assigne l'utilisateur connecté à la nouvelle diligence.
         """
         serializer.save(created_by=self.request.user)
+
+
+class TaskViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet pour gérer les tâches.
+    """
+    queryset = Task.objects.select_related('assigned_to', 'assigned_by', 'case').all()
+    serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    search_fields = ['title', 'description', 'case__title', 'case__reference']
+    ordering_fields = ['due_date', 'priority', 'status', 'created_at']
+    ordering = ['due_date', '-priority']
+
+    def get_queryset(self):
+        """
+        Filtre les tâches visibles par l'utilisateur.
+        """
+        queryset = super().get_queryset()
+        
+        # Admin voit tout
+        if self.request.user.is_admin or self.request.user.is_superuser:
+            pass
+        else:
+            # Utilisateurs voient ce qui leur est assigné ou ce qu'ils ont créé
+            queryset = queryset.filter(
+                Q(assigned_to=self.request.user) |
+                Q(assigned_by=self.request.user)
+            )
+
+        # Filtres
+        assigned_to = self.request.query_params.get('assigned_to', None)
+        if assigned_to:
+            queryset = queryset.filter(assigned_to_id=assigned_to)
+
+        status_param = self.request.query_params.get('status', None)
+        if status_param:
+            queryset = queryset.filter(status=status_param)
+
+        case_id = self.request.query_params.get('case', None)
+        if case_id:
+            queryset = queryset.filter(case_id=case_id)
+
+        return queryset
+
+    def perform_create(self, serializer):
+        """
+        Assigne l'utilisateur créateur et notifie l'assigné.
+        """
+        task = serializer.save(assigned_by=self.request.user)
+        
+        # Notifier l'utilisateur assigné si ce n'est pas le créateur
+        if task.assigned_to and task.assigned_to != self.request.user:
+            send_notification(
+                user=task.assigned_to,
+                title="Nouvelle tâche assignée",
+                message=f"{self.request.user.get_full_name()} vous a assigné une tâche : {task.title}",
+                level='INFO',
+                entity_type='TASK',
+                entity_id=task.id
+            )

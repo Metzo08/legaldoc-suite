@@ -131,3 +131,11 @@ export const diligencesAPI = {
     delete: (id) => apiClient.delete(`/documents/diligences/${id}/`)
 };
 
+export const tasksAPI = {
+    getAll: (params) => apiClient.get('/documents/tasks/', { params }),
+    getOne: (id) => apiClient.get(`/documents/tasks/${id}/`),
+    create: (data) => apiClient.post('/documents/tasks/', data),
+    update: (id, data) => apiClient.put(`/documents/tasks/${id}/`, data),
+    delete: (id) => apiClient.delete(`/documents/tasks/${id}/`)
+};
+

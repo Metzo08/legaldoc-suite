@@ -21,6 +21,7 @@ const Users = lazy(() => import('./pages/Users'));
 const AuditLog = lazy(() => import('./pages/AuditLog'));
 const Audiences = lazy(() => import('./pages/Audiences'));
 const Tags = lazy(() => import('./pages/Tags'));
+const Tasks = lazy(() => import('./pages/Tasks'));
 const Deadlines = lazy(() => import('./pages/Deadlines'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Layout = lazy(() => import('./components/Layout'));
@@ -135,6 +136,7 @@ function App() {
                                                         <Route path="/audiences" element={<Audiences />} />
                                                         <Route path="/deadlines" element={<Deadlines />} />
                                                         <Route path="/tags" element={<Tags />} />
+                                                        <Route path="/tasks" element={<Tasks />} />
                                                         <Route path="/search" element={<Search />} />
                                                         <Route path="/users" element={<Users />} />
                                                         <Route path="/audit" element={<AuditLog />} />

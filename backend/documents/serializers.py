@@ -2,7 +2,7 @@
 Sérialiseurs pour l'API de gestion documentaire.
 """
 from rest_framework import serializers
-from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence
+from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence, Task
 from users.serializers import UserSerializer
 
 
@@ -337,3 +337,34 @@ class DiligenceSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         )
         read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
+
+
+class TaskSerializer(serializers.ModelSerializer):
+    """
+    Sérialiseur pour le modèle Task.
+    """
+    assigned_to_name = serializers.SerializerMethodField()
+    assigned_by_name = serializers.SerializerMethodField()
+    case_reference = serializers.SerializerMethodField()
+    case_title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Task
+        fields = (
+            'id', 'title', 'description', 'assigned_to', 'assigned_to_name',
+            'assigned_by', 'assigned_by_name', 'case', 'case_reference', 'case_title',
+            'due_date', 'priority', 'status', 'created_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'assigned_by', 'created_at', 'updated_at')
+
+    def get_assigned_to_name(self, obj):
+        return obj.assigned_to.get_full_name() if obj.assigned_to else None
+
+    def get_assigned_by_name(self, obj):
+        return obj.assigned_by.get_full_name() if obj.assigned_by else None
+
+    def get_case_reference(self, obj):
+        return obj.case.reference if obj.case else None
+
+    def get_case_title(self, obj):
+        return obj.case.title if obj.case else None

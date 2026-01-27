@@ -31,7 +31,8 @@ import {
     Brightness4 as DarkModeIcon,
     Brightness7 as LightModeIcon,
     Event as EventIcon,
-    Label as LabelIcon
+    Label as LabelIcon,
+    AssignmentTurnedIn as TaskIcon
 } from '@mui/icons-material';
 import authService from '../services/authService';
 import { ThemeContext } from '../App';
@@ -45,6 +46,7 @@ const drawerWidth = 260;
 
 const menuItems = [
     { text: 'Tableau de bord', icon: <DashboardIcon />, path: '/dashboard' },
+    { text: 'Tâches', icon: <TaskIcon />, path: '/tasks' },
     { text: 'Clients', icon: <PeopleIcon />, path: '/clients' },
     { text: 'Dossiers', icon: <FolderIcon />, path: '/cases' },
     { text: 'Documents', icon: <DescriptionIcon />, path: '/documents' },

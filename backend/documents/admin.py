@@ -2,7 +2,7 @@
 Administration Django pour la gestion documentaire.
 """
 from django.contrib import admin
-from .models import Client, Case, Document, DocumentPermission, AuditLog
+from .models import Client, Case, Document, DocumentPermission, AuditLog, Task
 
 
 @admin.register(Client)
@@ -148,3 +148,14 @@ class AuditLogAdmin(admin.ModelAdmin):
         Seuls les super-admins peuvent supprimer des logs.
         """
         return request.user.is_superuser
+
+
+@admin.register(Task)
+class TaskAdmin(admin.ModelAdmin):
+    """
+    Administration pour les tâches.
+    """
+    list_display = ('title', 'assigned_to', 'status', 'priority', 'due_date', 'assigned_by')
+    list_filter = ('status', 'priority', 'due_date')
+    search_fields = ('title', 'description', 'assigned_to__username')
+    readonly_fields = ('created_at', 'updated_at')
