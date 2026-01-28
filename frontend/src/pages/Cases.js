@@ -66,6 +66,7 @@ function Cases() {
         description: '',
         fees: '',
         status: 'OUVERT',
+        parent_case: null,
         opened_date: new Date().toISOString().split('T')[0]
     });
 
@@ -95,17 +96,31 @@ function Cases() {
     useEffect(() => {
         loadData().then(() => {
             const clientId = searchParams.get('clientId');
+            const parentId = searchParams.get('parentId');
             const isNew = searchParams.get('new') === 'true';
-            if (clientId && isNew) {
-                setFormData(prev => ({
-                    ...prev,
-                    client: parseInt(clientId),
-                    opened_date: new Date().toISOString().split('T')[0]
-                }));
-                setOpenDialog(true);
+
+            if (isNew) {
+                if (parentId) {
+                    // Si on crée un sous-dossier, on cherche le parent pour le client
+                    const parentCase = cases.find(c => c.id === parseInt(parentId));
+                    setFormData(prev => ({
+                        ...prev,
+                        client: parentCase?.client || '',
+                        parent_case: parseInt(parentId),
+                        opened_date: new Date().toISOString().split('T')[0]
+                    }));
+                    setOpenDialog(true);
+                } else if (clientId) {
+                    setFormData(prev => ({
+                        ...prev,
+                        client: parseInt(clientId),
+                        opened_date: new Date().toISOString().split('T')[0]
+                    }));
+                    setOpenDialog(true);
+                }
             }
         });
-    }, [loadData, searchParams]);
+    }, [loadData, searchParams, cases]);
 
     const handleOpenDialog = (caseItem = null) => {
         if (caseItem) {
@@ -126,6 +141,7 @@ function Cases() {
                 description: caseItem.description || '',
                 fees: caseItem.fees || '',
                 status: caseItem.status,
+                parent_case: caseItem.parent_case || null,
                 opened_date: caseItem.opened_date
             });
         } else {
@@ -146,6 +162,7 @@ function Cases() {
                 description: '',
                 fees: '',
                 status: 'OUVERT',
+                parent_case: null,
                 opened_date: new Date().toISOString().split('T')[0]
             });
         }
@@ -466,7 +483,23 @@ function Cases() {
                             </TextField>
                         </Grid>
 
-                        <Grid item xs={12}>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Dossier Principal"
+                                select
+                                fullWidth
+                                value={formData.parent_case || ''}
+                                onChange={(e) => setFormData({ ...formData, parent_case: e.target.value || null })}
+                                helperText="Sélectionnez pour créer un sous-dossier"
+                            >
+                                <MenuItem value=""><em>Aucun (Dossier Principal)</em></MenuItem>
+                                {cases.filter(c => !c.parent_case).map((c) => (
+                                    <MenuItem key={c.id} value={c.id}>{c.reference} - {c.title}</MenuItem>
+                                ))}
+                            </TextField>
+                        </Grid>
+
+                        <Grid item xs={12} sm={6}>
                             <TextField
                                 label="Client"
                                 select

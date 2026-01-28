@@ -240,6 +240,68 @@ const CaseDetail = () => {
                             </Paper>
                         </Grid>
 
+                        {/* Sous-dossiers */}
+                        <Grid item xs={12}>
+                            <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center' }}>
+                                        <FolderIcon sx={{ mr: 1, color: 'info.main' }} /> Sous-dossiers
+                                    </Typography>
+                                    {!caseData.parent_case && (
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            startIcon={<AddIcon />}
+                                            onClick={() => navigate(`/cases?parentId=${id}&new=true`)}
+                                        >
+                                            Ajouter un sous-dossier
+                                        </Button>
+                                    )}
+                                </Box>
+
+                                {caseData.sub_cases && caseData.sub_cases.length > 0 ? (
+                                    <List disablePadding>
+                                        {caseData.sub_cases.map((subCase) => (
+                                            <ListItem
+                                                key={subCase.id}
+                                                divider
+                                                sx={{
+                                                    px: 2,
+                                                    borderRadius: 2,
+                                                    mb: 1,
+                                                    cursor: 'pointer',
+                                                    '&:hover': { bgcolor: 'action.hover' }
+                                                }}
+                                                onClick={() => navigate(`/cases/${subCase.id}`)}
+                                            >
+                                                <ListItemIcon sx={{ minWidth: 40 }}>
+                                                    <FolderIcon sx={{ color: 'text.disabled' }} />
+                                                </ListItemIcon>
+                                                <ListItemText
+                                                    primary={subCase.title || subCase.reference}
+                                                    secondary={`Réf: ${subCase.reference} • ${subCase.category}`}
+                                                    primaryTypographyProps={{ fontWeight: 700 }}
+                                                />
+                                                <Chip
+                                                    label={subCase.status}
+                                                    size="small"
+                                                    color={subCase.status === 'OUVERT' ? 'success' : 'default'}
+                                                />
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                ) : (
+                                    <Box sx={{ textAlign: 'center', py: 3, opacity: 0.7 }}>
+                                        <Typography variant="body2">
+                                            {caseData.parent_case
+                                                ? "Ceci est un sous-dossier."
+                                                : "Aucun sous-dossier pour le moment."}
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Paper>
+                        </Grid>
+
                         {/* Contacts & Collaboration */}
                         <Grid item xs={12}>
                             <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
