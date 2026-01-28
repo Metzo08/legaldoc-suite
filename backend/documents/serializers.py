@@ -72,6 +72,7 @@ class CaseDetailSerializer(serializers.ModelSerializer):
     client_name = serializers.SerializerMethodField()
     assigned_to_details = UserSerializer(source='assigned_to', many=True, read_only=True)
     created_by_name = serializers.SerializerMethodField()
+    sub_cases = CaseListSerializer(many=True, read_only=True)
     
     class Meta:
         model = Case
