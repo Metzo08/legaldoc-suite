@@ -136,11 +136,13 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
                         '&:hover': { boxShadow: 'none' },
                     },
                     containedPrimary: {
-                        backgroundColor: colors.primary,
-                        '&:hover': { backgroundColor: '#1e293b' },
+                        backgroundColor: activePrimary,
+                        '&:hover': { backgroundColor: alpha(activePrimary, 0.8) },
                     },
                     containedSecondary: {
+                        backgroundColor: activeSecondary,
                         color: '#fff', // Assurer un bon contraste
+                        '&:hover': { backgroundColor: alpha(activeSecondary, 0.8) },
                     },
                 },
             },
@@ -203,13 +205,13 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
                         borderRadius: 8,
                         margin: '4px 8px',
                         '&.Mui-selected': {
-                            backgroundColor: alpha(colors.secondary, 0.15),
-                            color: colors.secondary,
+                            backgroundColor: alpha(activeSecondary, 0.15),
+                            color: activeSecondary,
                             '&:hover': {
-                                backgroundColor: alpha(colors.secondary, 0.25),
+                                backgroundColor: alpha(activeSecondary, 0.25),
                             },
                             '& .MuiListItemIcon-root': {
-                                color: colors.secondary,
+                                color: activeSecondary,
                             },
                         },
                         '&:hover': {

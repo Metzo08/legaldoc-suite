@@ -6,6 +6,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+import logging
+import threading
+from django.db import transaction
 from django.db.models import Q
 from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence, Task
 from .serializers import (
@@ -17,7 +20,6 @@ from .serializers import (
 from .permissions import IsAdminOrReadOnly, CanDeleteDocuments, HasDocumentPermission
 from .ocr import process_document_ocr
 from .utils import log_action, send_notification
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +118,7 @@ class CaseViewSet(viewsets.ModelViewSet):
         
         # Filtrer par client
         client_id = self.request.query_params.get('client', None)
-        if client_id:
+        if client_id and str(client_id).isdigit():
             queryset = queryset.filter(client_id=client_id)
         
         # Filtrer par statut
@@ -127,7 +129,7 @@ class CaseViewSet(viewsets.ModelViewSet):
         
         # Filtrer par utilisateur assigné
         assigned_to = self.request.query_params.get('assigned_to', None)
-        if assigned_to:
+        if assigned_to and str(assigned_to).isdigit():
             queryset = queryset.filter(assigned_to=assigned_to)
             
         # Restriction client: voir uniquement ses propres dossiers
@@ -221,7 +223,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
         
         # Filtrer par dossier
         case_id = self.request.query_params.get('case', None)
-        if case_id:
+        if case_id and str(case_id).isdigit():
             queryset = queryset.filter(case_id=case_id)
         
         # Filtrer par type
@@ -231,7 +233,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
         
         # Filtrer par client
         client_id = self.request.query_params.get('client', None)
-        if client_id:
+        if client_id and str(client_id).isdigit():
             queryset = queryset.filter(case__client_id=client_id)
 
         # Restriction client: voir uniquement les documents de ses dossiers
@@ -265,16 +267,33 @@ class DocumentViewSet(viewsets.ModelViewSet):
 
         document = serializer.save(uploaded_by=self.request.user)
         
-        # Lancer l'OCR en asynchrone (ou synchrone pour le MVP)
+        # Fonction interne pour le traitement OCR en tâche de fond
+        def run_ocr_background(doc_id):
+            try:
+                # Recharger le document dans ce thread
+                from .models import Document
+                from django.contrib.postgres.search import SearchVector
+                doc = Document.objects.get(pk=doc_id)
+                
+                process_document_ocr(doc)
+                
+                # Mettre à jour le vecteur de recherche
+                Document.objects.filter(pk=doc_id).update(
+                    search_vector=SearchVector('title', 'description', 'ocr_text', 'file_name')
+                )
+                logger.info(f"OCR et indexation terminés pour document {doc_id}")
+            except Exception as e:
+                logger.error(f"Erreur OCR Task Arrière-plan pour document {doc_id}: {str(e)}")
+
+        # Lancer l'OCR en thread séparé pour ne pas bloquer la réponse HTTP
+        # Utile si Celery n'est pas encore configuré/utilisé pour toutes les tâches
         try:
-            process_document_ocr(document)
-            
-            # Mettre à jour le vecteur de recherche
-            Document.objects.filter(pk=document.pk).update(
-                search_vector=SearchVector('title', 'description', 'ocr_text', 'file_name')
-            )
+            thread = threading.Thread(target=run_ocr_background, args=(document.id,))
+            thread.daemon = True # Ne bloque pas l'arrêt du serveur
+            thread.start()
+            logger.info(f"Tâche OCR lancée en arrière-plan pour document {document.id}")
         except Exception as e:
-            logger.error(f"Erreur OCR pour document {document.id}: {str(e)}")
+            logger.error(f"Impossible de lancer le thread OCR pour {document.id}: {str(e)}")
         
         log_action(
             user=self.request.user,
@@ -383,9 +402,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
                 'status': 'error',
                 'message': f'Erreur lors du retraitement: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-    
+
     def perform_destroy(self, instance):
         """
         Log la suppression.
@@ -622,7 +639,7 @@ class DeadlineViewSet(viewsets.ModelViewSet):
         
         # Filtrer par dossier
         case_id = self.request.query_params.get('case', None)
-        if case_id:
+        if case_id and str(case_id).isdigit():
             queryset = queryset.filter(case_id=case_id)
         
         # Filtrer par statut (complété/non complété)
@@ -779,7 +796,7 @@ class DiligenceViewSet(viewsets.ModelViewSet):
         """
         queryset = Diligence.objects.filter(created_by=self.request.user).select_related('case')
         case_id = self.request.query_params.get('case', None)
-        if case_id:
+        if case_id and str(case_id).isdigit():
             queryset = queryset.filter(case_id=case_id)
         return queryset
 
@@ -820,7 +837,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
         # Filtres
         assigned_to = self.request.query_params.get('assigned_to', None)
-        if assigned_to:
+        if assigned_to and str(assigned_to).isdigit():
             queryset = queryset.filter(assigned_to_id=assigned_to)
 
         status_param = self.request.query_params.get('status', None)
@@ -828,7 +845,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(status=status_param)
 
         case_id = self.request.query_params.get('case', None)
-        if case_id:
+        if case_id and str(case_id).isdigit():
             queryset = queryset.filter(case_id=case_id)
 
         return queryset

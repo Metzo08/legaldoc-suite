@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import mammoth from 'mammoth';
 import {
     Box,
     Grid,
@@ -14,14 +15,7 @@ import {
     DialogContent,
     IconButton,
     Tooltip,
-    TextField,
-    List,
-    ListItem,
-    ListItemIcon,
-    ListItemText,
-    Checkbox,
-    MenuItem,
-    Autocomplete
+    Button
 } from '@mui/material';
 import {
     People as PeopleIcon,
@@ -34,14 +28,9 @@ import {
     ZoomIn as ZoomInIcon,
     ZoomOut as ZoomOutIcon,
     RestartAlt as ResetIcon,
-    Contrast as ContrastIcon,
-    Note as NoteIcon,
-    Save as SaveIcon,
-    Delete as DeleteIcon,
-    AddCircle as AddIcon,
-    NoteAdd as NoteAddIcon
+    Contrast as ContrastIcon
 } from '@mui/icons-material';
-import { clientsAPI, casesAPI, documentsAPI, deadlinesAPI, tagsAPI, diligencesAPI } from '../services/api';
+import { clientsAPI, casesAPI, documentsAPI, deadlinesAPI, tagsAPI } from '../services/api';
 import StatCard from '../components/StatCard';
 import DiligenceManager from '../components/DiligenceManager';
 
@@ -68,13 +57,33 @@ function Dashboard() {
     const [previewDoc, setPreviewDoc] = useState(null);
     const [imageZoom, setImageZoom] = useState(null);
     const [imageEnhance, setImageEnhance] = useState(false);
+    const [wordContent, setWordContent] = useState('');
+    const [wordLoading, setWordLoading] = useState(false);
 
 
-    const handlePreview = (doc) => {
+    const handlePreview = async (doc) => {
         setPreviewDoc(doc);
         setImageZoom(null);
         setImageEnhance(false);
+        setWordContent('');
         setPreviewDialog(true);
+
+        const extension = (doc.file_extension || doc.title?.split('.').pop() || '').toLowerCase().replace('.', '');
+
+        if (extension.includes('doc')) {
+            try {
+                setWordLoading(true);
+                const response = await fetch(doc.file_url);
+                const arrayBuffer = await response.arrayBuffer();
+                const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+                setWordContent(result.value);
+            } catch (error) {
+                console.error('Erreur conversion Word:', error);
+                setWordContent('<p style="color: red;">Erreur lors de la lecture du document Word.</p>');
+            } finally {
+                setWordLoading(false);
+            }
+        }
     };
 
     const handleZoomIn = () => setImageZoom(prev => (prev || 100) + 25);
@@ -206,8 +215,8 @@ function Dashboard() {
                                 size="small"
                                 onClick={(e) => { e.stopPropagation(); navigate('/cases?filter=CIVIL'); }}
                                 sx={{
-                                    bgcolor: '#fff9c4', color: '#fbc02d', fontWeight: 800, border: '1px solid #fbc02d',
-                                    '&:hover': { bgcolor: '#fff59d' }
+                                    bgcolor: '#fefce8', color: '#a16207', fontWeight: 800, border: '1px solid #facc15',
+                                    '&:hover': { bgcolor: '#fef9c3' }
                                 }}
                             />
                             <Chip
@@ -215,8 +224,8 @@ function Dashboard() {
                                 size="small"
                                 onClick={(e) => { e.stopPropagation(); navigate('/cases?filter=CORRECTIONNEL'); }}
                                 sx={{
-                                    bgcolor: '#e3f2fd', color: '#1976d2', fontWeight: 800, border: '1px solid #1976d2',
-                                    '&:hover': { bgcolor: '#bbdefb' }
+                                    bgcolor: '#eff6ff', color: '#1d4ed8', fontWeight: 800, border: '1px solid #3b82f6',
+                                    '&:hover': { bgcolor: '#dbeafe' }
                                 }}
                             />
                         </Box>
@@ -532,39 +541,55 @@ function Dashboard() {
                         </IconButton>
                     </Box>
                 </DialogTitle>
-                <DialogContent dividers sx={{ p: 0, bgcolor: '#f5f5f5', display: 'flex', flexDirection: 'column' }}>
-                    {previewDoc && (
-                        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: imageZoom ? 'flex-start' : 'center', overflow: 'auto', p: 2 }}>
-                            {previewDoc.file_extension?.toLowerCase() === '.pdf' ? (
-                                <iframe
-                                    src={previewDoc.file_url}
-                                    width="100%"
-                                    height="100%"
-                                    style={{ border: 'none' }}
-                                    title="PDF Preview"
-                                />
-                            ) : ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(previewDoc.file_extension?.toLowerCase().replace('.', '')) ? (
-                                <img
-                                    src={previewDoc.file_url}
-                                    alt={previewDoc.title}
-                                    style={{
-                                        maxWidth: imageZoom ? 'none' : '100%',
-                                        maxHeight: imageZoom ? 'none' : '100%',
-                                        width: imageZoom ? `${imageZoom}%` : 'auto',
-                                        objectFit: 'contain',
-                                        filter: imageEnhance ? 'contrast(1.5) brightness(1.05) grayscale(0.2)' : 'none',
-                                        transition: 'width 0.2s, filter 0.2s'
-                                    }}
-                                />
-                            ) : (
-                                <Box sx={{ textAlign: 'center', p: 4 }}>
-                                    <Typography variant="h6" color="text.secondary" gutterBottom>
-                                        Aperçu non disponible pour ce type de fichier.
-                                    </Typography>
-                                </Box>
-                            )}
-                        </Box>
-                    )}
+                <DialogContent dividers sx={{ p: 0, bgcolor: (theme) => theme.palette.mode === 'dark' ? 'background.default' : '#f5f5f5', display: 'flex', flexDirection: 'column' }}>
+                    {previewDoc && (() => {
+                        const extension = (previewDoc.file_extension || previewDoc.title?.split('.').pop() || '').toLowerCase().replace('.', '');
+                        const isPdf = extension === 'pdf';
+                        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension);
+                        const isWord = extension.includes('doc');
+
+                        return (
+                            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: imageZoom ? 'flex-start' : 'center', overflow: 'auto', p: 2 }}>
+                                {isPdf ? (
+                                    <iframe src={previewDoc.file_url} width="100%" height="100%" style={{ border: 'none', borderRadius: '8px' }} title="PDF Preview" />
+                                ) : isImage ? (
+                                    <img
+                                        src={previewDoc.file_url}
+                                        alt={previewDoc.title}
+                                        style={{
+                                            maxWidth: imageZoom ? 'none' : '100%',
+                                            maxHeight: imageZoom ? 'none' : '100%',
+                                            width: imageZoom ? `${imageZoom}%` : 'auto',
+                                            objectFit: 'contain',
+                                            filter: imageEnhance ? 'contrast(1.5) brightness(1.05) grayscale(0.2)' : 'none',
+                                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                                        }}
+                                    />
+                                ) : isWord ? (
+                                    <Paper sx={{ p: 4, width: '100%', maxWidth: '800px', mx: 'auto', minHeight: '100%', bgcolor: 'white', color: 'black', borderRadius: '4px', boxShadow: 3 }} elevation={2}>
+                                        {wordLoading ? (
+                                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><Typography>Chargement du document Word...</Typography></Box>
+                                        ) : (
+                                            <div dangerouslySetInnerHTML={{ __html: wordContent }} style={{ textAlign: 'left' }} />
+                                        )}
+                                    </Paper>
+                                ) : (
+                                    <Box sx={{ textAlign: 'center', p: 4, bgcolor: 'background.paper', borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+                                        <DescriptionIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
+                                        <Typography variant="h6" color="text.secondary" gutterBottom>
+                                            Aperçu non disponible pour ce type de fichier.
+                                        </Typography>
+                                        <Typography variant="body2" color="text.disabled" sx={{ mb: 3 }}>
+                                            Type détecté : {extension.toUpperCase() || 'Inconnu'}
+                                        </Typography>
+                                        <Button variant="contained" component="a" href={previewDoc.file_url} download>
+                                            Télécharger pour voir le fichier
+                                        </Button>
+                                    </Box>
+                                )}
+                            </Box>
+                        );
+                    })()}
                 </DialogContent>
             </Dialog>
         </Box>

@@ -285,25 +285,33 @@ const DiligenceManager = ({ caseId = null, title = "Pense-bête", showCaseLink =
                                     >
                                         {item.title}
                                     </Typography>
-                                    {!caseId && showCaseLink && item.case_reference && (
-                                        <Chip
-                                            label={item.case_reference}
-                                            size="small"
-                                            variant="outlined"
-                                            onClick={() => navigate(`/cases/${item.case}`)}
-                                            sx={{
-                                                height: 18,
-                                                fontSize: '0.6rem',
-                                                fontWeight: 800,
-                                                mt: 0.5,
-                                                color: '#fbc02d',
-                                                borderColor: alpha('#fbc02d', 0.3),
-                                                bgcolor: alpha('#fbc02d', 0.05),
-                                                cursor: 'pointer',
-                                                '&:hover': { bgcolor: alpha('#fbc02d', 0.1), borderColor: '#fbc02d' }
-                                            }}
-                                        />
-                                    )}
+                                    {!caseId && showCaseLink && item.case_reference && (() => {
+                                        const category = item.case_category || 'CIVIL';
+                                        const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(category);
+                                        const isBlue = ['PENAL', 'CORRECTIONNEL'].includes(category);
+                                        return (
+                                            <Chip
+                                                label={item.case_reference}
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() => navigate(`/cases/${item.case}`)}
+                                                sx={{
+                                                    height: 18,
+                                                    fontSize: '0.6rem',
+                                                    fontWeight: 800,
+                                                    mt: 0.5,
+                                                    color: isYellow ? '#a16207' : (isBlue ? '#1d4ed8' : 'primary.main'),
+                                                    borderColor: isYellow ? '#facc15' : (isBlue ? '#3b82f6' : 'divider'),
+                                                    bgcolor: isYellow ? '#fefce8' : (isBlue ? '#eff6ff' : 'action.hover'),
+                                                    cursor: 'pointer',
+                                                    '&:hover': {
+                                                        bgcolor: isYellow ? '#fef9c3' : (isBlue ? '#dbeafe' : 'action.selected'),
+                                                        borderColor: isYellow ? '#facc15' : (isBlue ? '#3b82f6' : 'primary.main')
+                                                    }
+                                                }}
+                                            />
+                                        );
+                                    })()}
                                 </Box>
                                 <IconButton
                                     size="small"

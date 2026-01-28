@@ -9,9 +9,6 @@ const API_URL = process.env.REACT_APP_API_URL || '/api';
 // Créer une instance axios
 const apiClient = axios.create({
     baseURL: API_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
 });
 
 // Intercepteur pour ajouter le token JWT à chaque requête

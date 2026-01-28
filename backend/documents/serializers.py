@@ -329,13 +329,14 @@ class DiligenceSerializer(serializers.ModelSerializer):
     """
     case_reference = serializers.CharField(source='case.reference', read_only=True)
     case_title = serializers.CharField(source='case.title', read_only=True)
+    case_category = serializers.CharField(source='case.category', read_only=True)
     created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
     
     class Meta:
         model = Diligence
         fields = (
             'id', 'title', 'is_completed', 'case', 'case_reference', 
-            'case_title', 'created_by', 'created_by_name', 
+            'case_title', 'case_category', 'created_by', 'created_by_name', 
             'created_at', 'updated_at'
         )
         read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')

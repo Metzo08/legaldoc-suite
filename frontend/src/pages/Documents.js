@@ -16,7 +16,8 @@ import {
     MenuItem,
     Chip,
     Tooltip,
-    Grid
+    Grid,
+    alpha
 } from '@mui/material';
 import {
     DataGrid,
@@ -127,7 +128,9 @@ function Documents() {
         loadData().then(() => {
             const caseId = searchParams.get('caseId');
             const isNew = searchParams.get('new') === 'true';
-            if (caseId && isNew) {
+
+            // Sanitize caseId: jump to creation only if it's a valid number
+            if (caseId && isNew && caseId !== 'undefined' && !isNaN(parseInt(caseId))) {
                 setFormData(prev => ({
                     ...prev,
                     case: parseInt(caseId)
@@ -286,8 +289,10 @@ function Documents() {
         setWordContent('');
         setPreviewDialog(true);
 
+        const extension = (doc.file_extension || doc.title?.split('.').pop() || '').toLowerCase().replace('.', '');
+
         // Si c'est un fichier Word, charger et convertir
-        if (doc.file_extension?.toLowerCase().includes('doc')) {
+        if (extension.includes('doc')) {
             try {
                 setWordLoading(true);
                 const response = await fetch(doc.file_url);
@@ -664,8 +669,22 @@ function Documents() {
                         <Box sx={{ mb: 2 }}><Chip label={selectedDoc?.ocr_processed ? "OCR traité" : "OCR non traité"} color={selectedDoc?.ocr_processed ? "success" : "warning"} sx={{ mr: 1 }} /><Chip label={selectedDoc?.document_type || 'N/A'} variant="outlined" /></Box>
                         {selectedDoc?.ocr_error && <Box sx={{ p: 2, mb: 2, bgcolor: '#ffebee', borderRadius: 1 }}><Typography color="error"><strong>Erreur OCR:</strong> {selectedDoc.ocr_error}</Typography></Box>}
                         <Typography variant="subtitle2" gutterBottom>Texte extrait :</Typography>
-                        <Box sx={{ p: 2, bgcolor: '#ffffff', border: '1px solid #e0e0e0', borderRadius: 1, maxHeight: 400, overflow: 'auto', color: '#000000' }}>
-                            <Typography variant="body2" component="div" sx={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '0.875rem', lineHeight: 1.6, color: '#000000' }}>
+                        <Box sx={{
+                            p: 2,
+                            bgcolor: (theme) => theme.palette.mode === 'dark' ? alpha('#fff', 0.05) : '#f8f9fa',
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            borderRadius: 2,
+                            maxHeight: 400,
+                            overflow: 'auto'
+                        }}>
+                            <Typography variant="body2" component="div" sx={{
+                                whiteSpace: 'pre-wrap',
+                                fontFamily: "'Courier New', Courier, monospace",
+                                fontSize: '0.9rem',
+                                lineHeight: 1.6,
+                                color: 'text.primary'
+                            }}>
                                 {selectedDoc?.ocr_text || "Aucun texte extrait."}
                             </Typography>
                         </Box>
@@ -692,44 +711,55 @@ function Documents() {
                         <IconButton aria-label="close" onClick={() => setPreviewDialog(false)}><CloseIcon /></IconButton>
                     </Box>
                 </DialogTitle>
-                <DialogContent dividers sx={{ p: 0, bgcolor: '#f5f5f5', display: 'flex', flexDirection: 'column' }}>
-                    {previewDoc && (
-                        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: imageZoom ? 'flex-start' : 'center', overflow: 'auto', p: 2 }}>
-                            {previewDoc.file_extension?.toLowerCase().includes('pdf') ? (
-                                <iframe src={previewDoc.file_url} width="100%" height="100%" style={{ border: 'none' }} title="PDF Preview" />
-                            ) : ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(previewDoc.file_extension?.toLowerCase().replace('.', '')) ? (
-                                <img
-                                    src={previewDoc.file_url}
-                                    alt={previewDoc.title}
-                                    style={{
-                                        maxWidth: imageZoom ? 'none' : '100%',
-                                        maxHeight: imageZoom ? 'none' : '100%',
-                                        width: imageZoom ? `${imageZoom}%` : 'auto',
-                                        objectFit: 'contain',
-                                        filter: imageEnhance ? 'contrast(1.5) brightness(1.05) grayscale(0.2)' : 'none',
-                                        transition: 'width 0.2s, filter 0.2s'
-                                    }}
-                                />
-                            ) : previewDoc.file_extension?.toLowerCase().includes('doc') ? (
-                                <Paper sx={{ p: 4, width: '100%', maxWidth: '800px', mx: 'auto', minHeight: '100%', bgcolor: 'white', color: 'black' }} elevation={2}>
-                                    {wordLoading ? (
-                                        <Typography>Chargement du document Word...</Typography>
-                                    ) : (
-                                        <div dangerouslySetInnerHTML={{ __html: wordContent }} style={{ textAlign: 'left' }} />
-                                    )}
-                                </Paper>
-                            ) : (
-                                <Box sx={{ textAlign: 'center', p: 4 }}>
-                                    <Typography variant="h6" color="text.secondary" gutterBottom>
-                                        Aperçu non disponible pour ce type de fichier.
-                                    </Typography>
-                                    <Button variant="outlined" component="a" href={previewDoc.file_url} download startIcon={<DownloadIcon />} sx={{ mt: 2 }}>
-                                        Télécharger pour voir
-                                    </Button>
-                                </Box>
-                            )}
-                        </Box>
-                    )}
+                <DialogContent dividers sx={{ p: 0, bgcolor: (theme) => theme.palette.mode === 'dark' ? 'background.default' : '#f5f5f5', display: 'flex', flexDirection: 'column' }}>
+                    {previewDoc && (() => {
+                        const extension = (previewDoc.file_extension || previewDoc.title?.split('.').pop() || '').toLowerCase().replace('.', '');
+                        const isPdf = extension === 'pdf';
+                        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension);
+                        const isWord = extension.includes('doc');
+
+                        return (
+                            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: imageZoom ? 'flex-start' : 'center', overflow: 'auto', p: 2 }}>
+                                {isPdf ? (
+                                    <iframe src={previewDoc.file_url} width="100%" height="100%" style={{ border: 'none', borderRadius: '8px' }} title="PDF Preview" />
+                                ) : isImage ? (
+                                    <img
+                                        src={previewDoc.file_url}
+                                        alt={previewDoc.title}
+                                        style={{
+                                            maxWidth: imageZoom ? 'none' : '100%',
+                                            maxHeight: imageZoom ? 'none' : '100%',
+                                            width: imageZoom ? `${imageZoom}%` : 'auto',
+                                            objectFit: 'contain',
+                                            filter: imageEnhance ? 'contrast(1.5) brightness(1.05) grayscale(0.2)' : 'none',
+                                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                                        }}
+                                    />
+                                ) : isWord ? (
+                                    <Paper sx={{ p: 4, width: '100%', maxWidth: '800px', mx: 'auto', minHeight: '100%', bgcolor: 'white', color: 'black', borderRadius: '4px', boxShadow: 3 }} elevation={2}>
+                                        {wordLoading ? (
+                                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><Typography>Chargement du document Word...</Typography></Box>
+                                        ) : (
+                                            <div dangerouslySetInnerHTML={{ __html: wordContent }} style={{ textAlign: 'left' }} />
+                                        )}
+                                    </Paper>
+                                ) : (
+                                    <Box sx={{ textAlign: 'center', p: 4, bgcolor: 'background.paper', borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+                                        <FileIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
+                                        <Typography variant="h6" color="text.secondary" gutterBottom>
+                                            Aperçu non disponible pour ce type de fichier.
+                                        </Typography>
+                                        <Typography variant="body2" color="text.disabled" sx={{ mb: 3 }}>
+                                            Type détecté : {extension.toUpperCase() || 'Inconnu'}
+                                        </Typography>
+                                        <Button variant="contained" component="a" href={previewDoc.file_url} download startIcon={<DownloadIcon />}>
+                                            Télécharger pour voir le fichier
+                                        </Button>
+                                    </Box>
+                                )}
+                            </Box>
+                        );
+                    })()}
                 </DialogContent>
             </Dialog>
 

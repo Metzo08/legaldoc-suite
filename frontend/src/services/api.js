@@ -25,12 +25,8 @@ export const casesAPI = {
 export const documentsAPI = {
     getAll: (params) => apiClient.get('/documents/documents/', { params }),
     getOne: (id) => apiClient.get(`/documents/documents/${id}/`),
-    upload: (formData) => apiClient.post('/documents/documents/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-    }),
-    update: (id, data) => apiClient.patch(`/documents/documents/${id}/`, data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-    }),
+    upload: (formData) => apiClient.post('/documents/documents/', formData),
+    update: (id, formData) => apiClient.patch(`/documents/documents/${id}/`, formData),
     delete: (id) => apiClient.delete(`/documents/documents/${id}/`),
     download: (id) => apiClient.get(`/documents/documents/${id}/download/`, {
         responseType: 'blob'

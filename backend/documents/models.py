@@ -265,6 +265,7 @@ class Document(models.Model):
     )
     file = models.FileField(
         upload_to=document_upload_path,
+        max_length=500,
         verbose_name='Fichier'
     )
     file_name = models.CharField(max_length=255, verbose_name='Nom du fichier')
@@ -553,7 +554,7 @@ class DocumentVersion(models.Model):
         verbose_name='Document'
     )
     version_number = models.IntegerField(verbose_name='Numéro de version')
-    file = models.FileField(upload_to='document_versions/', verbose_name='Fichier')
+    file = models.FileField(upload_to='document_versions/', max_length=500, verbose_name='Fichier')
     file_name = models.CharField(max_length=255, verbose_name='Nom du fichier')
     file_size = models.BigIntegerField(verbose_name='Taille du fichier')
     comment = models.TextField(blank=True, verbose_name='Commentaire')

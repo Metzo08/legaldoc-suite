@@ -256,7 +256,20 @@ function Cases() {
                 <GridActionsCellItem icon={<DeleteIcon />} label="Supprimer" onClick={() => handleDeleteClick(params.row)} color="error" />,
             ],
         },
-        { field: 'reference', headerName: 'Numéro dossier', width: 140 },
+        {
+            field: 'reference',
+            headerName: 'Numéro dossier',
+            width: 160,
+            renderCell: (params) => {
+                const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(params.row.category);
+                return (
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <FolderIcon sx={{ color: isYellow ? '#facc15' : '#1d4ed8', mr: 1, fontSize: 20 }} />
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{params.value}</Typography>
+                    </Box>
+                );
+            }
+        },
         { field: 'title', headerName: 'Intitulé de l\'affaire', flex: 2, minWidth: 200 },
         {
             field: 'client_name',
@@ -284,11 +297,11 @@ function Cases() {
                         label={label}
                         size="small"
                         sx={{
-                            bgcolor: isYellow ? '#fff9c4' : '#e3f2fd',
-                            color: isYellow ? '#fbc02d' : '#1976d2',
+                            bgcolor: isYellow ? '#fefce8' : '#eff6ff',
+                            color: isYellow ? '#a16207' : '#1d4ed8',
                             fontWeight: 'bold',
                             border: '1px solid',
-                            borderColor: isYellow ? '#fbc02d' : '#1976d2'
+                            borderColor: isYellow ? '#facc15' : '#3b82f6'
                         }}
                     />
                 );
@@ -398,7 +411,7 @@ function Cases() {
                         <StatCard
                             title="Civil & Autres"
                             value={civilCases}
-                            icon={<FolderIcon sx={{ color: '#fbc02d' }} />}
+                            icon={<FolderIcon sx={{ color: '#facc15' }} />}
                             color="warning"
                             sx={{ border: filterMode === 'CIVIL' ? '2px solid' : 'none', borderColor: 'warning.main', borderRadius: 2 }}
                         />
@@ -409,7 +422,7 @@ function Cases() {
                         <StatCard
                             title="Pénal & Correctionnel"
                             value={penalCases}
-                            icon={<FolderIcon color="info" />}
+                            icon={<FolderIcon sx={{ color: '#1d4ed8' }} />}
                             color="info"
                             sx={{ border: filterMode === 'CORRECTIONNEL' ? '2px solid' : 'none', borderColor: 'info.main', borderRadius: 2 }}
                         />

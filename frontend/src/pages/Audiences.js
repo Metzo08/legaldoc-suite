@@ -89,10 +89,10 @@ function Audiences() {
         const isNew = searchParams.get('new') === 'true';
         const caseId = searchParams.get('caseId');
 
-        if (isNew) {
+        if (isNew && caseId && caseId !== 'undefined' && !isNaN(parseInt(caseId))) {
             setFormData(prev => ({
                 ...prev,
-                case: caseId || prev.case
+                case: parseInt(caseId)
             }));
             setOpenDialog(true);
         }
@@ -347,12 +347,12 @@ function Audiences() {
                                         position: 'relative', overflow: 'hidden',
                                         '&:before': {
                                             content: '""', position: 'absolute', left: 0, top: 0, bottom: 0, width: 4,
-                                            bgcolor: isYellow ? '#fbc02d' : '#1976d2'
+                                            bgcolor: isYellow ? '#facc15' : (isBlue ? '#1d4ed8' : 'primary.main')
                                         }
                                     }}>
                                         <CardContent>
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                                <Typography variant="caption" sx={{ color: isYellow ? '#fbc02d' : '#1976d2', fontWeight: 800, textTransform: 'uppercase' }}>
+                                                <Typography variant="caption" sx={{ color: isYellow ? '#a16207' : '#1d4ed8', fontWeight: 800, textTransform: 'uppercase' }}>
                                                     {categoryLabel} • {new Date(audience.due_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                                                 </Typography>
                                                 <Box>
