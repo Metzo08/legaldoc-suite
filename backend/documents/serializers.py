@@ -44,7 +44,7 @@ class CaseListSerializer(serializers.ModelSerializer):
             'opened_date', 'closed_date', 'category', 'assigned_to_names', 'total_documents',
             'created_at', 'updated_at', 'represented_party', 'adverse_party',
             'adverse_lawyer', 'external_reference', 'contact_name', 'contact_email',
-            'contact_phone', 'our_lawyers', 'fees'
+            'contact_phone', 'our_lawyers', 'fees', 'parent_case'
         )
     
     def to_representation(self, instance):
@@ -80,7 +80,8 @@ class CaseDetailSerializer(serializers.ModelSerializer):
             'status', 'opened_date', 'closed_date', 'category', 'assigned_to', 'assigned_to_details',
             'created_by', 'created_by_name', 'created_at', 'updated_at', 'represented_party',
             'adverse_party', 'adverse_lawyer', 'external_reference', 'contact_name',
-            'contact_email', 'contact_phone', 'our_lawyers', 'fees', 'client_name'
+            'contact_email', 'contact_phone', 'our_lawyers', 'fees', 'client_name',
+            'parent_case', 'sub_cases'
         )
         read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
     

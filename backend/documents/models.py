@@ -176,7 +176,7 @@ class Case(models.Model):
         Format sous-dossier : CIV1234.1 (Réf Principal + . + incrément)
         """
         if not self.reference:
-            # Préfixes par catégorie: jaune (CIV/COM/SOC/PEN) et bleu (COR)
+            # Préfixes par catégorie
             prefix_map = {
                 'CIVIL': 'CIV',
                 'COMMERCIAL': 'COM',
@@ -185,25 +185,18 @@ class Case(models.Model):
                 'CORRECTIONNEL': 'COR'
             }
             prefix = prefix_map.get(self.category, 'CIV')
-            
-            # 1. Vérifier si le client a déjà un dossier "principal" dans cette catégorie
-            root_case = Case.objects.filter(
-                client=self.client, 
-                category=self.category
-            ).order_by('created_at').first()
-            
-            if root_case:
-                # C'est un sous-dossier
-                base_ref = root_case.reference.split('.')[0]
-                count = Case.objects.filter(
-                    client=self.client, 
-                    category=self.category
-                ).count()
-                self.reference = f"{base_ref}.{count}"
+
+            if self.parent_case:
+                # C'est explicitement un sous-dossier
+                base_ref = self.parent_case.reference.split('.')[0]
+                # Compter les sous-dossiers existants pour ce parent
+                count = Case.objects.filter(parent_case=self.parent_case).count()
+                self.reference = f"{base_ref}.{count + 1}"
             else:
-                # Dossier Principal
+                # Dossier Principal - Logique existante améliorée
                 import re
                 principal_cases = Case.objects.filter(
+                    parent_case__isnull=True,
                     category=self.category,
                     reference__regex=rf'^{prefix}\d+$'
                 )
