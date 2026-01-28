@@ -29,7 +29,8 @@ import {
     Email as EmailIcon,
     ArrowBack as ArrowBackIcon,
     Edit as EditIcon,
-    CloudUpload as UploadIcon
+    CloudUpload as UploadIcon,
+    Add as AddIcon
 } from '@mui/icons-material';
 import { casesAPI, documentsAPI, deadlinesAPI } from '../services/api';
 import authService from '../services/authService';
