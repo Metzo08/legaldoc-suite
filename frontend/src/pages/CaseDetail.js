@@ -241,6 +241,35 @@ const CaseDetail = () => {
                             </Paper>
                         </Grid>
 
+                        {/* Contacts & Collaboration */}
+                        <Grid item xs={12}>
+                            <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Collaboration et Contacts</Typography>
+                                <Grid container spacing={3}>
+                                    <Grid item xs={12} sm={6}>
+                                        <Typography variant="subtitle2" sx={{ mb: 1.5, color: 'text.secondary' }}>Personne à contacter</Typography>
+                                        <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
+                                            <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>{caseData.contact_name || 'Aucun contact direct'}</Typography>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                                                <EmailIcon sx={{ fontSize: 16, mr: 1, color: 'text.disabled' }} />
+                                                <Typography variant="caption">{caseData.contact_email || 'Pas d\'email'}</Typography>
+                                            </Box>
+                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                <PhoneIcon sx={{ fontSize: 16, mr: 1, color: 'text.disabled' }} />
+                                                <Typography variant="caption">{caseData.contact_phone || 'Pas de téléphone'}</Typography>
+                                            </Box>
+                                        </Box>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <Typography variant="subtitle2" sx={{ mb: 1.5, color: 'text.secondary' }}>Avocats à nos côtés</Typography>
+                                        <Box sx={{ p: 2, bgcolor: alpha('#6366f1', 0.05), borderRadius: 2, borderLeft: '4px solid', borderLeftColor: 'primary.main' }}>
+                                            <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>{caseData.our_lawyers || 'Aucun avocat collaborateur spécifié'}</Typography>
+                                        </Box>
+                                    </Grid>
+                                </Grid>
+                            </Paper>
+                        </Grid>
+
                         {/* Sous-dossiers */}
                         <Grid item xs={12}>
                             <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
@@ -300,35 +329,6 @@ const CaseDetail = () => {
                                         </Typography>
                                     </Box>
                                 )}
-                            </Paper>
-                        </Grid>
-
-                        {/* Contacts & Collaboration */}
-                        <Grid item xs={12}>
-                            <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
-                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Collaboration et Contacts</Typography>
-                                <Grid container spacing={3}>
-                                    <Grid item xs={12} sm={6}>
-                                        <Typography variant="subtitle2" sx={{ mb: 1.5, color: 'text.secondary' }}>Personne à contacter</Typography>
-                                        <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
-                                            <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>{caseData.contact_name || 'Aucun contact direct'}</Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                                                <EmailIcon sx={{ fontSize: 16, mr: 1, color: 'text.disabled' }} />
-                                                <Typography variant="caption">{caseData.contact_email || 'Pas d\'email'}</Typography>
-                                            </Box>
-                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                <PhoneIcon sx={{ fontSize: 16, mr: 1, color: 'text.disabled' }} />
-                                                <Typography variant="caption">{caseData.contact_phone || 'Pas de téléphone'}</Typography>
-                                            </Box>
-                                        </Box>
-                                    </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                        <Typography variant="subtitle2" sx={{ mb: 1.5, color: 'text.secondary' }}>Avocats à nos côtés</Typography>
-                                        <Box sx={{ p: 2, bgcolor: alpha('#6366f1', 0.05), borderRadius: 2, borderLeft: '4px solid', borderLeftColor: 'primary.main' }}>
-                                            <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>{caseData.our_lawyers || 'Aucun avocat collaborateur spécifié'}</Typography>
-                                        </Box>
-                                    </Grid>
-                                </Grid>
                             </Paper>
                         </Grid>
 
