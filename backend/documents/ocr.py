@@ -7,6 +7,7 @@ from PIL import Image, ImageOps
 import PyPDF2
 import os
 import tempfile
+import docx
 from django.conf import settings
 import logging
 
@@ -60,6 +61,10 @@ class OCRProcessor:
             
             if ext == '.pdf':
                 return self.extract_from_pdf(file_path)
+            elif ext in ['.docx']:
+                return self.extract_from_docx(file_path)
+            elif ext in ['.doc']:
+                return '', 'Le format .doc est ancien. Veuillez le convertir en .docx pour l\'extraction.'
             elif ext in ['.jpg', '.jpeg', '.png', '.tiff', '.bmp', '.gif']:
                 return self.extract_from_image(file_path)
             elif ext in ['.txt']:
@@ -68,8 +73,8 @@ class OCRProcessor:
                 return '', f'Type de fichier non supporté pour l\'OCR: {ext}'
                 
         except Exception as e:
-            logger.error(f"Erreur lors de l'extraction de texte pour {file_path}: {str(e)}")
-            return '', str(e)
+            logger.exception(f"Erreur lors de l'extraction de texte pour {file_path}")
+            return '', f"Erreur système: {str(e)}"
     
     def extract_from_pdf(self, pdf_path):
         """
@@ -167,12 +172,6 @@ class OCRProcessor:
     def extract_from_text(self, text_path):
         """
         Lit le contenu d'un fichier texte.
-        
-        Args:
-            text_path (str): Chemin vers le fichier texte
-            
-        Returns:
-            tuple: (texte_extrait, erreur)
         """
         try:
             with open(text_path, 'r', encoding='utf-8') as file:
@@ -180,7 +179,6 @@ class OCRProcessor:
             return text, ''
             
         except UnicodeDecodeError:
-            # Essayer avec un autre encodage
             try:
                 with open(text_path, 'r', encoding='latin-1') as file:
                     text = file.read()
@@ -191,6 +189,27 @@ class OCRProcessor:
         except Exception as e:
             logger.error(f"Erreur lecture fichier texte {text_path}: {str(e)}")
             return '', str(e)
+
+    def extract_from_docx(self, docx_path):
+        """
+        Extrait le texte d'un fichier Word (.docx).
+        """
+        try:
+            doc = docx.Document(docx_path)
+            full_text = []
+            for para in doc.paragraphs:
+                full_text.append(para.text)
+            
+            # Extraire aussi le texte des tableaux
+            for table in doc.tables:
+                for row in table.rows:
+                    for cell in row.cells:
+                        full_text.append(cell.text)
+            
+            return '\n'.join(full_text), ''
+        except Exception as e:
+            logger.error(f"Erreur extraction Word {docx_path}: {str(e)}")
+            return '', f"Erreur Word: {str(e)}"
 
 
 def process_document_ocr(document):

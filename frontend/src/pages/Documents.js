@@ -250,6 +250,32 @@ function Documents() {
         setOcrDialog(true);
     };
 
+    const handleReprocessOcr = async () => {
+        if (!selectedDoc) return;
+        try {
+            setLoading(true);
+            const response = await documentsAPI.reprocessOcr(selectedDoc.id);
+            if (response.data.status === 'success') {
+                showNotification("OCR relancé avec succès !");
+                // Mettre à jour le document sélectionné avec les nouveaux résultats
+                setSelectedDoc(prev => ({
+                    ...prev,
+                    ocr_processed: true,
+                    ocr_text: response.data.ocr_text,
+                    ocr_error: response.data.ocr_error
+                }));
+                loadData();
+            } else {
+                showNotification(response.data.message || "Erreur lors du retraitement.", "error");
+            }
+        } catch (error) {
+            console.error('Erreur retraitement OCR:', error);
+            showNotification("Erreur lors de la communication avec le serveur.", "error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handlePreview = (doc) => {
         setPreviewDoc(doc);
         setImageZoom(null);
@@ -626,9 +652,13 @@ function Documents() {
                     </Box>
                 </DialogContent>
                 <DialogActions>
+                    <Button onClick={handleReprocessOcr} startIcon={<FindIcon />} color="primary" disabled={loading}>
+                        {loading ? 'Traitement...' : 'Relancer l\'OCR'}
+                    </Button>
+                    <Box sx={{ flex: 1 }} />
                     <Button onClick={handleExportWord} startIcon={<DownloadIcon />} color="success">Exporter Word</Button>
                     <Button onClick={handleExportPDF} startIcon={<DownloadIcon />} color="error">Exporter PDF</Button>
-                    <Button onClick={() => setOcrDialog(false)} variant="contained">Fermer</Button>
+                    <Button onClick={() => setOcrDialog(false)} variant="contained" color="inherit">Fermer</Button>
                 </DialogActions>
             </Dialog>
 

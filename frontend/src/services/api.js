@@ -37,7 +37,8 @@ export const documentsAPI = {
     }),
     search: (query) => apiClient.get('/documents/documents/search/', {
         params: { q: query }
-    })
+    }),
+    reprocessOcr: (id) => apiClient.post(`/documents/documents/${id}/reprocess-ocr/`)
 };
 
 // API Users

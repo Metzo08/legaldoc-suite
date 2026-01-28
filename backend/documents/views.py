@@ -354,6 +354,35 @@ class DocumentViewSet(viewsets.ModelViewSet):
             details=f'Document consulté: {instance.title}',
             request=request
         )
+        return super().retrieve(request, *args, **kwargs)
+
+    @action(detail=True, methods=['post'], url_path='reprocess-ocr')
+    def reprocess_ocr(self, request, pk=None):
+        """
+        Relance manuellement le processus OCR pour un document.
+        """
+        document = self.get_object()
+        try:
+            from .ocr import process_document_ocr
+            process_document_ocr(document)
+            
+            # Mettre à jour le vecteur de recherche
+            from django.contrib.postgres.search import SearchVector
+            Document.objects.filter(pk=document.pk).update(
+                search_vector=SearchVector('title', 'description', 'ocr_text', 'file_name')
+            )
+            
+            return Response({
+                'status': 'success',
+                'message': 'OCR relancé avec succès',
+                'ocr_text': document.ocr_text,
+                'ocr_error': document.ocr_error
+            })
+        except Exception as e:
+            return Response({
+                'status': 'error',
+                'message': f'Erreur lors du retraitement: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
     
