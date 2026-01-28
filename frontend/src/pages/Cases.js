@@ -83,18 +83,24 @@ function Cases() {
                 casesAPI.getAll(),
                 clientsAPI.getAll()
             ]);
-            setCases(casesRes.data.results || casesRes.data);
-            setClients(clientsRes.data.results || clientsRes.data);
+            const fetchedCases = casesRes.data.results || casesRes.data;
+            const fetchedClients = clientsRes.data.results || clientsRes.data;
+            setCases(fetchedCases);
+            setClients(fetchedClients);
+            return { fetchedCases, fetchedClients };
         } catch (error) {
             console.error('Erreur chargement:', error);
             showNotification("Erreur lors du chargement des données.", "error");
+            return null;
         } finally {
             setLoading(false);
         }
     }, [showNotification]);
 
     useEffect(() => {
-        loadData().then(() => {
+        loadData().then((data) => {
+            if (!data) return;
+            const { fetchedCases } = data;
             const clientId = searchParams.get('clientId');
             const parentId = searchParams.get('parentId');
             const isNew = searchParams.get('new') === 'true';
@@ -102,7 +108,7 @@ function Cases() {
             if (isNew) {
                 if (parentId) {
                     // Si on crée un sous-dossier, on cherche le parent pour le client
-                    const parentCase = cases.find(c => c.id === parseInt(parentId));
+                    const parentCase = fetchedCases.find(c => c.id === parseInt(parentId));
                     setFormData(prev => ({
                         ...prev,
                         client: parentCase?.client || '',
@@ -120,7 +126,7 @@ function Cases() {
                 }
             }
         });
-    }, [loadData, searchParams, cases]);
+    }, [loadData, searchParams]);
 
     const handleOpenDialog = (caseItem = null) => {
         if (caseItem) {
