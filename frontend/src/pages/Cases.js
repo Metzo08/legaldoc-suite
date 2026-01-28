@@ -257,6 +257,7 @@ function Cases() {
             ],
         },
         { field: 'reference', headerName: 'Numéro dossier', width: 140 },
+        { field: 'title', headerName: 'Intitulé de l\'affaire', flex: 2, minWidth: 200 },
         {
             field: 'client_name',
             headerName: 'Client',

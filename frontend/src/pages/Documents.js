@@ -45,6 +45,7 @@ import { documentsAPI, casesAPI } from '../services/api';
 import jsPDF from 'jspdf';
 import { Document as DocxDocument, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
 import { saveAs } from 'file-saver';
+import mammoth from 'mammoth';
 import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
 import StatCard from '../components/StatCard';
 
@@ -78,6 +79,8 @@ function Documents() {
     const [previewDoc, setPreviewDoc] = useState(null);
     const [imageZoom, setImageZoom] = useState(null); // null = fit to screen
     const [imageEnhance, setImageEnhance] = useState(false); // contrast/brightness filter
+    const [wordContent, setWordContent] = useState(''); // Contenu HTML pour Word
+    const [wordLoading, setWordLoading] = useState(false);
 
     // État pour la suppression
     const [deleteDialog, setDeleteDialog] = useState(false);
@@ -276,11 +279,28 @@ function Documents() {
         }
     };
 
-    const handlePreview = (doc) => {
+    const handlePreview = async (doc) => {
         setPreviewDoc(doc);
         setImageZoom(null);
         setImageEnhance(false);
+        setWordContent('');
         setPreviewDialog(true);
+
+        // Si c'est un fichier Word, charger et convertir
+        if (doc.file_extension?.toLowerCase().includes('doc')) {
+            try {
+                setWordLoading(true);
+                const response = await fetch(doc.file_url);
+                const arrayBuffer = await response.arrayBuffer();
+                const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+                setWordContent(result.value);
+            } catch (error) {
+                console.error('Erreur conversion Word:', error);
+                setWordContent('<p style="color: red;">Erreur lors de la lecture du document Word.</p>');
+            } finally {
+                setWordLoading(false);
+            }
+        }
     };
 
     const handleZoomIn = () => setImageZoom(prev => (prev || 100) + 25);
@@ -413,7 +433,7 @@ function Documents() {
                     <Box sx={{ width: '100%', overflow: 'hidden', py: 1 }}>
                         <Typography
                             variant="body2"
-                            onClick={() => navigate(`/cases?search=${encodeURIComponent(params.row.case_title)}`)}
+                            onClick={() => navigate(`/cases/${params.row.case}`)}
                             sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer', color: 'primary.main', '&:hover': { textDecoration: 'underline' } }}
                         >
                             {params.value}
@@ -675,7 +695,39 @@ function Documents() {
                 <DialogContent dividers sx={{ p: 0, bgcolor: '#f5f5f5', display: 'flex', flexDirection: 'column' }}>
                     {previewDoc && (
                         <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: imageZoom ? 'flex-start' : 'center', overflow: 'auto', p: 2 }}>
-                            {previewDoc.file_extension?.toLowerCase() === '.pdf' ? <iframe src={previewDoc.file_url} width="100%" height="100%" style={{ border: 'none' }} title="PDF Preview" /> : ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(previewDoc.file_extension?.toLowerCase().replace('.', '')) ? <img src={previewDoc.file_url} alt={previewDoc.title} style={{ maxWidth: imageZoom ? 'none' : '100%', maxHeight: imageZoom ? 'none' : '100%', width: imageZoom ? `${imageZoom}%` : 'auto', objectFit: 'contain', filter: imageEnhance ? 'contrast(1.5) brightness(1.05) grayscale(0.2)' : 'none', transition: 'width 0.2s, filter 0.2s' }} /> : <Box sx={{ textAlign: 'center', p: 4 }}><Typography variant="h6" color="text.secondary" gutterBottom>Aperçu non disponible pour ce type de fichier.</Typography></Box>}
+                            {previewDoc.file_extension?.toLowerCase().includes('pdf') ? (
+                                <iframe src={previewDoc.file_url} width="100%" height="100%" style={{ border: 'none' }} title="PDF Preview" />
+                            ) : ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(previewDoc.file_extension?.toLowerCase().replace('.', '')) ? (
+                                <img
+                                    src={previewDoc.file_url}
+                                    alt={previewDoc.title}
+                                    style={{
+                                        maxWidth: imageZoom ? 'none' : '100%',
+                                        maxHeight: imageZoom ? 'none' : '100%',
+                                        width: imageZoom ? `${imageZoom}%` : 'auto',
+                                        objectFit: 'contain',
+                                        filter: imageEnhance ? 'contrast(1.5) brightness(1.05) grayscale(0.2)' : 'none',
+                                        transition: 'width 0.2s, filter 0.2s'
+                                    }}
+                                />
+                            ) : previewDoc.file_extension?.toLowerCase().includes('doc') ? (
+                                <Paper sx={{ p: 4, width: '100%', maxWidth: '800px', mx: 'auto', minHeight: '100%', bgcolor: 'white', color: 'black' }} elevation={2}>
+                                    {wordLoading ? (
+                                        <Typography>Chargement du document Word...</Typography>
+                                    ) : (
+                                        <div dangerouslySetInnerHTML={{ __html: wordContent }} style={{ textAlign: 'left' }} />
+                                    )}
+                                </Paper>
+                            ) : (
+                                <Box sx={{ textAlign: 'center', p: 4 }}>
+                                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                                        Aperçu non disponible pour ce type de fichier.
+                                    </Typography>
+                                    <Button variant="outlined" component="a" href={previewDoc.file_url} download startIcon={<DownloadIcon />} sx={{ mt: 2 }}>
+                                        Télécharger pour voir
+                                    </Button>
+                                </Box>
+                            )}
                         </Box>
                     )}
                 </DialogContent>
