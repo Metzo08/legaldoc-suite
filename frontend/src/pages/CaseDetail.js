@@ -181,7 +181,7 @@ const CaseDetail = () => {
                                     <Typography variant="h6" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center' }}>
                                         <GavelIcon sx={{ mr: 1, color: 'primary.main' }} /> Audiences
                                     </Typography>
-                                    <Button variant="outlined" size="small" startIcon={<EventIcon />} onClick={() => navigate(`/deadlines?caseId=${id}&type=AUDIENCE`)}>
+                                    <Button variant="outlined" size="small" startIcon={<EventIcon />} onClick={() => navigate(`/audiences?caseId=${id}&new=true`)}>
                                         Gérer
                                     </Button>
                                 </Box>
@@ -232,7 +232,7 @@ const CaseDetail = () => {
                                 ) : (
                                     <Box sx={{ textAlign: 'center', py: 3, opacity: 0.7 }}>
                                         <Typography variant="body2">Aucune audience programmée pour ce dossier.</Typography>
-                                        <Button sx={{ mt: 1 }} size="small" onClick={() => navigate(`/deadlines?caseId=${id}&new=true&type=AUDIENCE`)}>
+                                        <Button sx={{ mt: 1 }} size="small" onClick={() => navigate(`/audiences?caseId=${id}&new=true`)}>
                                             Ajouter une audience
                                         </Button>
                                     </Box>
@@ -346,7 +346,7 @@ const CaseDetail = () => {
                         {/* Échéances */}
                         <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
                             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Échéances</Typography>
-                            <Button fullWidth variant="outlined" startIcon={<EventIcon />} onClick={() => navigate(`/deadlines?caseId=${id}`)}>
+                            <Button fullWidth variant="outlined" startIcon={<EventIcon />} onClick={() => navigate(`/deadlines?caseId=${id}&new=true`)}>
                                 Gérer les échéances
                             </Button>
                         </Paper>

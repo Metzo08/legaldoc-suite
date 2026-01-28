@@ -106,6 +106,20 @@ function Deadlines() {
         loadData();
     }, [loadData]);
 
+    // Auto-open logic based on URL params
+    useEffect(() => {
+        const isNew = searchParams.get('new') === 'true';
+        const caseId = searchParams.get('caseId');
+
+        if (isNew) {
+            setFormData(prev => ({
+                ...prev,
+                case: caseId || prev.case
+            }));
+            setOpenDialog(true);
+        }
+    }, [searchParams]);
+
     const handleOpenDialog = (deadline = null) => {
         if (deadline) {
             setEditingDeadline(deadline);
