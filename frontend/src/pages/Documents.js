@@ -291,17 +291,10 @@ function Documents() {
         const extension = (doc.file_extension || doc.title?.split('.').pop() || '').toLowerCase().replace('.', '');
 
         // Déterminer l'URL du fichier à prévisualiser
-        // Priorité à la version "Searchable" si elle existe pour les PDF
+        // ON GARDE L'ORIGINAL pour l'aperçu visuel (Scan)
         let previewUrl = doc.file_url;
-        if (extension === 'pdf' && doc.versions) {
-            const searchableVersion = doc.versions.find(v =>
-                v.file_name && v.file_name.toLowerCase().includes('searchable_')
-            );
-            if (searchableVersion) {
-                previewUrl = (searchableVersion.file_url || searchableVersion.file) + '?t=' + new Date().getTime();
-                console.log("Using searchable version for preview:", previewUrl);
-            }
-        }
+
+        // Note: AskYourPDF utilisera explicitement la version searchable via son propre bouton
         setPreviewFileUrl(previewUrl);
 
         // Si c'est un fichier Word, charger et convertir
@@ -797,7 +790,7 @@ function Documents() {
                         {previewDoc && ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(previewDoc.file_extension?.toLowerCase().replace('.', '')) && (
                             <><Tooltip title="Zoom arrière"><IconButton onClick={handleZoomOut}><ZoomOutIcon /></IconButton></Tooltip><Tooltip title="Zoom avant"><IconButton onClick={handleZoomIn}><ZoomInIcon /></IconButton></Tooltip><Tooltip title="Réinitialiser"><IconButton onClick={handleResetZoom}><ResetIcon /></IconButton></Tooltip><Tooltip title="Améliorer la lisibilité (Contraste)"><IconButton onClick={toggleEnhance} color={imageEnhance ? "primary" : "default"}><ContrastIcon /></IconButton></Tooltip><Box sx={{ mx: 1, borderLeft: '1px solid #ddd' }} /></>
                         )}
-                        {previewFileUrl.toLowerCase().includes('searchable_') && (
+                        {previewDoc?.versions?.some(v => v.file_name && v.file_name.toLowerCase().includes('searchable_')) && (
                             <Button
                                 size="small"
                                 variant="contained"
@@ -810,11 +803,16 @@ function Documents() {
                                 }}
                                 startIcon={<FindIcon />}
                                 onClick={() => {
-                                    // Robust URL handling for Preview Dialog button
-                                    const url = previewFileUrl;
-                                    // Note: previewFileUrl already has timestamp if it came from searchableVersion logic
-                                    console.log("Opening AskYourPDF from Preview with URL:", url);
-                                    window.open(url, '_blank');
+                                    // Robust URL resolution for AskYourPDF
+                                    const searchableVersion = previewDoc.versions.find(v =>
+                                        v.file_name && v.file_name.toLowerCase().includes('searchable_')
+                                    );
+                                    if (searchableVersion) {
+                                        let url = searchableVersion.file_url || searchableVersion.file;
+                                        url += '?t=' + new Date().getTime();
+                                        console.log("Opening AskYourPDF from Preview with URL:", url);
+                                        window.open(url, '_blank');
+                                    }
                                 }}
                             >
                                 AskYourPDF

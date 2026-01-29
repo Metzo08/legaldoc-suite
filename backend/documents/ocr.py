@@ -83,28 +83,26 @@ class OCRProcessor:
             
             if text.strip():
                 logger.info(f"Texte extrait directement du PDF: {len(text)} caractères")
-                # On génère quand même le PDF recherchable pour la compatibilité AskYourPDF
-                _, searchable_path, ocr_error = self.ocr_pdf_images(pdf_path)
-                return text, searchable_path, ocr_error
+                # On utilise directement le texte pour créer un PDF propre pour AskYourPDF
+                pdf_path, error = self.convert_txt_to_pdf(text, pdf_path)
+                return text, pdf_path, error
             
             logger.info("PDF sans texte, utilisation de l'OCR...")
             return self.ocr_pdf_images(pdf_path)
             
         except Exception as e:
             logger.error(f"Erreur extraction PDF {pdf_path}: {str(e)}")
-            # En cas d'erreur de lecture PDF (ex: malformé), on tente quand même l'OCR via Image
             return self.ocr_pdf_images(pdf_path)
     
     def ocr_pdf_images(self, pdf_path):
         """
         Convertit les pages PDF en images et applique l'OCR.
-        Utilise PyMuPDF (fitz) car il est auto-contenu et ne nécessite pas Poppler.
+        Retourne le texte et un nouveau PDF généré à partir de ce texte.
         """
         try:
             import fitz
             doc = fitz.open(pdf_path)
             text = ''
-            pdf_writer = PyPDF2.PdfWriter()
             
             for i in range(len(doc)):
                 logger.info(f"OCR page {i+1}/{len(doc)}")
@@ -120,26 +118,14 @@ class OCRProcessor:
                     lang=self.ocr_languages,
                     config='--psm 3 -c preserve_interword_spaces=1'
                 )
-                text += f"\n--- Page {i+1} ---\n{page_text}"
-                
-                try:
-                    pdf_page_data = pytesseract.image_to_pdf_or_hocr(
-                        processed_image, 
-                        lang=self.ocr_languages, 
-                        extension='pdf'
-                    )
-                    pdf_page_reader = PyPDF2.PdfReader(io.BytesIO(pdf_page_data))
-                    pdf_writer.add_page(pdf_page_reader.pages[0])
-                except Exception as e:
-                    logger.warning(f"Erreur génération PDF page {i+1}: {str(e)}")
+                text += f"\n{page_text}\n"
             
-            temp_pdf = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
-            pdf_writer.write(temp_pdf)
-            searchable_pdf_path = temp_pdf.name
-            temp_pdf.close()
             doc.close()
             
-            return text, searchable_pdf_path, ''
+            # Générer le PDF chercheable à partir du texte extrait
+            searchable_pdf_path, error = self.convert_txt_to_pdf(text, pdf_path)
+            
+            return text, searchable_pdf_path, error
             
         except Exception as e:
             logger.error(f"Erreur OCR PDF avec PyMuPDF: {str(e)}")
