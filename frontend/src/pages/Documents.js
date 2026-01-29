@@ -525,7 +525,10 @@ function Documents() {
             headerName: 'Actions',
             width: 200,
             getActions: (params) => {
-                const searchableVersion = params.row.versions?.find(v =>
+                const versions = params.row.versions || [];
+                const sortedVersions = [...versions].sort((a, b) => b.version_number - a.version_number);
+
+                const searchableVersion = sortedVersions.find(v =>
                     v.file_name && v.file_name.toLowerCase().includes('searchable_')
                 );
 
@@ -804,7 +807,9 @@ function Documents() {
                                 startIcon={<FindIcon />}
                                 onClick={() => {
                                     // Robust URL resolution for AskYourPDF
-                                    const searchableVersion = previewDoc.versions.find(v =>
+                                    const versions = previewDoc.versions || [];
+                                    const sortedVersions = [...versions].sort((a, b) => b.version_number - a.version_number);
+                                    const searchableVersion = sortedVersions.find(v =>
                                         v.file_name && v.file_name.toLowerCase().includes('searchable_')
                                     );
                                     if (searchableVersion) {
