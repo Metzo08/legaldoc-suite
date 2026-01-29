@@ -242,6 +242,19 @@ class OCRProcessor:
             doc.close()
             doc = fitz.open()
             
+            # Fallback si le texte est vide (évite le "Scanned PDF" error)
+            if not text or not text.strip():
+                text = (
+                    "-------------------------------------------------------------------\n"
+                    "AVERTISSEMENT: Aucun texte n'a pu être extrait de ce document.\n"
+                    "-------------------------------------------------------------------\n\n"
+                    "Causes possibles :\n"
+                    "1. Le document original est de très mauvaise qualité.\n"
+                    "2. C'est une image sans texte lisible.\n"
+                    "3. Le format ou l'encodage pose problème.\n\n"
+                    "Ceci est un placeholder généré pour permettre l'ouverture du fichier."
+                )
+
             lines = text.split('\n')
             lines_per_page = 55 # approx pour du 11pt sur A4
             

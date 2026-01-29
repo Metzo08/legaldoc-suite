@@ -530,7 +530,7 @@ function Documents() {
             field: 'actions',
             type: 'actions',
             headerName: 'Actions',
-            width: 150,
+            width: 200,
             getActions: (params) => {
                 const searchableVersion = params.row.versions?.find(v =>
                     v.file_name && v.file_name.toLowerCase().includes('searchable_')
