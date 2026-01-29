@@ -543,9 +543,6 @@ function Documents() {
                 ];
 
                 // Prioritize Searchable PDF for AskYourPDF
-                const searchableVersion = params.row.versions?.find(v =>
-                    v.file_name && v.file_name.toLowerCase().includes('searchable_')
-                );
 
                 if (searchableVersion) {
                     actions.push(
