@@ -78,6 +78,7 @@ function Documents() {
     // État pour la prévisualisation
     const [previewDialog, setPreviewDialog] = useState(false);
     const [previewDoc, setPreviewDoc] = useState(null);
+    const [previewFileUrl, setPreviewFileUrl] = useState('');
     const [imageZoom, setImageZoom] = useState(null); // null = fit to screen
     const [imageEnhance, setImageEnhance] = useState(false); // contrast/brightness filter
     const [wordContent, setWordContent] = useState(''); // Contenu HTML pour Word
@@ -263,12 +264,10 @@ function Documents() {
             const response = await documentsAPI.reprocessOcr(selectedDoc.id);
             if (response.data.status === 'success') {
                 showNotification("OCR relancé avec succès !");
-                // Mettre à jour le document sélectionné avec les nouveaux résultats
+                // Mettre à jour le document sélectionné avec les nouveaux résultats (y compris les versions)
                 setSelectedDoc(prev => ({
                     ...prev,
-                    ocr_processed: true,
-                    ocr_text: response.data.ocr_text,
-                    ocr_error: response.data.ocr_error
+                    ...response.data
                 }));
                 loadData();
             } else {
@@ -291,11 +290,25 @@ function Documents() {
 
         const extension = (doc.file_extension || doc.title?.split('.').pop() || '').toLowerCase().replace('.', '');
 
+        // Déterminer l'URL du fichier à prévisualiser
+        // Priorité à la version "Searchable" si elle existe pour les PDF
+        let previewUrl = doc.file_url;
+        if (extension === 'pdf' && doc.versions) {
+            const searchableVersion = doc.versions.find(v =>
+                v.file_name && v.file_name.toLowerCase().includes('searchable_')
+            );
+            if (searchableVersion) {
+                previewUrl = (searchableVersion.file_url || searchableVersion.file) + '?t=' + new Date().getTime();
+                console.log("Using searchable version for preview:", previewUrl);
+            }
+        }
+        setPreviewFileUrl(previewUrl);
+
         // Si c'est un fichier Word, charger et convertir
         if (extension.includes('doc')) {
             try {
                 setWordLoading(true);
-                const response = await fetch(doc.file_url);
+                const response = await fetch(previewUrl);
                 const arrayBuffer = await response.arrayBuffer();
                 const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
                 setWordContent(result.value);
@@ -518,12 +531,59 @@ function Documents() {
             type: 'actions',
             headerName: 'Actions',
             width: 150,
-            getActions: (params) => [
-                <GridActionsCellItem icon={<PreviewIcon />} label="Aperçu" onClick={() => handlePreview(params.row)} color="info" />,
-                <GridActionsCellItem icon={<EditIcon />} label="Modifier" onClick={() => handleEditClick(params.row)} color="warning" />,
-                <GridActionsCellItem icon={<OcrIcon />} label="OCR" onClick={() => handleViewOcr(params.row)} color="primary" />,
-                <GridActionsCellItem icon={<DeleteIcon />} label="Supprimer" onClick={() => handleDeleteClick(params.row)} color="error" />,
-            ],
+            getActions: (params) => {
+                const searchableVersion = params.row.versions?.find(v =>
+                    v.file_name && v.file_name.toLowerCase().includes('searchable_')
+                );
+
+                const actions = [
+                    <GridActionsCellItem icon={<PreviewIcon />} label="Aperçu" onClick={() => handlePreview(params.row)} color="info" />,
+                    <GridActionsCellItem icon={<EditIcon />} label="Modifier" onClick={() => handleEditClick(params.row)} color="warning" />,
+                    <GridActionsCellItem icon={<OcrIcon />} label="OCR" onClick={() => handleViewOcr(params.row)} color="primary" />,
+                ];
+
+                // Prioritize Searchable PDF for AskYourPDF
+                const searchableVersion = params.row.versions?.find(v =>
+                    v.file_name && v.file_name.toLowerCase().includes('searchable_')
+                );
+
+                if (searchableVersion) {
+                    actions.push(
+                        <GridActionsCellItem
+                            icon={<FindIcon sx={{ color: '#f57c00' }} />}
+                            label="AskYourPDF"
+                            onClick={() => {
+                                // Use file_url from the version if available, otherwise fallback or construct it
+                                let url = searchableVersion.file_url || searchableVersion.file;
+                                // Add timestamp to force refresh (cache busting)
+                                url += '?t=' + new Date().getTime();
+                                console.log("Opening AskYourPDF with URL:", url);
+                                window.open(url, '_blank');
+                            }}
+                            sx={{ color: '#f57c00' }}
+                            showInMenu
+                        />
+                    );
+                } else if (params.row.file_extension === 'pdf' || params.row.file_name?.toLowerCase().endsWith('.pdf')) {
+                    // Still show button for normal PDFs, but it might fail if scanned
+                    actions.push(
+                        <GridActionsCellItem
+                            icon={<FindIcon sx={{ color: '#f57c00' }} />}
+                            label="AskYourPDF"
+                            onClick={() => {
+                                const url = params.row.file_url || params.row.file;
+                                console.log("Opening AskYourPDF with original URL:", url);
+                                window.open(url, '_blank');
+                            }}
+                            sx={{ color: '#f57c00' }}
+                            showInMenu
+                        />
+                    );
+                }
+
+                actions.push(<GridActionsCellItem icon={<DeleteIcon />} label="Supprimer" onClick={() => handleDeleteClick(params.row)} color="error" />);
+                return actions;
+            },
         },
     ];
 
@@ -695,6 +755,27 @@ function Documents() {
                         {loading ? 'Traitement...' : 'Relancer l\'OCR'}
                     </Button>
                     <Box sx={{ flex: 1 }} />
+                    {selectedDoc?.versions?.some(v => v.file_name && v.file_name.toLowerCase().includes('searchable_')) && (
+                        <Button
+                            onClick={() => {
+                                const searchableVersion = selectedDoc.versions.find(v =>
+                                    v.file_name && v.file_name.toLowerCase().includes('searchable_')
+                                );
+                                if (searchableVersion) {
+                                    window.open(searchableVersion.file_url, '_blank');
+                                }
+                            }}
+                            startIcon={<DownloadIcon />}
+                            sx={{
+                                bgcolor: '#f57c00',
+                                color: 'white',
+                                '&:hover': { bgcolor: '#e65100' }
+                            }}
+                            variant="contained"
+                        >
+                            PDF Recherchable (AskYourPDF)
+                        </Button>
+                    )}
                     <Button onClick={handleExportWord} startIcon={<DownloadIcon />} color="success">Exporter Word</Button>
                     <Button onClick={handleExportPDF} startIcon={<DownloadIcon />} color="error">Exporter PDF</Button>
                     <Button onClick={() => setOcrDialog(false)} variant="contained" color="inherit">Fermer</Button>
@@ -703,10 +784,44 @@ function Documents() {
 
             <Dialog open={previewDialog} onClose={() => setPreviewDialog(false)} maxWidth="xl" fullWidth PaperProps={{ sx: { height: '90vh' } }}>
                 <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="h6" component="div">{previewDoc?.title}</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Typography variant="h6" component="div">{previewDoc?.title}</Typography>
+                        {previewFileUrl.includes('Searchable_') && (
+                            <Chip
+                                label="Version OCR"
+                                color="success"
+                                size="small"
+                                variant="outlined"
+                                sx={{ height: 24, fontSize: '0.7rem' }}
+                            />
+                        )}
+                    </Box>
                     <Box sx={{ display: 'flex', gap: 1 }}>
                         {previewDoc && ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(previewDoc.file_extension?.toLowerCase().replace('.', '')) && (
                             <><Tooltip title="Zoom arrière"><IconButton onClick={handleZoomOut}><ZoomOutIcon /></IconButton></Tooltip><Tooltip title="Zoom avant"><IconButton onClick={handleZoomIn}><ZoomInIcon /></IconButton></Tooltip><Tooltip title="Réinitialiser"><IconButton onClick={handleResetZoom}><ResetIcon /></IconButton></Tooltip><Tooltip title="Améliorer la lisibilité (Contraste)"><IconButton onClick={toggleEnhance} color={imageEnhance ? "primary" : "default"}><ContrastIcon /></IconButton></Tooltip><Box sx={{ mx: 1, borderLeft: '1px solid #ddd' }} /></>
+                        )}
+                        {previewFileUrl.toLowerCase().includes('searchable_') && (
+                            <Button
+                                size="small"
+                                variant="contained"
+                                sx={{
+                                    ml: 1,
+                                    borderRadius: 2,
+                                    bgcolor: '#f57c00',
+                                    color: 'white',
+                                    '&:hover': { bgcolor: '#e65100' }
+                                }}
+                                startIcon={<FindIcon />}
+                                onClick={() => {
+                                    // Robust URL handling for Preview Dialog button
+                                    const url = previewFileUrl;
+                                    // Note: previewFileUrl already has timestamp if it came from searchableVersion logic
+                                    console.log("Opening AskYourPDF from Preview with URL:", url);
+                                    window.open(url, '_blank');
+                                }}
+                            >
+                                AskYourPDF
+                            </Button>
                         )}
                         <IconButton aria-label="close" onClick={() => setPreviewDialog(false)}><CloseIcon /></IconButton>
                     </Box>
@@ -721,10 +836,10 @@ function Documents() {
                         return (
                             <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: imageZoom ? 'flex-start' : 'center', overflow: 'auto', p: 2 }}>
                                 {isPdf ? (
-                                    <iframe src={previewDoc.file_url} width="100%" height="100%" style={{ border: 'none', borderRadius: '8px' }} title="PDF Preview" />
+                                    <iframe src={previewFileUrl} width="100%" height="100%" style={{ border: 'none', borderRadius: '8px' }} title="PDF Preview" />
                                 ) : isImage ? (
                                     <img
-                                        src={previewDoc.file_url}
+                                        src={previewFileUrl}
                                         alt={previewDoc.title}
                                         style={{
                                             maxWidth: imageZoom ? 'none' : '100%',
@@ -752,7 +867,7 @@ function Documents() {
                                         <Typography variant="body2" color="text.disabled" sx={{ mb: 3 }}>
                                             Type détecté : {extension.toUpperCase() || 'Inconnu'}
                                         </Typography>
-                                        <Button variant="contained" component="a" href={previewDoc.file_url} download startIcon={<DownloadIcon />}>
+                                        <Button variant="contained" component="a" href={previewFileUrl} download startIcon={<DownloadIcon />}>
                                             Télécharger pour voir le fichier
                                         </Button>
                                     </Box>

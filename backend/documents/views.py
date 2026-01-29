@@ -200,7 +200,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour gérer les documents.
     """
-    queryset = Document.objects.select_related('case', 'case__client', 'uploaded_by').prefetch_related('tags', 'permissions')
+    queryset = Document.objects.select_related('case', 'case__client', 'uploaded_by').prefetch_related('tags', 'permissions', 'versions')
     permission_classes = [IsAuthenticated, CanDeleteDocuments, HasDocumentPermission]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'description', 'file_name', 'ocr_text']
@@ -391,13 +391,17 @@ class DocumentViewSet(viewsets.ModelViewSet):
                 search_vector=SearchVector('title', 'description', 'ocr_text', 'file_name')
             )
             
+            # Utiliser le sérialiseur pour retourner les données complètes (y compris les versions)
+            document.refresh_from_db()
+            serializer = self.get_serializer(document)
+            
             return Response({
                 'status': 'success',
                 'message': 'OCR relancé avec succès',
-                'ocr_text': document.ocr_text,
-                'ocr_error': document.ocr_error
+                **serializer.data
             })
         except Exception as e:
+            logger.error(f"Erreur reprocess_ocr: {str(e)}")
             return Response({
                 'status': 'error',
                 'message': f'Erreur lors du retraitement: {str(e)}'
