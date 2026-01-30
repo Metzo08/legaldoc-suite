@@ -171,6 +171,9 @@ OCR_LANGUAGES = ['fra', 'eng']
 # Configuration de chiffrement
 ENCRYPTION_KEY = config('ENCRYPTION_KEY', default='changez-cette-cle-de-32-chars!').encode()
 
+# Configuration Gemini AI
+GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
+
 # Configuration des uploads
 MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 5 MB
 ALLOWED_UPLOAD_EXTENSIONS = [
