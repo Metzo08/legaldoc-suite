@@ -930,36 +930,7 @@ function Documents() {
                         {previewDoc && ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(previewDoc.file_extension?.toLowerCase().replace('.', '')) && (
                             <><Tooltip title="Zoom arrière"><IconButton onClick={handleZoomOut}><ZoomOutIcon /></IconButton></Tooltip><Tooltip title="Zoom avant"><IconButton onClick={handleZoomIn}><ZoomInIcon /></IconButton></Tooltip><Tooltip title="Réinitialiser"><IconButton onClick={handleResetZoom}><ResetIcon /></IconButton></Tooltip><Tooltip title="Améliorer la lisibilité (Contraste)"><IconButton onClick={toggleEnhance} color={imageEnhance ? "primary" : "default"}><ContrastIcon /></IconButton></Tooltip><Box sx={{ mx: 1, borderLeft: '1px solid #ddd' }} /></>
                         )}
-                        {previewDoc?.versions?.some(v => v.file_name && v.file_name.toLowerCase().includes('searchable_')) && (
-                            <Button
-                                size="small"
-                                variant="contained"
-                                sx={{
-                                    ml: 1,
-                                    borderRadius: 2,
-                                    bgcolor: '#f57c00',
-                                    color: 'white',
-                                    '&:hover': { bgcolor: '#e65100' }
-                                }}
-                                startIcon={<FindIcon />}
-                                onClick={() => {
-                                    // Robust URL resolution for AskYourPDF
-                                    const versions = previewDoc.versions || [];
-                                    const sortedVersions = [...versions].sort((a, b) => b.version_number - a.version_number);
-                                    const searchableVersion = sortedVersions.find(v =>
-                                        v.file_name && v.file_name.toLowerCase().includes('searchable_')
-                                    );
-                                    if (searchableVersion) {
-                                        let url = searchableVersion.file_url || searchableVersion.file;
-                                        url += '?t=' + new Date().getTime();
-                                        console.log("Opening AskYourPDF from Preview with URL:", url);
-                                        window.open(url, '_blank');
-                                    }
-                                }}
-                            >
-                                AskYourPDF
-                            </Button>
-                        )}
+
                         <IconButton aria-label="close" onClick={() => setPreviewDialog(false)}><CloseIcon /></IconButton>
                     </Box>
                 </DialogTitle>
