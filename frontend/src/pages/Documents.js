@@ -30,6 +30,7 @@ import {
     GridToolbar,
     frFR
 } from '@mui/x-data-grid';
+import AIChatDialog from '../components/AIChatDialog';
 import {
     CloudUpload as UploadIcon,
     Download as DownloadIcon,
@@ -46,7 +47,8 @@ import {
     FindInPage as FindIcon,
     Edit as EditIcon,
     Add as AddIcon,
-    Folder as FolderIcon
+    Folder as FolderIcon,
+    SmartToy as BotIcon
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { documentsAPI, casesAPI, clientsAPI } from '../services/api';
@@ -100,9 +102,13 @@ function Documents() {
     const [deleteDialog, setDeleteDialog] = useState(false);
     const [docToDelete, setDocToDelete] = useState(null);
 
+    const [chatOpen, setChatOpen] = useState(false);
+    const [searchParams] = useSearchParams();
+    const urlCaseId = searchParams.get('caseId');
+    const selectedCaseId = formData.case || (urlCaseId ? parseInt(urlCaseId) : null);
+
     const loadData = useCallback(async () => {
         try {
-            setLoading(true);
             setLoading(true);
             const [docsRes, casesRes, clientsRes] = await Promise.all([
                 documentsAPI.getAll(),
@@ -121,7 +127,6 @@ function Documents() {
     }, [showNotification]);
 
     const [filterType, setFilterType] = useState('ALL');
-    const [searchParams] = useSearchParams();
     const initialSearch = searchParams.get('search') || '';
     const [searchTerm, setSearchTerm] = useState(initialSearch);
 
@@ -667,7 +672,27 @@ function Documents() {
                     <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>Documents</Typography>
                     <Typography variant="body1" color="text.secondary">Centralisez et gérez tous vos documents juridiques.</Typography>
                 </Box>
-                <Button variant="contained" startIcon={<UploadIcon />} onClick={handleOpenDialog} sx={{ borderRadius: 2, px: 3, py: 1, width: { xs: '100%', sm: 'auto' } }}>Uploader un document</Button>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    {selectedCaseId && (
+                        <Button
+                            variant="contained"
+                            onClick={() => setChatOpen(true)}
+                            startIcon={<BotIcon />}
+                            sx={{
+                                borderRadius: 2,
+                                px: 3,
+                                py: 1,
+                                background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                                boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
+                                color: 'white',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            Assistant IA
+                        </Button>
+                    )}
+                    <Button variant="contained" startIcon={<UploadIcon />} onClick={handleOpenDialog} sx={{ borderRadius: 2, px: 3, py: 1, width: { xs: '100%', sm: 'auto' } }}>Uploader un document</Button>
+                </Box>
             </Box>
 
             <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -985,6 +1010,16 @@ function Documents() {
                     })()}
                 </DialogContent>
             </Dialog>
+
+            {/* AI CHAT DIALOG */}
+            {selectedCaseId && (
+                <AIChatDialog
+                    open={chatOpen}
+                    onClose={() => setChatOpen(false)}
+                    caseId={selectedCaseId}
+                    caseTitle={cases.find(c => c.id === selectedCaseId)?.title || "Dossier"}
+                />
+            )}
 
             <DeleteConfirmDialog open={deleteDialog} onClose={() => setDeleteDialog(false)} onConfirm={handleConfirmDelete} title="ce document" itemName={docToDelete?.title} />
         </Box>
