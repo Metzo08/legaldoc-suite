@@ -620,41 +620,7 @@ function Documents() {
                     <GridActionsCellItem icon={<OcrIcon />} label="OCR" onClick={() => handleViewOcr(params.row)} color="primary" />,
                 ];
 
-                // Prioritize Searchable PDF for AskYourPDF
 
-                if (searchableVersion) {
-                    actions.push(
-                        <GridActionsCellItem
-                            icon={<FindIcon sx={{ color: '#f57c00' }} />}
-                            label="AskYourPDF"
-                            onClick={() => {
-                                // Use file_url from the version if available, otherwise fallback or construct it
-                                let url = searchableVersion.file_url || searchableVersion.file;
-                                // Add timestamp to force refresh (cache busting)
-                                url += '?t=' + new Date().getTime();
-                                console.log("Opening AskYourPDF with URL:", url);
-                                window.open(url, '_blank');
-                            }}
-                            sx={{ color: '#f57c00' }}
-                            showInMenu
-                        />
-                    );
-                } else if (params.row.file_extension === 'pdf' || params.row.file_name?.toLowerCase().endsWith('.pdf')) {
-                    // Still show button for normal PDFs, but it might fail if scanned
-                    actions.push(
-                        <GridActionsCellItem
-                            icon={<FindIcon sx={{ color: '#f57c00' }} />}
-                            label="AskYourPDF"
-                            onClick={() => {
-                                const url = params.row.file_url || params.row.file;
-                                console.log("Opening AskYourPDF with original URL:", url);
-                                window.open(url, '_blank');
-                            }}
-                            sx={{ color: '#f57c00' }}
-                            showInMenu
-                        />
-                    );
-                }
 
                 actions.push(<GridActionsCellItem icon={<DeleteIcon />} label="Supprimer" onClick={() => handleDeleteClick(params.row)} color="error" />);
                 return actions;
