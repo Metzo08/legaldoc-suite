@@ -328,10 +328,10 @@ function Cases() {
             field: 'actions',
             type: 'actions',
             headerName: 'Actions',
-            width: 160,
+            width: 240,
             getActions: (params) => [
                 <GridActionsCellItem icon={<KeyboardArrowRight sx={{ fontSize: 28, color: 'text.primary' }} />} label="Ouvrir" onClick={() => navigate(`/cases/${params.id}`)} />,
-                <GridActionsCellItem icon={<BotIcon sx={{ color: 'secondary.main' }} />} label="Assistant Juridique IA" onClick={() => handleAnalyzeCase(params.row)} showInMenu />,
+                <GridActionsCellItem icon={<BotIcon sx={{ color: 'secondary.main', fontSize: 26 }} />} label="Assistant Juridique IA" onClick={() => handleAnalyzeCase(params.row)} />,
                 <GridActionsCellItem icon={<UploadIcon color="info" />} label="Ajouter un document" onClick={() => navigate(`/documents?caseId=${params.id}&new=true`)} />,
                 <GridActionsCellItem icon={<EditIcon color="warning" />} label="Modifier" onClick={() => handleOpenDialog(params.row)} />,
                 <GridActionsCellItem icon={<DeleteIcon color="error" />} label="Supprimer" onClick={() => handleDeleteClick(params.row)} />,
