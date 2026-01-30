@@ -44,7 +44,7 @@ import {
     Contrast as ContrastIcon,
     Description as FileIcon,
     Storage as StorageIcon,
-    FindInPage as FindIcon,
+
     Edit as EditIcon,
     Add as AddIcon,
     Folder as FolderIcon,
@@ -678,7 +678,7 @@ function Documents() {
                         <StatCard
                             title="Documents analysés (OCR)"
                             value={ocrProcessed}
-                            icon={<FindIcon color="info" />}
+                            icon={<OcrIcon color="info" />}
                             color="info"
                             sx={{ border: filterType === 'OCR' ? '2px solid' : 'none', borderColor: 'info.main', borderRadius: 2 }}
                         />
