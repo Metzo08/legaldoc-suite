@@ -28,7 +28,8 @@ import {
     Folder as FolderIcon,
     CloudUpload as UploadIcon,
     Visibility as ViewIcon,
-    SmartToy as BotIcon
+    SmartToy as BotIcon,
+    KeyboardArrowRight
 } from '@mui/icons-material';
 import { casesAPI, clientsAPI } from '../services/api';
 import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
@@ -329,11 +330,11 @@ function Cases() {
             headerName: 'Actions',
             width: 160,
             getActions: (params) => [
-                <GridActionsCellItem icon={<ViewIcon color="primary" />} label="Détails" onClick={() => navigate(`/cases/${params.id}`)} />,
+                <GridActionsCellItem icon={<KeyboardArrowRight sx={{ fontSize: 28, color: 'text.primary' }} />} label="Ouvrir" onClick={() => navigate(`/cases/${params.id}`)} />,
                 <GridActionsCellItem icon={<BotIcon sx={{ color: 'secondary.main' }} />} label="Assistant Juridique IA" onClick={() => handleAnalyzeCase(params.row)} showInMenu />,
                 <GridActionsCellItem icon={<UploadIcon color="info" />} label="Ajouter un document" onClick={() => navigate(`/documents?caseId=${params.id}&new=true`)} />,
-                <GridActionsCellItem icon={<EditIcon />} label="Modifier" onClick={() => handleOpenDialog(params.row)} color="primary" />,
-                <GridActionsCellItem icon={<DeleteIcon />} label="Supprimer" onClick={() => handleDeleteClick(params.row)} color="error" />,
+                <GridActionsCellItem icon={<EditIcon color="warning" />} label="Modifier" onClick={() => handleOpenDialog(params.row)} />,
+                <GridActionsCellItem icon={<DeleteIcon color="error" />} label="Supprimer" onClick={() => handleDeleteClick(params.row)} />,
             ],
         },
     ];
