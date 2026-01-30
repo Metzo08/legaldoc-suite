@@ -1,0 +1,100 @@
+﻿ValueError: Field 'id' expected a number but got 'undefined'.
+ERROR 2026-01-28 01:25:20,344 log Internal Server Error: /api/documents/deadlines/
+Traceback (most recent call last):
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\django\db\models\fields\__init__.py", line 2128, in get_prep_value
+    return int(value)
+ValueError: invalid literal for int() with base 10: 'undefined'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\documents\views.py", line 586, in list
+    return super().list(request, *args, **kwargs)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\documents\views.py", line 597, in get_queryset
+    queryset = queryset.filter(case_id=case_id)
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\django\db\models\query.py", line 1542, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\django\db\models\query.py", line 1560, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\django\db\models\query.py", line 1570, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\django\db\models\sql\query.py", line 1671, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\django\db\models\sql\query.py", line 1703, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\django\db\models\sql\query.py", line 1613, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\django\db\models\sql\query.py", line 1440, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\django\db\models\lookups.py", line 35, in __init__
+    self.rhs = self.get_prep_lookup()
+               ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\django\db\models\fields\related_lookups.py", line 113, in get_prep_lookup
+    self.rhs = target_field.get_prep_value(self.rhs)
+               ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\hp\Downloads\LegalDoc Suite\backend\venv\Lib\site-packages\django\db\models\fields\__init__.py", line 2130, in get_prep_value
+    raise e.__class__(
+        "Field '%s' expected a number but got %r." % (self.name, value),
+    ) from e
+ValueError: Field 'id' expected a number but got 'undefined'.
+INFO 2026-01-28 01:30:12,184 autoreload C:\Users\hp\Downloads\LegalDoc Suite\backend\documents\serializers.py changed, reloading.
+INFO 2026-01-28 01:30:13,985 autoreload Watching for file changes with StatReloader
+INFO 2026-01-28 02:07:50,830 autoreload C:\Users\hp\Downloads\LegalDoc Suite\backend\documents\ocr.py changed, reloading.
+INFO 2026-01-28 02:07:52,439 autoreload Watching for file changes with StatReloader
+INFO 2026-01-28 02:36:35,751 autoreload Watching for file changes with StatReloader
+INFO 2026-01-28 02:37:49,326 autoreload C:\Users\hp\Downloads\LegalDoc Suite\backend\documents\views.py changed, reloading.
+INFO 2026-01-28 02:37:52,002 autoreload Watching for file changes with StatReloader
+WARNING 2026-01-28 12:12:38,356 log Unauthorized: /api/documents/notifications/
+INFO 2026-01-28 12:13:37,308 autoreload Watching for file changes with StatReloader
+INFO 2026-01-28 13:32:53,801 autoreload Watching for file changes with StatReloader
+WARNING 2026-01-28 13:35:31,056 log Unauthorized: /api/documents/notifications/
+WARNING 2026-01-28 13:35:31,688 log Unauthorized: /api/cabinet/public/
+WARNING 2026-01-28 13:35:31,726 log Unauthorized: /api/cabinet/public/
+INFO 2026-01-28 13:53:39,692 autoreload C:\Users\hp\Downloads\LegalDoc Suite\backend\legaldoc\settings.py changed, reloading.
+INFO 2026-01-28 13:53:42,847 autoreload Watching for file changes with StatReloader
+INFO 2026-01-28 14:12:55,503 autoreload C:\Users\hp\Downloads\LegalDoc Suite\backend\documents\serializers.py changed, reloading.
+INFO 2026-01-28 14:13:05,689 autoreload Watching for file changes with StatReloader
+WARNING 2026-01-28 14:54:27,086 log Unauthorized: /api/documents/notifications/
+WARNING 2026-01-28 15:07:00,837 log Bad Request: /api/documents/documents/
+INFO 2026-01-28 15:17:03,194 autoreload C:\Users\hp\Downloads\LegalDoc Suite\backend\documents\views.py changed, reloading.
+INFO 2026-01-28 15:17:05,047 autoreload Watching for file changes with StatReloader
+INFO 2026-01-28 15:17:25,987 autoreload C:\Users\hp\Downloads\LegalDoc Suite\backend\documents\views.py changed, reloading.
+INFO 2026-01-28 15:17:30,097 autoreload Watching for file changes with StatReloader
+INFO 2026-01-28 15:17:44,192 autoreload C:\Users\hp\Downloads\LegalDoc Suite\backend\documents\views.py changed, reloading.
+INFO 2026-01-28 15:17:45,701 autoreload Watching for file changes with StatReloader
+WARNING 2026-01-28 15:22:57,102 log Bad Request: /api/documents/documents/
+WARNING 2026-01-28 15:23:21,845 log Bad Request: /api/documents/documents/

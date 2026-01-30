@@ -195,6 +195,105 @@ class CaseViewSet(viewsets.ModelViewSet):
         )
         instance.delete()
 
+    @action(detail=True, methods=['get'])
+    def chat_init(self, request, pk=None):
+        """
+        Initialise une session de chat : fusionne les docs et upload vers Gemini.
+        """
+        case = self.get_object()
+        documents = case.documents.all().order_by('created_at')
+        
+        if not documents.exists():
+            return Response({"detail": "Ce dossier ne contient aucun document."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        from .ai_service import GeminiService
+        import fitz  # PyMuPDF
+        import os
+        from django.conf import settings
+        
+        try:
+            # 1. Fusionner les documents (Code existant réutilisé)
+            merged_doc = fitz.open()
+            
+            for doc in documents:
+                try:
+                    file_path = doc.file.path
+                    if hasattr(doc, 'versions'):
+                        searchable = doc.versions.filter(file_name__icontains='searchable_').order_by('-version_number').first()
+                        if searchable:
+                            file_path = searchable.file.path
+                    
+                    if not os.path.exists(file_path):
+                        continue
+                        
+                    if file_path.lower().endswith('.pdf'):
+                        with fitz.open(file_path) as pdf_doc:
+                            merged_doc.insert_pdf(pdf_doc)
+                    elif file_path.lower().endswith(('.png', '.jpg', '.jpeg')):
+                        img = fitz.open(file_path)
+                        pdf_bytes = img.convert_to_pdf()
+                        with fitz.open("pdf", pdf_bytes) as img_pdf:
+                            merged_doc.insert_pdf(img_pdf)
+                            
+                except Exception as e:
+                    logger.warning(f"Impossible de fusionner le document {doc.id}: {str(e)}")
+                    continue
+            
+            if merged_doc.page_count == 0:
+                return Response({"detail": "Aucun document valide n'a pu être fusionné."}, status=status.HTTP_400_BAD_REQUEST)
+                
+            # Sauvegarder temporairement
+            output_filename = f"chat_context_{case.reference.replace('/', '_')}.pdf"
+            output_path = os.path.join(settings.MEDIA_ROOT, 'temp', output_filename)
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            merged_doc.save(output_path)
+            merged_doc.close()
+            
+            # 2. Upload vers Gemini
+            service = GeminiService()
+            uploaded_file = service.upload_file(output_path)
+            
+            # Nettoyage (ou pas, si on veut utiliser request.build_absolute_uri pour debug)
+            # os.remove(output_path) 
+            
+            return Response({
+                "status": "success",
+                "session_id": uploaded_file.name, # Resource name 'files/...'
+                "message": "Dossier analysé et prêt pour le chat.",
+                "doc_count": documents.count()
+            })
+            
+        except Exception as e:
+            logger.error(f"Erreur init chat {case.id}: {str(e)}")
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=['post'])
+    def chat_message(self, request, pk=None):
+        """
+        Envoie un message au chatbot Gemini.
+        Body: { session_id, message, history }
+        """
+        try:
+            session_id = request.data.get('session_id')
+            message = request.data.get('message')
+            history = request.data.get('history', [])
+            
+            if not session_id or not message:
+                return Response({"detail": "session_id et message requis"}, status=status.HTTP_400_BAD_REQUEST)
+                
+            from .ai_service import GeminiService
+            service = GeminiService()
+            
+            response_text = service.chat_with_document(session_id, history, message)
+            
+            return Response({
+                "response": response_text
+            })
+            
+        except Exception as e:
+            logger.error(f"Erreur chat message: {str(e)}")
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class DocumentViewSet(viewsets.ModelViewSet):
     """

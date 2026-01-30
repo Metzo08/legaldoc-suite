@@ -100,6 +100,33 @@ class CaseDetailSerializer(serializers.ModelSerializer):
         return obj.client.name if obj.client else None
 
 
+class DocumentVersionSerializer(serializers.ModelSerializer):
+    """
+    Sérialiseur pour les versions de documents.
+    """
+    document_title = serializers.CharField(source='document.title', read_only=True)
+    uploaded_by_name = serializers.SerializerMethodField()
+    file_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = DocumentVersion
+        fields = (
+            'id', 'document', 'document_title', 'version_number', 'file',
+            'file_url', 'file_name', 'file_size', 'comment', 'uploaded_by',
+            'uploaded_by_name', 'uploaded_at'
+        )
+        read_only_fields = ('id', 'uploaded_by', 'uploaded_at')
+    
+    def get_uploaded_by_name(self, obj):
+        return obj.uploaded_by.get_full_name() if obj.uploaded_by else None
+    
+    def get_file_url(self, obj):
+        request = self.context.get('request')
+        if obj.file and request:
+            return request.build_absolute_uri(obj.file.url)
+        return None
+
+
 class DocumentSerializer(serializers.ModelSerializer):
     """
     Sérialiseur pour le modèle Document.
@@ -116,6 +143,8 @@ class DocumentSerializer(serializers.ModelSerializer):
         source='tags'
     )
     
+    versions = DocumentVersionSerializer(many=True, read_only=True)
+    
     class Meta:
         model = Document
         fields = (
@@ -123,7 +152,7 @@ class DocumentSerializer(serializers.ModelSerializer):
             'document_type', 'file', 'file_url', 'file_name', 'file_size',
             'file_extension', 'ocr_text', 'ocr_processed', 'ocr_error',
             'uploaded_by', 'uploaded_by_name', 'is_confidential', 'tags',
-            'tags_list', 'created_at', 'updated_at'
+            'tags_list', 'versions', 'created_at', 'updated_at'
         )
         read_only_fields = (
             'id', 'file_name', 'file_size', 'file_extension', 'ocr_text',

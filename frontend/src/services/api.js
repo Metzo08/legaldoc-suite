@@ -18,7 +18,9 @@ export const casesAPI = {
     getOne: (id) => apiClient.get(`/documents/cases/${id}/`),
     create: (data) => apiClient.post('/documents/cases/', data),
     update: (id, data) => apiClient.put(`/documents/cases/${id}/`, data),
-    delete: (id) => apiClient.delete(`/documents/cases/${id}/`)
+    delete: (id) => apiClient.delete(`/documents/cases/${id}/`),
+    chatInit: (id) => apiClient.get(`/documents/cases/${id}/chat_init/`),
+    chatMessage: (id, data) => apiClient.post(`/documents/cases/${id}/chat_message/`, data)
 };
 
 // API Documents

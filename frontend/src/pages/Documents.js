@@ -17,7 +17,12 @@ import {
     Chip,
     Tooltip,
     Grid,
-    alpha
+    alpha,
+    List,
+    ListItem,
+    ListItemText,
+    ListItemSecondaryAction,
+    InputAdornment
 } from '@mui/material';
 import {
     DataGrid,
@@ -39,10 +44,12 @@ import {
     Description as FileIcon,
     Storage as StorageIcon,
     FindInPage as FindIcon,
-    Edit as EditIcon
+    Edit as EditIcon,
+    Add as AddIcon,
+    Folder as FolderIcon
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
-import { documentsAPI, casesAPI } from '../services/api';
+import { documentsAPI, casesAPI, clientsAPI } from '../services/api';
 import jsPDF from 'jspdf';
 import { Document as DocxDocument, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
 import { saveAs } from 'file-saver';
@@ -56,11 +63,16 @@ function Documents() {
     const navigate = useNavigate();
     const [documents, setDocuments] = useState([]);
     const [cases, setCases] = useState([]);
+    const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [openDialog, setOpenDialog] = useState(false);
-    const [uploadFile, setUploadFile] = useState(null);
+    const [uploadFiles, setUploadFiles] = useState([]);
     const [isEditMode, setIsEditMode] = useState(false);
     const [editingDocId, setEditingDocId] = useState(null);
+
+    // État pour la création rapide de dossier
+    const [quickCaseDialog, setQuickCaseDialog] = useState(false);
+    const [newCaseData, setNewCaseData] = useState({ title: '', client: '' });
 
     const [formData, setFormData] = useState({
         title: '',
@@ -91,12 +103,15 @@ function Documents() {
     const loadData = useCallback(async () => {
         try {
             setLoading(true);
-            const [docsRes, casesRes] = await Promise.all([
+            setLoading(true);
+            const [docsRes, casesRes, clientsRes] = await Promise.all([
                 documentsAPI.getAll(),
-                casesAPI.getAll()
+                casesAPI.getAll(),
+                clientsAPI.getAll()
             ]);
             setDocuments(docsRes.data.results || docsRes.data);
             setCases(casesRes.data.results || casesRes.data);
+            setClients(clientsRes.data.results || clientsRes.data);
         } catch (error) {
             console.error('Erreur chargement:', error);
             showNotification("Erreur lors du chargement des documents.", "error");
@@ -156,18 +171,25 @@ function Documents() {
 
     const onDrop = useCallback((acceptedFiles) => {
         if (acceptedFiles.length > 0) {
-            setUploadFile(acceptedFiles[0]);
-            setFormData(prev => ({ ...prev, title: acceptedFiles[0].name }));
+            setUploadFiles(prev => [...prev, ...acceptedFiles]);
+            // Si c'est le premier fichier ajouté et qu'il n'y a pas de titre, on pré-remplit
+            if (formData.title === '' && acceptedFiles.length > 0) {
+                setFormData(prev => ({ ...prev, title: acceptedFiles[0].name.split('.')[0] }));
+            }
         }
-    }, []);
+    }, [formData.title]);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
-        multiple: false
+        multiple: true
     });
 
+    const handleRemoveFile = (index) => {
+        setUploadFiles(prev => prev.filter((_, i) => i !== index));
+    };
+
     const handleOpenDialog = () => {
-        setUploadFile(null);
+        setUploadFiles([]);
         setIsEditMode(false);
         setEditingDocId(null);
         setFormData({
@@ -182,7 +204,7 @@ function Documents() {
     };
 
     const handleEditClick = (doc) => {
-        setUploadFile(null);
+        setUploadFiles([]);
         setIsEditMode(true);
         setEditingDocId(doc.id);
         setFormData({
@@ -201,35 +223,90 @@ function Documents() {
     };
 
     const handleSubmit = async () => {
-        if (!isEditMode && (!uploadFile || !formData.case)) {
-            showNotification('Veuillez sélectionner un fichier et un dossier', 'warning');
+        if (!isEditMode && (uploadFiles.length === 0 || !formData.case)) {
+            showNotification('Veuillez sélectionner au moins un fichier et un dossier', 'warning');
             return;
         }
 
-        const data = new FormData();
-        if (uploadFile) {
-            data.append('file', uploadFile);
-        }
-        data.append('title', formData.title);
-        data.append('description', formData.description);
-        data.append('case', formData.case);
-        data.append('document_type', formData.document_type);
-        data.append('is_confidential', formData.is_confidential);
-
         try {
             if (isEditMode) {
-                // Utiliser PATCH pour permettre la modification partielle (sans renvoyer le fichier si inchangé)
+                // Mode édition (un seul fichier max)
+                const data = new FormData();
+                if (uploadFiles.length > 0) {
+                    data.append('file', uploadFiles[0]);
+                }
+                data.append('title', formData.title);
+                data.append('description', formData.description);
+                data.append('case', formData.case);
+                data.append('document_type', formData.document_type);
+                data.append('is_confidential', formData.is_confidential);
+
                 await documentsAPI.update(editingDocId, data);
                 showNotification("Document mis à jour avec succès !");
             } else {
-                await documentsAPI.upload(data);
-                showNotification("Document uploadé avec succès !");
+                // Mode Multi-Upload
+                setLoading(true);
+                let successCount = 0;
+
+                for (const file of uploadFiles) {
+                    const data = new FormData();
+                    data.append('file', file);
+                    // Si plusieurs fichiers, on utilise le nom du fichier comme titre, sinon le titre du formulaire
+                    const title = uploadFiles.length > 1 ? file.name.split('.')[0] : formData.title;
+                    data.append('title', title);
+                    data.append('description', formData.description);
+                    data.append('case', formData.case);
+                    data.append('document_type', formData.document_type);
+                    data.append('is_confidential', formData.is_confidential);
+
+                    try {
+                        await documentsAPI.upload(data);
+                        successCount++;
+                    } catch (err) {
+                        console.error(`Erreur upload ${file.name}:`, err);
+                    }
+                }
+
+                if (successCount === uploadFiles.length) {
+                    showNotification(`${successCount} documents uploadés avec succès !`);
+                } else if (successCount > 0) {
+                    showNotification(`${successCount}/${uploadFiles.length} documents uploadés.`, "warning");
+                } else {
+                    throw new Error("Aucun fichier n'a pu être uploadé.");
+                }
             }
             loadData();
             handleCloseDialog();
         } catch (error) {
             console.error('Erreur soumission document:', error);
             showNotification(`Erreur lors de ${isEditMode ? 'la mise à jour' : "l'upload"}.`, "error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCreateQuickCase = async () => {
+        if (!newCaseData.title || !newCaseData.client) {
+            showNotification("Veuillez remplir le titre et le client", "warning");
+            return;
+        }
+        try {
+            const resp = await casesAPI.create({
+                title: newCaseData.title,
+                client: newCaseData.client,
+                reference: `DOS-${Date.now()}`, // Simple auto-ref
+                status: 'OPEN',
+                description: 'Créé depuis l\'upload rapide'
+            });
+            const newCase = resp.data;
+            setCases(prev => [newCase, ...prev]);
+            setFormData(prev => ({ ...prev, case: newCase.id })); // Auto-select new case
+            setQuickCaseDialog(false);
+            setNewCaseData({ title: '', client: '' });
+            showNotification("Dossier créé et sélectionné !");
+        } catch (error) {
+            console.error("Erreur création dossier:", error);
+            showNotification("Erreur lors de la création du dossier", "error");
         }
     };
 
@@ -673,22 +750,52 @@ function Documents() {
                         <Paper {...getRootProps()} sx={{ p: 4, textAlign: 'center', border: '2px dashed', borderColor: isDragActive ? 'primary.main' : 'divider', bgcolor: isDragActive ? 'action.hover' : 'background.paper', cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}>
                             <input {...getInputProps()} />
                             <UploadIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
-                            {uploadFile ? (
-                                <Typography sx={{ fontWeight: 600, color: 'success.main' }}>
-                                    Nouveau fichier : {uploadFile.name}
-                                </Typography>
-                            ) : (
-                                <Typography color="text.secondary">
-                                    {isEditMode
-                                        ? 'Glissez-déposez pour remplacer le fichier actuel (optionnel)'
-                                        : 'Glissez-déposez un fichier ou cliquez pour sélectionner'}
-                                </Typography>
-                            )}
+                            <Typography color="text.secondary">
+                                {isEditMode
+                                    ? 'Glissez-déposez pour remplacer le fichier actuel (optionnel)'
+                                    : 'Glissez-déposez vos fichiers ici ou cliquez pour sélectionner'}
+                            </Typography>
                         </Paper>
-                        <TextField label="Titre" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required fullWidth />
-                        <TextField label="Dossier" select value={formData.case} onChange={(e) => setFormData({ ...formData, case: e.target.value })} required fullWidth>
-                            {cases.map((c) => <MenuItem key={c.id} value={c.id}>{c.reference} - {c.title}</MenuItem>)}
-                        </TextField>
+
+                        {uploadFiles.length > 0 && (
+                            <Paper variant="outlined" sx={{ maxHeight: 150, overflow: 'auto', p: 1 }}>
+                                <List dense>
+                                    {uploadFiles.map((file, index) => (
+                                        <ListItem key={index} secondaryAction={
+                                            <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveFile(index)}>
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        }>
+                                            <FileIcon sx={{ mr: 2, color: 'text.secondary' }} />
+                                            <ListItemText
+                                                primary={file.name}
+                                                secondary={formatFileSize(file.size)}
+                                                primaryTypographyProps={{ noWrap: true }}
+                                            />
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </Paper>
+                        )}
+
+                        <TextField label="Titre (pour fichier unique ou préfixe)" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} fullWidth />
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <TextField
+                                label="Dossier"
+                                select
+                                value={formData.case}
+                                onChange={(e) => setFormData({ ...formData, case: e.target.value })}
+                                required
+                                fullWidth
+                            >
+                                {cases.map((c) => <MenuItem key={c.id} value={c.id}>{c.reference} - {c.title}</MenuItem>)}
+                            </TextField>
+                            <Tooltip title="Créer un nouveau dossier">
+                                <Button variant="outlined" sx={{ minWidth: 56, px: 0 }} onClick={() => setQuickCaseDialog(true)}>
+                                    <AddIcon />
+                                </Button>
+                            </Tooltip>
+                        </Box>
                         <TextField label="Type de document" select value={formData.document_type} onChange={(e) => setFormData({ ...formData, document_type: e.target.value })} fullWidth>
                             <MenuItem value="CONTRAT">Contrat</MenuItem>
                             <MenuItem value="COURRIER">Courrier</MenuItem>
@@ -712,6 +819,36 @@ function Documents() {
                     <Button onClick={handleSubmit} variant="contained" sx={{ px: 4 }}>
                         {isEditMode ? 'Enregistrer les modifications' : 'Uploader'}
                     </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={quickCaseDialog} onClose={() => setQuickCaseDialog(false)} maxWidth="xs" fullWidth>
+                <DialogTitle>Nouveau Dossier Rapide</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <TextField
+                            label="Titre du dossier"
+                            value={newCaseData.title}
+                            onChange={(e) => setNewCaseData({ ...newCaseData, title: e.target.value })}
+                            fullWidth
+                            autoFocus
+                        />
+                        <TextField
+                            label="Client"
+                            select
+                            value={newCaseData.client}
+                            onChange={(e) => setNewCaseData({ ...newCaseData, client: e.target.value })}
+                            fullWidth
+                        >
+                            {clients.map((c) => (
+                                <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+                            ))}
+                        </TextField>
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setQuickCaseDialog(false)}>Annuler</Button>
+                    <Button onClick={handleCreateQuickCase} variant="contained" startIcon={<FolderIcon />}>Créer</Button>
                 </DialogActions>
             </Dialog>
 

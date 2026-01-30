@@ -202,6 +202,11 @@ function Deadlines() {
         }
     };
 
+    const getCaseCategory = (caseId) => {
+        const found = cases.find(c => c.id === caseId);
+        return found?.category || 'CIVIL';
+    };
+
     const getDeadlineTypeLabel = (type) => {
         const found = deadlineTypes.find(t => t.value === type);
         return found ? found.label : type;
@@ -282,12 +287,29 @@ function Deadlines() {
             <Grid container spacing={3}>
                 {filteredDeadlines.map((deadline) => {
                     const status = getStatusInfo(deadline);
+                    const category = getCaseCategory(deadline.case);
+                    const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(category);
+                    const isBlue = ['PENAL', 'CORRECTIONNEL'].includes(category);
+                    const categoryLabel = category.charAt(0) + category.slice(1).toLowerCase();
+
                     return (
                         <Grid item xs={12} sm={6} md={4} key={deadline.id}>
-                            <Card sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
+                            <Card sx={{
+                                borderRadius: 3, border: '1px solid', borderColor: 'divider', boxShadow: 'none',
+                                position: 'relative', overflow: 'hidden',
+                                '&:before': {
+                                    content: '""', position: 'absolute', left: 0, top: 0, bottom: 0, width: 4,
+                                    bgcolor: isYellow ? '#facc15' : (isBlue ? '#1d4ed8' : 'primary.main')
+                                }
+                            }}>
                                 <CardContent>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                        <Chip label={getDeadlineTypeLabel(deadline.deadline_type)} size="small" variant="outlined" />
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                            <Chip label={getDeadlineTypeLabel(deadline.deadline_type)} size="small" variant="outlined" />
+                                            <Typography variant="caption" sx={{ color: isYellow ? '#a16207' : (isBlue ? '#1d4ed8' : 'primary.main'), fontWeight: 800 }}>
+                                                {categoryLabel}
+                                            </Typography>
+                                        </Box>
                                         <Box>
                                             <Tooltip title="Marquer comme terminée">
                                                 <IconButton size="small" onClick={() => handleToggleComplete(deadline)} color={deadline.is_completed ? "success" : "default"}>
@@ -298,7 +320,7 @@ function Deadlines() {
                                             <IconButton size="small" onClick={() => handleDeleteClick(deadline)} color="error"><DeleteIcon fontSize="small" /></IconButton>
                                         </Box>
                                     </Box>
-                                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>{deadline.title}</Typography>
+                                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: deadline.is_completed ? 'text.disabled' : 'text.primary' }}>{deadline.title}</Typography>
                                     <Typography
                                         variant="body2"
                                         color="text.secondary"

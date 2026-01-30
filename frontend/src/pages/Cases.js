@@ -27,11 +27,13 @@ import {
     Delete as DeleteIcon,
     Folder as FolderIcon,
     CloudUpload as UploadIcon,
-    Visibility as ViewIcon
+    Visibility as ViewIcon,
+    SmartToy as BotIcon
 } from '@mui/icons-material';
 import { casesAPI, clientsAPI } from '../services/api';
 import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
 import WorkflowRedirectDialog from '../components/WorkflowRedirectDialog';
+import AIChatDialog from '../components/AIChatDialog';
 import StatCard from '../components/StatCard';
 import authService from '../services/authService';
 
@@ -75,6 +77,9 @@ function Cases() {
 
     // Workflow Redirect State
     const [redirectDialog, setRedirectDialog] = useState({ open: false, caseId: null });
+
+    // AI Chat State
+    const [chatDialog, setChatDialog] = useState({ open: false, caseId: null, caseRef: '' });
 
     const loadData = useCallback(async () => {
         try {
@@ -208,6 +213,10 @@ function Cases() {
         }
     };
 
+    const handleAnalyzeCase = (caseItem) => {
+        setChatDialog({ open: true, caseId: caseItem.id, caseRef: caseItem.reference });
+    };
+
     const handleDeleteClick = (caseItem) => {
         setCaseToDelete(caseItem);
         setDeleteDialog(true);
@@ -251,6 +260,7 @@ function Cases() {
             width: 160,
             getActions: (params) => [
                 <GridActionsCellItem icon={<ViewIcon color="primary" />} label="Détails" onClick={() => navigate(`/cases/${params.id}`)} />,
+                <GridActionsCellItem icon={<BotIcon sx={{ color: 'secondary.main' }} />} label="Assistant Juridique IA" onClick={() => handleAnalyzeCase(params.row)} showInMenu />,
                 <GridActionsCellItem icon={<UploadIcon color="info" />} label="Ajouter un document" onClick={() => navigate(`/documents?caseId=${params.id}&new=true`)} />,
                 <GridActionsCellItem icon={<EditIcon />} label="Modifier" onClick={() => handleOpenDialog(params.row)} color="primary" />,
                 <GridActionsCellItem icon={<DeleteIcon />} label="Supprimer" onClick={() => handleDeleteClick(params.row)} color="error" />,
@@ -670,6 +680,13 @@ function Cases() {
                 message="Le dossier a été ouvert avec succès. Souhaitez-vous y ajouter des documents immédiatement ?"
                 confirmText="Ajouter des documents"
                 cancelText="Plus tard"
+            />
+
+            <AIChatDialog
+                open={chatDialog.open}
+                onClose={() => setChatDialog({ ...chatDialog, open: false })}
+                caseId={chatDialog.caseId}
+                caseReference={chatDialog.caseRef}
             />
         </Box>
     );
