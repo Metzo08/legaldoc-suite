@@ -872,7 +872,7 @@ function Documents() {
                     </Box>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleReprocessOcr} startIcon={<FindIcon />} color="primary" disabled={loading}>
+                    <Button onClick={handleReprocessOcr} startIcon={<ResetIcon />} color="primary" disabled={loading}>
                         {loading ? 'Traitement...' : 'Relancer l\'OCR'}
                     </Button>
                     <Box sx={{ flex: 1 }} />
@@ -894,7 +894,7 @@ function Documents() {
                             }}
                             variant="contained"
                         >
-                            PDF Recherchable (AskYourPDF)
+                            PDF Recherchable (OCR)
                         </Button>
                     )}
                     <Button onClick={handleExportWord} startIcon={<DownloadIcon />} color="success">Exporter Word</Button>
