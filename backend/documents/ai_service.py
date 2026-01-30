@@ -13,7 +13,7 @@ class GeminiService:
             raise ValueError("GEMINI_API_KEY is not configured")
         
         genai.configure(api_key=self.api_key)
-        self.model_name = 'gemini-1.5-flash'
+        self.model_name = 'gemini-flash-latest'
         
     def upload_file(self, file_path, mime_type='application/pdf'):
         """
@@ -104,21 +104,6 @@ class GeminiService:
                 ])
             else:
                 # Reconstruct history
-                # Note: The file object must be present in the history if we want the context.
-                # However, passing the actual File object in 'parts' for history reconstruction works 
-                # if the object is valid.
-                
-                # Since we accept history from frontend (JSON), we need to handle the file part carefully.
-                # We can't re-upload. We should assume the "context" is established.
-                # BUT Gemini 1.5 context caching or file lifetime implies we just need to reference it.
-                
-                # Alternate robust strategy: using generate_content with a list of messages + file every time?
-                # No, that's token heavy if we re-send text history, but for file it's fine (pointer).
-                # Cost-effective way: use chat session.
-                
-                # Let's try to pass the file_ref in the history.
-                # We will prepend the file-loading turn to the history we receive from frontend.
-                
                 internal_history = [
                      {
                         "role": "user",
@@ -132,16 +117,27 @@ class GeminiService:
                 
                 # Append user history (text only)
                 for turn in history:
+                    # Ensure parts is a list, some frontends send string for simple messages
+                    parts = turn.get('parts', [])
+                    if isinstance(parts, str):
+                        parts = [parts]
+                    elif isinstance(parts, list):
+                        # Verify elements are strings (or other valid types)
+                        # The API expects strings for text parts
+                        pass
+                    
                     internal_history.append({
                         "role": turn['role'],
-                        "parts": turn['parts']
+                        "parts": parts
                     })
                 
+                logger.info(f"Starting chat with history length: {len(internal_history)}")
                 chat = model.start_chat(history=internal_history)
                 
             response = chat.send_message(message)
             return response.text
             
         except Exception as e:
-            logger.error(f"Gemini Chat Error: {str(e)}")
+            logger.error(f"Gemini Chat Error: {str(e)}", exc_info=True)
+            # Return a user-friendly error if possible or re-raise
             raise e

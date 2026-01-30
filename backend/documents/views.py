@@ -209,10 +209,11 @@ class CaseViewSet(viewsets.ModelViewSet):
         from .ai_service import GeminiService
         import fitz  # PyMuPDF
         import os
+        import docx # python-docx
         from django.conf import settings
         
         try:
-            # 1. Fusionner les documents (Code existant réutilisé)
+            # 1. Fusionner les documents
             merged_doc = fitz.open()
             
             for doc in documents:
@@ -226,21 +227,92 @@ class CaseViewSet(viewsets.ModelViewSet):
                     if not os.path.exists(file_path):
                         continue
                         
-                    if file_path.lower().endswith('.pdf'):
+                    ext = file_path.lower().split('.')[-1]
+                    
+                    if ext == 'pdf':
                         with fitz.open(file_path) as pdf_doc:
                             merged_doc.insert_pdf(pdf_doc)
-                    elif file_path.lower().endswith(('.png', '.jpg', '.jpeg')):
+                            
+                    elif ext in ['png', 'jpg', 'jpeg']:
                         img = fitz.open(file_path)
                         pdf_bytes = img.convert_to_pdf()
                         with fitz.open("pdf", pdf_bytes) as img_pdf:
                             merged_doc.insert_pdf(img_pdf)
+                            
+                    elif ext == 'docx':
+                        try:
+                            try:
+                                doc_word = docx.Document(file_path)
+                            except:
+                                # Fallback handling if python-docx fails to open
+                                logger.warning(f"python-docx failed for {file_path}")
+                                continue
+
+                            full_text = []
+                            for para in doc_word.paragraphs:
+                                full_text.append(para.text)
+                            text_content = '\n'.join(full_text)
+                            
+                            text_pdf = fitz.open()
+                            
+                            # Simple pagination logic
+                            # 3000 chars per page approx
+                            chunk_size = 3000
+                            if not text_content:
+                                text_content = "[Document vide]"
+                                
+                            remaining = text_content
+                            while len(remaining) > 0:
+                                page = text_pdf.new_page()
+                                chunk = remaining[:chunk_size]
+                                remaining = remaining[chunk_size:]
+                                try:
+                                    # Insert text with some basic formatting awareness
+                                    page.insert_text((50, 72), chunk, fontsize=10)
+                                except:
+                                    pass
+                                    
+                            merged_doc.insert_pdf(text_pdf)
+                            
+                        except Exception as e:
+                            logger.error(f"Erreur conversion DOCX {doc.id}: {e}")
+                            
+                    elif ext == 'txt':
+                        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                            text_content = f.read()
+                            
+                        text_pdf = fitz.open()
+                        remaining = text_content
+                        chunk_size = 3000
+                        while len(remaining) > 0:
+                            page = text_pdf.new_page()
+                            chunk = remaining[:chunk_size]
+                            remaining = remaining[chunk_size:]
+                            page.insert_text((50, 72), chunk, fontsize=10)
+                                
+                        merged_doc.insert_pdf(text_pdf)
                             
                 except Exception as e:
                     logger.warning(f"Impossible de fusionner le document {doc.id}: {str(e)}")
                     continue
             
             if merged_doc.page_count == 0:
-                return Response({"detail": "Aucun document valide n'a pu être fusionné."}, status=status.HTTP_400_BAD_REQUEST)
+                # Fallback: Créer un PDF avec un message d'erreur pour l'IA
+                fallback = fitz.open()
+                page = fallback.new_page()
+                page.insert_text((50, 50), "Aucun document n'a pu être converti correctement.", fontsize=12)
+                output_filename = f"chat_context_empty_{case.reference.replace('/', '_')}.pdf"
+                output_path = os.path.join(settings.MEDIA_ROOT, 'temp', output_filename)
+                os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                fallback.save(output_path)
+                fallback.close()
+                uploaded_file = GeminiService().upload_file(output_path)
+                return Response({
+                    "status": "warning",
+                    "session_id": uploaded_file.name,
+                    "message": "Documents illisibles, chat vide initié.",
+                    "doc_count": 0
+                })
                 
             # Sauvegarder temporairement
             output_filename = f"chat_context_{case.reference.replace('/', '_')}.pdf"
@@ -253,12 +325,9 @@ class CaseViewSet(viewsets.ModelViewSet):
             service = GeminiService()
             uploaded_file = service.upload_file(output_path)
             
-            # Nettoyage (ou pas, si on veut utiliser request.build_absolute_uri pour debug)
-            # os.remove(output_path) 
-            
             return Response({
                 "status": "success",
-                "session_id": uploaded_file.name, # Resource name 'files/...'
+                "session_id": uploaded_file.name, 
                 "message": "Dossier analysé et prêt pour le chat.",
                 "doc_count": documents.count()
             })
