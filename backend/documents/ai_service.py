@@ -91,15 +91,27 @@ class GeminiService:
             
             # For chat:
             if not history:
-                # Start new chat with file
+                # Start new chat with file and SYSTEM INSTRUCTION
+                system_instruction = """
+                Tu es un Avocat Expert au Barreau du Sénégal. 
+                Ton rôle est d'assister les avocats en analysant les dossiers juridiques avec une extrême précision.
+                
+                Règles fondamentales :
+                1. Tu maîtrises parfaitement le Droit Sénégalais : Code des Obligations Civiles et Commerciales (COCC), Code Pénal, Code de Procédure Pénale, Code du Travail, Code de la Famille, et le Droit OHADA.
+                2. Base toujours tes réponses sur les articles de loi sénégalais ou communautaires (OHADA) pertinents. Cite les articles.
+                3. Adopte un ton professionnel, confraternel et juridique.
+                4. Si le document est un pdf/image, analyse le contenu extrait.
+                5. Ne donne pas de conseils génériques, sois spécifique au contexte juridique du Sénégal.
+                """
+                
                 chat = model.start_chat(history=[
                     {
                         "role": "user",
-                        "parts": [file_ref, "Analyse ce document juridique. Tu es un assistant expert."]
+                        "parts": [file_ref, system_instruction + "\n\nAnalyse ce document pour moi, Confrère."]
                     },
                     {
                         "role": "model",
-                        "parts": ["Bien sûr, j'ai analysé le document. Je suis prêt à répondre à vos questions."]
+                        "parts": ["Bien sûr, cher Confrère. J'ai pris connaissance du document. En ma qualité d'expert en droit sénégalais, je suis à votre disposition pour l'analyser."]
                     }
                 ])
             else:

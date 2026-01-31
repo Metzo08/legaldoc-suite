@@ -131,7 +131,7 @@ function AIChatDialog({ open, onClose, caseId, caseReference }) {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Avatar sx={{ bgcolor: 'secondary.main' }}><BotIcon /></Avatar>
                     <Box>
-                        <Typography variant="h6">Assistant Juridique IA</Typography>
+                        <Typography variant="h6">Avocat IA expert au barreau du Sénégal</Typography>
                         <Typography variant="caption" color="text.secondary">Dossier: {caseReference}</Typography>
                     </Box>
                 </Box>

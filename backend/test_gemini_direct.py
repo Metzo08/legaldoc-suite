@@ -3,14 +3,15 @@ import os
 import sys
 
 # Load API Key directly for testing
-API_KEY = "AIzaSyCmc2AdPly60iqdnteqK66Arg3ULHVcFkI"
+API_KEY = "AIzaSyCws8w378QsQapYokZIkAeCRd1FkJRToNw"
 
 def test_gemini():
     print(f"Testing Gemini API with Key: {API_KEY[:5]}...")
     
     try:
         genai.configure(api_key=API_KEY)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.0-flash')
+
         
         # 1. Simple text generation
         print("\n1. Testing Text Generation...")
@@ -45,9 +46,13 @@ def test_gemini():
             
         except Exception as e:
             print(f"File Upload/Chat Failed: {e}")
+            with open("error.txt", "w") as f:
+                f.write(f"File Upload Error: {str(e)}")
             
     except Exception as e:
         print(f"General Error: {e}")
+        with open("error.txt", "w") as f:
+            f.write(f"General Error: {str(e)}")
 
 if __name__ == "__main__":
     test_gemini()
