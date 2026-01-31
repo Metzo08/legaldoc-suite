@@ -69,7 +69,8 @@ function AIChatDialog({ open, onClose, caseId, caseReference }) {
             }
         } catch (error) {
             console.error("Erreur init chat:", error);
-            setMessages([{ role: 'model', text: "Erreur lors de l'analyse du dossier. Veuillez réessayer plus tard.", error: true }]);
+            const errorMessage = error.response?.data?.detail || error.message || "Erreur lors de l'analyse du dossier.";
+            setMessages([{ role: 'model', text: `Erreur d'initialisation: ${errorMessage}`, error: true }]);
         } finally {
             setInitializing(false);
         }
@@ -106,7 +107,8 @@ function AIChatDialog({ open, onClose, caseId, caseReference }) {
             }
         } catch (error) {
             console.error("Erreur chat:", error);
-            setMessages(prev => [...prev, { role: 'model', text: "Erreur lors de la communication avec l'assistant.", error: true }]);
+            const errorMessage = error.response?.data?.detail || error.message || "Erreur lors de la communication avec l'assistant.";
+            setMessages(prev => [...prev, { role: 'model', text: `Erreur: ${errorMessage}`, error: true }]);
         } finally {
             setLoading(false);
         }
