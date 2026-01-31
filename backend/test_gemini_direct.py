@@ -2,8 +2,12 @@ import google.generativeai as genai
 import os
 import sys
 
-# Load API Key directly for testing
-API_KEY = "AIzaSyCws8w378QsQapYokZIkAeCRd1FkJRToNw"
+# Load API Key from environment
+API_KEY = os.getenv('GEMINI_API_KEY')
+
+if not API_KEY:
+    print("Error: GEMINI_API_KEY not found in environment variables.")
+    sys.exit(1)
 
 def test_gemini():
     print(f"Testing Gemini API with Key: {API_KEY[:5]}...")
