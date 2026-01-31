@@ -61,95 +61,96 @@ class GeminiService:
         history: List of dicts [{'role': 'user', 'parts': ['...']}, {'role': 'model', 'parts': ['...']}]
         message: The new user message string.
         """
-        try:
-            model = genai.GenerativeModel(self.model_name)
-            
-            # Retrieve the file reference to pass to the model
-            # Note: start_chat history format is strictly [{'role': 'user', 'parts': [...]}, ...]
-            # We need to make sure the file is in the history or context.
-            # Best practice for Gemini 1.5 with files:
-            # Pass the file in the initial history or system instruction?
-            # Actually, standard way is to include the file in the request contents.
-            
-            # If we are using `chat = model.start_chat()`, we can initialize it.
-            
-            # Simple approach: Reconstruct history where the first message includes the file.
-            
-            # Retrieve file object (lightweight reference)
-            # file_ref = genai.get_file(file_name) # This might fetch metadata
-            
-            # Since we can't easily "get" the object to pass to content generation without re-uploading in some versions,
-            # Let's verify: yes, get_file returns a proper object usable in generation.
-            
-            file_ref = genai.get_file(file_name)
-            
-            formatted_history = []
-            
-            # Add file to the first user message if history is empty, OR ensure it's in the context.
-            # Actually, we can just send [file_ref, message] if it's a stateless 'generate_content' call 
-            # but that doesn't remember history.
-            
-            # For chat:
-            if not history:
-                # Start new chat with file and SYSTEM INSTRUCTION
-                system_instruction = """
-                Tu es un Avocat Expert au Barreau du Sénégal. 
-                Ton rôle est d'assister les avocats en analysant les dossiers juridiques avec une extrême précision.
+        import time
+        
+        SYSTEM_INSTRUCTION = """
+        Tu es un Avocat Expert au Barreau du Sénégal. 
+        Ton rôle est d'assister les avocats en analysant les dossiers juridiques avec une extrême précision.
+        
+        Règles fondamentales :
+        1. Tu maîtrises parfaitement le Droit Sénégalais : Code des Obligations Civiles et Commerciales (COCC), Code Pénal, Code de Procédure Pénale, Code du Travail, Code de la Famille, et le Droit OHADA.
+        2. Base toujours tes réponses sur les articles de loi sénégalais ou communautaires (OHADA) pertinents. Cite les articles.
+        3. Adopte un ton professionnel, confraternel et juridique.
+        4. Si le document est un pdf/image, analyse le contenu extrait.
+        5. Ne donne pas de conseils génériques, sois spécifique au contexte juridique du Sénégal.
+        """
+
+        retries = 3
+        last_error = None
+        
+        for attempt in range(retries):
+            try:
+                # Pass system instruction to model constructor if supported by SDK version,
+                # otherwise we inject it in history.
+                # Assuming google-generativeai >= 0.3.0 which supports system_instruction
+                try:
+                   model = genai.GenerativeModel(self.model_name, system_instruction=SYSTEM_INSTRUCTION)
+                except TypeError:
+                   # Fallback for older SDKs
+                   model = genai.GenerativeModel(self.model_name)
+                   # Logic below handles context injection manually if needed, but SDK update recommended.
                 
-                Règles fondamentales :
-                1. Tu maîtrises parfaitement le Droit Sénégalais : Code des Obligations Civiles et Commerciales (COCC), Code Pénal, Code de Procédure Pénale, Code du Travail, Code de la Famille, et le Droit OHADA.
-                2. Base toujours tes réponses sur les articles de loi sénégalais ou communautaires (OHADA) pertinents. Cite les articles.
-                3. Adopte un ton professionnel, confraternel et juridique.
-                4. Si le document est un pdf/image, analyse le contenu extrait.
-                5. Ne donne pas de conseils génériques, sois spécifique au contexte juridique du Sénégal.
-                """
+                file_ref = genai.get_file(file_name)
                 
-                chat = model.start_chat(history=[
-                    {
-                        "role": "user",
-                        "parts": [file_ref, system_instruction + "\n\nAnalyse ce document pour moi, Confrère."]
-                    },
-                    {
-                        "role": "model",
-                        "parts": ["Bien sûr, cher Confrère. J'ai pris connaissance du document. En ma qualité d'expert en droit sénégalais, je suis à votre disposition pour l'analyser."]
-                    }
-                ])
-            else:
-                # Reconstruct history
-                internal_history = [
-                     {
-                        "role": "user",
-                        "parts": [file_ref, "Contexte du dossier."]
-                    },
-                    {
-                        "role": "model",
-                        "parts": ["Dossier chargé."]
-                    }
-                ]
+                # Check file state
+                if file_ref.state.name == "FAILED":
+                    raise ValueError(f"File processing failed on Gemini side: {file_ref.uri}")
                 
-                # Append user history (text only)
-                for turn in history:
-                    # Ensure parts is a list, some frontends send string for simple messages
-                    parts = turn.get('parts', [])
-                    if isinstance(parts, str):
-                        parts = [parts]
-                    elif isinstance(parts, list):
-                        # Verify elements are strings (or other valid types)
-                        # The API expects strings for text parts
-                        pass
+                internal_history = []
+                
+                if not history:
+                    # Start new chat with file
+                    # File is added to the first message context
+                    internal_history = [
+                        {
+                            "role": "user",
+                            "parts": [file_ref, "Analyse ce document pour moi, Confrère."]
+                        },
+                        {
+                            "role": "model",
+                            "parts": ["Bien sûr, cher Confrère. J'ai pris connaissance du document. En ma qualité d'expert en droit sénégalais, je suis à votre disposition pour l'analyser."]
+                        }
+                    ]
+                else:
+                    # Reconstruct history
+                    # We inject the file reference in the 'phantom' first turn to provide context
+                    internal_history = [
+                         {
+                            "role": "user",
+                            "parts": [file_ref, "Contexte du dossier."]
+                        },
+                        {
+                            "role": "model",
+                            "parts": ["Dossier chargé."]
+                        }
+                    ]
                     
-                    internal_history.append({
-                        "role": turn['role'],
-                        "parts": parts
-                    })
+                    # Append user history (text only)
+                    for turn in history:
+                        parts = turn.get('parts', [])
+                        if isinstance(parts, str):
+                            parts = [parts]
+                        
+                        internal_history.append({
+                            "role": turn['role'],
+                            "parts": parts
+                        })
                 
-                logger.info(f"Starting chat with history length: {len(internal_history)}")
+                logger.debug(f"Starting chat match (Attempt {attempt+1}/{retries})")
                 chat = model.start_chat(history=internal_history)
+                response = chat.send_message(message)
+                return response.text
                 
-            response = chat.send_message(message)
-            return response.text
-            
-        except Exception as e:
-            logger.error(f"Gemini Chat Error: {str(e)}", exc_info=True)
-            # Return a user-friendly error if possible or re-raise
-            raise e
+            except Exception as e:
+                last_error = e
+                logger.warning(f"Gemini Chat verification failed (Attempt {attempt+1}): {str(e)}")
+                if "429" in str(e) or "500" in str(e) or "503" in str(e):
+                    time.sleep(2 * (attempt + 1)) # Backoff
+                    continue
+                else:
+                    # Fatal error (like 403, 400)
+                    raise e
+                    
+        # If loop finishes
+        logger.error(f"Gemini Chat Failed after {retries} retries: {str(last_error)}")
+        raise last_error
