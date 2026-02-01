@@ -13,7 +13,7 @@ class GeminiService:
             raise ValueError("GEMINI_API_KEY is not configured")
         
         genai.configure(api_key=self.api_key)
-        self.model_name = 'gemini-2.0-flash-lite'
+        self.model_name = 'gemini-flash-latest'
         
     def upload_file(self, file_path, mime_type='application/pdf'):
         """
