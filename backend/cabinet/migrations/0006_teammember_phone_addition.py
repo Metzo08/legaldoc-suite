@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cabinet', '0004_cabinet_cel_cabinet_fax'),
+        ('cabinet', '0005_alter_cabinet_primary_color_and_more'),
     ]
 
     operations = [
