@@ -445,6 +445,10 @@ class AgendaEventSerializer(serializers.ModelSerializer):
             'created_by', 'created_by_name', 'created_at', 'updated_at'
         )
         read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
+        extra_kwargs = {
+            'year': {'required': False},
+            'is_archived': {'required': False},
+        }
 
     def get_created_by_name(self, obj):
         return obj.created_by.get_full_name() if obj.created_by else None

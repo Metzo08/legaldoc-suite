@@ -192,20 +192,30 @@ function Agenda() {
 
     const handleSave = async () => {
         try {
-            const data = {
-                ...formData,
-                case: formData.case || null,
+            const payload = {
+                title: formData.title,
+                event_type: formData.event_type,
+                start_datetime: formData.start_datetime,
                 end_datetime: formData.end_datetime || null,
+                all_day: formData.all_day,
+                case: formData.case || null,
+                description: formData.description,
+                location: formData.location,
+                color: formData.color,
+                reminder_minutes: formData.reminder_minutes || 0,
             };
             if (editingEvent) {
-                await agendaAPI.update(editingEvent.source_id, data);
+                await agendaAPI.update(editingEvent.source_id, payload);
             } else {
-                await agendaAPI.create(data);
+                await agendaAPI.create(payload);
             }
             setDialogOpen(false);
             loadEvents();
         } catch (err) {
             console.error('Erreur sauvegarde:', err);
+            const detail = err.response?.data;
+            const msg = detail ? JSON.stringify(detail) : 'Erreur lors de la sauvegarde';
+            alert(msg);
         }
     };
 
