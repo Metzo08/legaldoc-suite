@@ -10,12 +10,13 @@ import logging
 import threading
 from django.db import transaction
 from django.db.models import Q
-from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence, Task
+from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence, Task, Decision, AgendaEvent
 from .serializers import (
     ClientSerializer, CaseListSerializer, CaseDetailSerializer,
     DocumentSerializer, DocumentUploadSerializer, DocumentPermissionSerializer,
     AuditLogSerializer, TagSerializer, DeadlineSerializer, DocumentVersionSerializer,
-    NotificationSerializer, DiligenceSerializer, TaskSerializer
+    NotificationSerializer, DiligenceSerializer, TaskSerializer, DecisionSerializer,
+    AgendaEventSerializer
 )
 from .permissions import IsAdminOrReadOnly, CanDeleteDocuments, HasDocumentPermission
 from .ocr import process_document_ocr
@@ -979,6 +980,32 @@ class DiligenceViewSet(viewsets.ModelViewSet):
         serializer.save(created_by=self.request.user)
 
 
+class DecisionViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet pour gérer les décisions liées aux dossiers.
+    """
+    serializer_class = DecisionSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.OrderingFilter]
+    ordering = ['decision_type', 'date_decision']
+
+    def get_queryset(self):
+        """
+        Filtre les décisions par dossier si le paramètre 'case' est fourni.
+        """
+        queryset = Decision.objects.select_related('case', 'created_by').all()
+        case_id = self.request.query_params.get('case', None)
+        if case_id and str(case_id).isdigit():
+            queryset = queryset.filter(case_id=case_id)
+        return queryset
+
+    def perform_create(self, serializer):
+        """
+        Assigne l'utilisateur créateur.
+        """
+        serializer.save(created_by=self.request.user)
+
+
 class TaskViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour gérer les tâches.
@@ -1038,3 +1065,146 @@ class TaskViewSet(viewsets.ModelViewSet):
                 entity_type='TASK',
                 entity_id=task.id
             )
+
+
+class AgendaViewSet(viewsets.ModelViewSet):
+    """
+    CRUD pour les événements d'agenda + vue agrégée.
+    """
+    serializer_class = AgendaEventSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = AgendaEvent.objects.select_related('case', 'created_by').all()
+        year = self.request.query_params.get('year')
+        month = self.request.query_params.get('month')
+        case_id = self.request.query_params.get('case')
+        event_type = self.request.query_params.get('event_type')
+
+        if year:
+            qs = qs.filter(year=int(year))
+        if month and year:
+            qs = qs.filter(start_datetime__month=int(month))
+        if case_id:
+            qs = qs.filter(case_id=case_id)
+        if event_type:
+            qs = qs.filter(event_type=event_type)
+        return qs
+
+    def perform_create(self, serializer):
+        start = serializer.validated_data.get('start_datetime')
+        year = start.year if start else None
+        serializer.save(created_by=self.request.user, year=year)
+
+    @action(detail=False, methods=['get'])
+    def aggregated(self, request):
+        """
+        Retourne tous les événements agrégés (agenda + échéances + décisions + tâches)
+        pour une année/mois donnés.
+        """
+        year = request.query_params.get('year')
+        month = request.query_params.get('month')
+        events = []
+
+        # 1. Événements d'agenda
+        agenda_qs = self.get_queryset()
+        for ev in agenda_qs:
+            events.append({
+                'id': f'agenda_{ev.id}',
+                'source': 'agenda',
+                'source_id': ev.id,
+                'title': ev.title,
+                'event_type': ev.event_type,
+                'start': ev.start_datetime.isoformat(),
+                'end': ev.end_datetime.isoformat() if ev.end_datetime else None,
+                'all_day': ev.all_day,
+                'color': ev.color,
+                'case_id': ev.case_id,
+                'case_reference': ev.case.reference if ev.case else None,
+                'location': ev.location,
+                'description': ev.description,
+            })
+
+        # 2. Échéances (audiences et autres)
+        deadline_qs = Deadline.objects.select_related('case').all()
+        if year:
+            deadline_qs = deadline_qs.filter(due_date__year=int(year))
+        if month:
+            deadline_qs = deadline_qs.filter(due_date__month=int(month))
+        for dl in deadline_qs:
+            color_map = {
+                'AUDIENCE': '#2196f3',
+                'DEPOT': '#ff9800',
+                'REPONSE': '#9c27b0',
+                'DELAI': '#f44336',
+                'CONGES': '#78909c',
+                'AUTRE': '#607d8b',
+            }
+            events.append({
+                'id': f'deadline_{dl.id}',
+                'source': 'deadline',
+                'source_id': dl.id,
+                'title': dl.title,
+                'event_type': dl.deadline_type,
+                'start': dl.due_date.isoformat() if dl.due_date else None,
+                'end': None,
+                'all_day': True,
+                'color': color_map.get(dl.deadline_type, '#607d8b'),
+                'case_id': dl.case_id,
+                'case_reference': dl.case.reference if dl.case else None,
+                'location': dl.location if hasattr(dl, 'location') else '',
+                'description': dl.description,
+                'is_completed': dl.is_completed,
+            })
+
+        # 3. Décisions
+        decision_qs = Decision.objects.select_related('case').all()
+        if year:
+            decision_qs = decision_qs.filter(date_decision__year=int(year))
+        if month:
+            decision_qs = decision_qs.filter(date_decision__month=int(month))
+        for dec in decision_qs:
+            events.append({
+                'id': f'decision_{dec.id}',
+                'source': 'decision',
+                'source_id': dec.id,
+                'title': f'Décision {dec.get_decision_type_display()} - {dec.juridiction or ""}',
+                'event_type': 'DECISION',
+                'start': dec.date_decision.isoformat() if dec.date_decision else None,
+                'end': None,
+                'all_day': True,
+                'color': '#ff9800',
+                'case_id': dec.case_id,
+                'case_reference': dec.case.reference if dec.case else None,
+                'location': dec.juridiction or '',
+                'description': dec.resultat or '',
+            })
+
+        # 4. Tâches avec date d'échéance
+        task_qs = Task.objects.select_related('case', 'assigned_to').filter(due_date__isnull=False)
+        if year:
+            task_qs = task_qs.filter(due_date__year=int(year))
+        if month:
+            task_qs = task_qs.filter(due_date__month=int(month))
+        for task in task_qs:
+            events.append({
+                'id': f'task_{task.id}',
+                'source': 'task',
+                'source_id': task.id,
+                'title': task.title,
+                'event_type': 'TACHE',
+                'start': task.due_date.isoformat() if task.due_date else None,
+                'end': None,
+                'all_day': True,
+                'color': '#ffc107',
+                'case_id': task.case_id if task.case else None,
+                'case_reference': task.case.reference if task.case else None,
+                'location': '',
+                'description': task.description,
+                'status': task.status,
+            })
+
+        # Trier par date de début
+        events.sort(key=lambda e: e.get('start') or '')
+
+        return Response(events)

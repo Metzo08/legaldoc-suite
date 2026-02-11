@@ -673,6 +673,73 @@ class Diligence(models.Model):
         return self.title
 
 
+class Decision(models.Model):
+    """
+    Décisions de justice liées à un dossier.
+    Chaque dossier (principal ou sous-dossier) peut avoir plusieurs décisions
+    de type Instance, Appel ou Pourvoi.
+    """
+    class DecisionType(models.TextChoices):
+        INSTANCE = 'INSTANCE', 'Instance'
+        APPEL = 'APPEL', 'Appel'
+        POURVOI = 'POURVOI', 'Pourvoi'
+
+    case = models.ForeignKey(
+        Case,
+        on_delete=models.CASCADE,
+        related_name='decisions',
+        verbose_name='Dossier'
+    )
+    decision_type = models.CharField(
+        max_length=20,
+        choices=DecisionType.choices,
+        verbose_name='Type de décision'
+    )
+    date_decision = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name='Date de la décision'
+    )
+    juridiction = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name='Juridiction'
+    )
+    numero_decision = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name='Numéro de la décision'
+    )
+    resultat = models.TextField(
+        blank=True,
+        verbose_name='Résultat / Dispositif'
+    )
+    observations = models.TextField(
+        blank=True,
+        verbose_name='Observations'
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='decisions_created',
+        verbose_name='Créé par'
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Date de création')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Dernière modification')
+
+    class Meta:
+        verbose_name = 'Décision'
+        verbose_name_plural = 'Décisions'
+        ordering = ['decision_type', 'date_decision']
+        indexes = [
+            models.Index(fields=['case', 'decision_type']),
+        ]
+
+    def __str__(self):
+        return f"{self.get_decision_type_display()} - {self.case.reference}"
+
+
 class Task(models.Model):
     """
     Tâches assignées aux membres du cabinet.
@@ -744,3 +811,75 @@ class Task(models.Model):
     
     def __str__(self):
         return f"{self.title} ({self.get_status_display()})"
+
+
+class AgendaEvent(models.Model):
+    """
+    Événements de l'agenda du cabinet.
+    Chaque événement appartient à une année judiciaire pour l'archivage.
+    """
+    class EventType(models.TextChoices):
+        AUDIENCE = 'AUDIENCE', 'Audience'
+        RDV = 'RDV', 'Rendez-vous client'
+        REUNION = 'REUNION', 'Réunion'
+        DEPLACEMENT = 'DEPLACEMENT', 'Déplacement'
+        RAPPEL = 'RAPPEL', 'Rappel'
+        CONFERENCE = 'CONFERENCE', 'Conférence'
+        FORMATION = 'FORMATION', 'Formation'
+        AUTRE = 'AUTRE', 'Autre'
+
+    title = models.CharField(max_length=255, verbose_name='Titre')
+    event_type = models.CharField(
+        max_length=20,
+        choices=EventType.choices,
+        default=EventType.RDV,
+        verbose_name="Type d'événement"
+    )
+    start_datetime = models.DateTimeField(verbose_name='Date et heure de début')
+    end_datetime = models.DateTimeField(null=True, blank=True, verbose_name='Date et heure de fin')
+    all_day = models.BooleanField(default=False, verbose_name='Journée entière')
+    case = models.ForeignKey(
+        Case,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='agenda_events',
+        verbose_name='Dossier lié'
+    )
+    description = models.TextField(blank=True, verbose_name='Description')
+    location = models.CharField(max_length=255, blank=True, verbose_name='Lieu')
+    color = models.CharField(max_length=7, default='#6366f1', verbose_name='Couleur')
+    reminder_minutes = models.IntegerField(
+        null=True, blank=True,
+        verbose_name='Rappel (minutes avant)'
+    )
+    is_recurring = models.BooleanField(default=False, verbose_name='Récurrent')
+    recurrence_rule = models.CharField(
+        max_length=255, blank=True,
+        verbose_name='Règle de récurrence'
+    )
+    year = models.IntegerField(verbose_name="Année d'archivage")
+    is_archived = models.BooleanField(default=False, verbose_name='Archivé')
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='agenda_events',
+        verbose_name='Créé par'
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Date de création')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Dernière modification')
+
+    class Meta:
+        verbose_name = "Événement d'agenda"
+        verbose_name_plural = "Événements d'agenda"
+        ordering = ['start_datetime']
+        indexes = [
+            models.Index(fields=['year', 'start_datetime']),
+            models.Index(fields=['event_type']),
+            models.Index(fields=['case']),
+            models.Index(fields=['created_by', 'year']),
+        ]
+
+    def __str__(self):
+        return f"{self.title} - {self.start_datetime.strftime('%d/%m/%Y %H:%M')}"

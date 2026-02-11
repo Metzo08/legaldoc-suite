@@ -35,13 +35,13 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
             primary: {
                 main: activePrimary,
                 light: isLight ? alpha(activePrimary, 0.7) : alpha(activePrimary, 0.8),
-                dark: isLight ? alpha(activePrimary, 1.2) : activePrimary, // MUI gérera les variations si on ne précise pas trop
+                dark: isLight ? alpha(activePrimary, 0.9) : activePrimary,
                 contrastText: '#ffffff',
             },
             secondary: {
                 main: activeSecondary,
                 light: alpha(activeSecondary, 0.7),
-                dark: alpha(activeSecondary, 1.2),
+                dark: alpha(activeSecondary, 0.9),
                 contrastText: '#ffffff',
             },
             background: {
@@ -92,9 +92,9 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
                     root: {
                         backgroundImage: 'none',
                         boxShadow: isLight
-                            ? '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)' // Tailwind shadow-sm est très propre
+                            ? '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
                             : '0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4)',
-                        border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.05)', // Bordure ultra subtile
+                        border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.05)',
                     },
                     elevation0: { boxShadow: 'none', border: 'none' },
                     elevation1: {
@@ -116,7 +116,7 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
                         boxShadow: isLight
                             ? '0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05)'
                             : '0 4px 6px -1px rgb(0 0 0 / 0.4)',
-                        border: 'none', // Plus de bordure moche
+                        border: 'none',
                         transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
                         '&:hover': {
                             transform: 'translateY(-2px)',
@@ -133,16 +133,135 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
                         borderRadius: 8,
                         padding: '8px 20px',
                         boxShadow: 'none',
-                        '&:hover': { boxShadow: 'none' },
+                        fontWeight: 600,
+                        transition: 'all 0.2s ease-in-out',
+                        '&:hover': { boxShadow: 'none', transform: 'scale(1.02)' },
                     },
                     containedPrimary: {
-                        backgroundColor: activePrimary,
-                        '&:hover': { backgroundColor: alpha(activePrimary, 0.8) },
+                        background: isLight
+                            ? activePrimary
+                            : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                        color: '#fff',
+                        '&:hover': {
+                            background: isLight
+                                ? alpha(activePrimary, 0.85)
+                                : 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                        },
                     },
                     containedSecondary: {
                         backgroundColor: activeSecondary,
-                        color: '#fff', // Assurer un bon contraste
-                        '&:hover': { backgroundColor: alpha(activeSecondary, 0.8) },
+                        color: '#fff',
+                        '&:hover': { backgroundColor: alpha(activeSecondary, 0.85) },
+                    },
+                    outlinedPrimary: {
+                        borderColor: isLight ? activePrimary : '#818cf8',
+                        color: isLight ? activePrimary : '#a5b4fc',
+                        borderWidth: '1.5px',
+                        '&:hover': {
+                            borderWidth: '1.5px',
+                            backgroundColor: isLight ? alpha(activePrimary, 0.04) : alpha('#818cf8', 0.12),
+                            borderColor: isLight ? activePrimary : '#a5b4fc',
+                        },
+                    },
+                    outlinedSecondary: {
+                        borderColor: isLight ? activeSecondary : '#d4a574',
+                        color: isLight ? activeSecondary : '#e8c89e',
+                        borderWidth: '1.5px',
+                        '&:hover': {
+                            borderWidth: '1.5px',
+                            backgroundColor: isLight ? alpha(activeSecondary, 0.04) : alpha('#d4a574', 0.12),
+                        },
+                    },
+                    textPrimary: {
+                        color: isLight ? activePrimary : '#a5b4fc',
+                        '&:hover': {
+                            backgroundColor: isLight ? alpha(activePrimary, 0.04) : alpha('#818cf8', 0.1),
+                        },
+                    },
+                },
+            },
+            // ===== DIALOG — En-tête gradient + coins arrondis =====
+            MuiDialog: {
+                styleOverrides: {
+                    paper: {
+                        borderRadius: 16,
+                        overflow: 'hidden',
+                        border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(99,102,241,0.2)',
+                        boxShadow: isLight
+                            ? '0 25px 50px -12px rgba(0,0,0,0.15)'
+                            : '0 25px 50px -12px rgba(0,0,0,0.6), 0 0 30px rgba(99,102,241,0.1)',
+                    },
+                },
+            },
+            MuiDialogTitle: {
+                styleOverrides: {
+                    root: {
+                        fontWeight: 800,
+                        fontSize: '1.15rem',
+                        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                        color: '#ffffff',
+                        padding: '16px 24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                    },
+                },
+            },
+            MuiDialogContent: {
+                styleOverrides: {
+                    root: {
+                        padding: '24px 24px 8px 24px',
+                    },
+                },
+            },
+            MuiDialogActions: {
+                styleOverrides: {
+                    root: {
+                        padding: '12px 24px 20px 24px',
+                        gap: '8px',
+                    },
+                },
+            },
+            // ===== INPUTS — Bordures visibles en dark mode =====
+            MuiOutlinedInput: {
+                styleOverrides: {
+                    root: {
+                        borderRadius: 8,
+                        '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: isLight ? '#cbd5e1' : 'rgba(148,163,184,0.3)',
+                            borderWidth: '1.5px',
+                            transition: 'border-color 0.2s',
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: isLight ? '#94a3b8' : 'rgba(165,180,252,0.5)',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: '#6366f1',
+                            borderWidth: '2px',
+                        },
+                    },
+                },
+            },
+            MuiInputLabel: {
+                styleOverrides: {
+                    root: {
+                        color: isLight ? '#64748b' : '#94a3b8',
+                        '&.Mui-focused': {
+                            color: '#818cf8',
+                        },
+                    },
+                },
+            },
+            // ===== CHIP — Meilleur contraste dark mode =====
+            MuiChip: {
+                styleOverrides: {
+                    root: {
+                        fontWeight: 600,
+                        borderRadius: 8,
+                    },
+                    outlinedPrimary: {
+                        borderColor: isLight ? activePrimary : '#818cf8',
+                        color: isLight ? activePrimary : '#a5b4fc',
                     },
                 },
             },
@@ -193,7 +312,7 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
             MuiDrawer: {
                 styleOverrides: {
                     paper: {
-                        backgroundColor: '#111827', // Sidebar toujours sombre pour le contraste pro
+                        backgroundColor: '#111827',
                         color: '#e2e8f0',
                         borderRight: 'none',
                     },

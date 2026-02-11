@@ -2,7 +2,7 @@
 Administration Django pour la gestion documentaire.
 """
 from django.contrib import admin
-from .models import Client, Case, Document, DocumentPermission, AuditLog, Task
+from .models import Client, Case, Document, DocumentPermission, AuditLog, Task, Decision, AgendaEvent
 
 
 @admin.register(Client)
@@ -158,4 +158,26 @@ class TaskAdmin(admin.ModelAdmin):
     list_display = ('title', 'assigned_to', 'status', 'priority', 'due_date', 'assigned_by')
     list_filter = ('status', 'priority', 'due_date')
     search_fields = ('title', 'description', 'assigned_to__username')
+    readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(Decision)
+class DecisionAdmin(admin.ModelAdmin):
+    """
+    Administration pour les décisions.
+    """
+    list_display = ('case', 'decision_type', 'date_decision', 'juridiction', 'numero_decision', 'created_at')
+    list_filter = ('decision_type', 'date_decision')
+    search_fields = ('case__reference', 'juridiction', 'numero_decision', 'resultat')
+    readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(AgendaEvent)
+class AgendaEventAdmin(admin.ModelAdmin):
+    """
+    Administration pour les événements d'agenda.
+    """
+    list_display = ('title', 'event_type', 'start_datetime', 'case', 'year', 'is_archived', 'created_by')
+    list_filter = ('event_type', 'year', 'is_archived')
+    search_fields = ('title', 'description', 'location', 'case__reference')
     readonly_fields = ('created_at', 'updated_at')

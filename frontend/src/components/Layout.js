@@ -32,7 +32,8 @@ import {
     Brightness7 as LightModeIcon,
     Event as EventIcon,
     Label as LabelIcon,
-    AssignmentTurnedIn as TaskIcon
+    AssignmentTurnedIn as TaskIcon,
+    CalendarMonth as CalendarMonthIcon
 } from '@mui/icons-material';
 import authService from '../services/authService';
 import { ThemeContext } from '../App';
@@ -46,6 +47,7 @@ const drawerWidth = 260;
 
 const menuItems = [
     { text: 'Tableau de bord', icon: <DashboardIcon />, path: '/dashboard' },
+    { text: 'Agenda', icon: <CalendarMonthIcon />, path: '/agenda' },
     { text: 'Tâches', icon: <TaskIcon />, path: '/tasks' },
     { text: 'Clients', icon: <PeopleIcon />, path: '/clients' },
     { text: 'Dossiers', icon: <FolderIcon />, path: '/cases' },

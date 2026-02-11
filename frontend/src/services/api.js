@@ -138,3 +138,18 @@ export const tasksAPI = {
     delete: (id) => apiClient.delete(`/documents/tasks/${id}/`)
 };
 
+export const decisionsAPI = {
+    getAll: (params) => apiClient.get('/documents/decisions/', { params }),
+    create: (data) => apiClient.post('/documents/decisions/', data),
+    update: (id, data) => apiClient.put(`/documents/decisions/${id}/`, data),
+    delete: (id) => apiClient.delete(`/documents/decisions/${id}/`)
+};
+
+export const agendaAPI = {
+    getAll: (params) => apiClient.get('/documents/agenda/', { params }),
+    getAggregated: (params) => apiClient.get('/documents/agenda/aggregated/', { params }),
+    create: (data) => apiClient.post('/documents/agenda/', data),
+    update: (id, data) => apiClient.put(`/documents/agenda/${id}/`, data),
+    delete: (id) => apiClient.delete(`/documents/agenda/${id}/`)
+};
+

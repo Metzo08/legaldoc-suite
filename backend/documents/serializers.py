@@ -2,7 +2,7 @@
 Sérialiseurs pour l'API de gestion documentaire.
 """
 from rest_framework import serializers
-from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence, Task
+from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence, Task, Decision, AgendaEvent
 from users.serializers import UserSerializer
 
 
@@ -73,6 +73,7 @@ class CaseDetailSerializer(serializers.ModelSerializer):
     assigned_to_details = UserSerializer(source='assigned_to', many=True, read_only=True)
     created_by_name = serializers.SerializerMethodField()
     sub_cases = CaseListSerializer(many=True, read_only=True)
+    decisions = serializers.SerializerMethodField()
     
     class Meta:
         model = Case
@@ -82,7 +83,7 @@ class CaseDetailSerializer(serializers.ModelSerializer):
             'created_by', 'created_by_name', 'created_at', 'updated_at', 'represented_party',
             'adverse_party', 'adverse_lawyer', 'external_reference', 'contact_name',
             'contact_email', 'contact_phone', 'our_lawyers', 'fees', 'client_name',
-            'parent_case', 'sub_cases'
+            'parent_case', 'sub_cases', 'decisions'
         )
         read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
     
@@ -98,6 +99,10 @@ class CaseDetailSerializer(serializers.ModelSerializer):
 
     def get_client_name(self, obj):
         return obj.client.name if obj.client else None
+
+    def get_decisions(self, obj):
+        decisions = obj.decisions.all()
+        return DecisionSerializer(decisions, many=True).data
 
 
 class DocumentVersionSerializer(serializers.ModelSerializer):
@@ -371,6 +376,26 @@ class DiligenceSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
 
 
+class DecisionSerializer(serializers.ModelSerializer):
+    """
+    Sérialiseur pour le modèle Decision.
+    """
+    case_reference = serializers.CharField(source='case.reference', read_only=True)
+    created_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Decision
+        fields = (
+            'id', 'case', 'case_reference', 'decision_type', 'date_decision',
+            'juridiction', 'numero_decision', 'resultat', 'observations',
+            'created_by', 'created_by_name', 'created_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
+
+    def get_created_by_name(self, obj):
+        return obj.created_by.get_full_name() if obj.created_by else None
+
+
 class TaskSerializer(serializers.ModelSerializer):
     """
     Sérialiseur pour le modèle Task.
@@ -400,3 +425,26 @@ class TaskSerializer(serializers.ModelSerializer):
 
     def get_case_title(self, obj):
         return obj.case.title if obj.case else None
+
+
+class AgendaEventSerializer(serializers.ModelSerializer):
+    """
+    Sérialiseur pour le modèle AgendaEvent.
+    """
+    case_reference = serializers.CharField(source='case.reference', read_only=True)
+    case_title = serializers.CharField(source='case.title', read_only=True)
+    created_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AgendaEvent
+        fields = (
+            'id', 'title', 'event_type', 'start_datetime', 'end_datetime',
+            'all_day', 'case', 'case_reference', 'case_title', 'description',
+            'location', 'color', 'reminder_minutes', 'is_recurring',
+            'recurrence_rule', 'year', 'is_archived',
+            'created_by', 'created_by_name', 'created_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
+
+    def get_created_by_name(self, obj):
+        return obj.created_by.get_full_name() if obj.created_by else None

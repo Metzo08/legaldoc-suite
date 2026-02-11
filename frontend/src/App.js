@@ -24,6 +24,7 @@ const Tags = lazy(() => import('./pages/Tags'));
 const Tasks = lazy(() => import('./pages/Tasks'));
 const Deadlines = lazy(() => import('./pages/Deadlines'));
 const Profile = lazy(() => import('./pages/Profile'));
+const Agenda = lazy(() => import('./pages/Agenda'));
 const Layout = lazy(() => import('./components/Layout'));
 
 // Context pour le thème
@@ -141,6 +142,7 @@ function App() {
                                                         <Route path="/users" element={<Users />} />
                                                         <Route path="/audit" element={<AuditLog />} />
                                                         <Route path="/profile" element={<Profile />} />
+                                                        <Route path="/agenda" element={<Agenda />} />
                                                         <Route path="*" element={<Navigate to="/dashboard" />} />
                                                     </Routes>
                                                 </Suspense>

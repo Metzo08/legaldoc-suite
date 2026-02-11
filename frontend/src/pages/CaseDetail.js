@@ -16,7 +16,20 @@ import {
     ListItemIcon,
     ListItemText,
     CircularProgress,
-    alpha
+    alpha,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
+    MenuItem,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Tooltip
 } from '@mui/material';
 import {
     NavigateNext as NavigateNextIcon,
@@ -30,9 +43,11 @@ import {
     ArrowBack as ArrowBackIcon,
     Edit as EditIcon,
     CloudUpload as UploadIcon,
-    Add as AddIcon
+    Add as AddIcon,
+    Delete as DeleteIcon,
+    Balance as BalanceIcon
 } from '@mui/icons-material';
-import { casesAPI, documentsAPI, deadlinesAPI } from '../services/api';
+import { casesAPI, documentsAPI, deadlinesAPI, decisionsAPI } from '../services/api';
 import authService from '../services/authService';
 import DiligenceManager from '../components/DiligenceManager';
 
@@ -43,6 +58,19 @@ const CaseDetail = () => {
     const [documents, setDocuments] = useState([]);
     const [hearings, setHearings] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Decisions state
+    const [decisions, setDecisions] = useState([]);
+    const [decisionDialog, setDecisionDialog] = useState(false);
+    const [editingDecision, setEditingDecision] = useState(null);
+    const [decisionForm, setDecisionForm] = useState({
+        decision_type: 'INSTANCE',
+        date_decision: '',
+        juridiction: '',
+        numero_decision: '',
+        resultat: '',
+        observations: ''
+    });
 
     const currentUser = authService.getCurrentUser();
     const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.is_staff || false;
@@ -58,6 +86,8 @@ const CaseDetail = () => {
             setCaseData(caseRes.data);
             setDocuments(docsRes.data.results || docsRes.data);
             setHearings(hearingsRes.data.results || hearingsRes.data);
+            // Les décisions sont incluses dans le detail du dossier
+            setDecisions(caseRes.data.decisions || []);
         } catch (error) {
             console.error('Erreur chargement détail dossier:', error);
             if (error.response?.status === 404) {
@@ -72,6 +102,69 @@ const CaseDetail = () => {
         loadCaseData();
     }, [loadCaseData]);
 
+    // Decision handlers
+    const handleOpenDecisionDialog = (decision = null) => {
+        if (decision) {
+            setEditingDecision(decision);
+            setDecisionForm({
+                decision_type: decision.decision_type,
+                date_decision: decision.date_decision || '',
+                juridiction: decision.juridiction || '',
+                numero_decision: decision.numero_decision || '',
+                resultat: decision.resultat || '',
+                observations: decision.observations || ''
+            });
+        } else {
+            setEditingDecision(null);
+            setDecisionForm({
+                decision_type: 'INSTANCE',
+                date_decision: '',
+                juridiction: '',
+                numero_decision: '',
+                resultat: '',
+                observations: ''
+            });
+        }
+        setDecisionDialog(true);
+    };
+
+    const handleSaveDecision = async () => {
+        try {
+            const data = {
+                ...decisionForm,
+                case: parseInt(id),
+                date_decision: decisionForm.date_decision || null
+            };
+            if (editingDecision) {
+                await decisionsAPI.update(editingDecision.id, data);
+            } else {
+                await decisionsAPI.create(data);
+            }
+            setDecisionDialog(false);
+            loadCaseData();
+        } catch (error) {
+            console.error('Erreur sauvegarde décision:', error);
+            alert('Erreur lors de la sauvegarde de la décision. Vérifiez les champs et réessayez.');
+        }
+    };
+
+    const handleDeleteDecision = async (decisionId) => {
+        if (!window.confirm('Voulez-vous vraiment supprimer cette décision ?')) return;
+        try {
+            await decisionsAPI.delete(decisionId);
+            loadCaseData();
+        } catch (error) {
+            console.error('Erreur suppression décision:', error);
+            alert('Erreur lors de la suppression.');
+        }
+    };
+
+    // Grouper les décisions par type
+    const instanceDecisions = decisions.filter(d => d.decision_type === 'INSTANCE');
+    const appelDecisions = decisions.filter(d => d.decision_type === 'APPEL');
+    const pourvoiDecisions = decisions.filter(d => d.decision_type === 'POURVOI');
+    const maxRows = Math.max(instanceDecisions.length, appelDecisions.length, pourvoiDecisions.length, 1);
+
     if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
@@ -81,6 +174,58 @@ const CaseDetail = () => {
     }
 
     if (!caseData) return null;
+
+    const renderDecisionCell = (decision) => {
+        if (!decision) return (
+            <Typography variant="caption" color="text.disabled" sx={{ fontStyle: 'italic' }}>—</Typography>
+        );
+        return (
+            <Box sx={{ position: 'relative', '&:hover .decision-actions': { opacity: 1 } }}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {decision.juridiction || 'Juridiction non définie'}
+                </Typography>
+                {decision.date_decision && (
+                    <Typography variant="caption" color="text.secondary" display="block">
+                        {new Date(decision.date_decision).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </Typography>
+                )}
+                {decision.numero_decision && (
+                    <Typography variant="caption" color="text.secondary" display="block">
+                        N° {decision.numero_decision}
+                    </Typography>
+                )}
+                {decision.resultat && (
+                    <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 600, display: 'block', mt: 0.5 }}>
+                        {decision.resultat}
+                    </Typography>
+                )}
+                {decision.observations && (
+                    <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5, fontStyle: 'italic' }}>
+                        {decision.observations}
+                    </Typography>
+                )}
+                <Box
+                    className="decision-actions"
+                    sx={{
+                        position: 'absolute', top: 0, right: 0,
+                        opacity: 0, transition: 'opacity 0.2s',
+                        display: 'flex', gap: 0.5
+                    }}
+                >
+                    <Tooltip title="Modifier">
+                        <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpenDecisionDialog(decision); }}>
+                            <EditIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Supprimer">
+                        <IconButton size="small" color="error" onClick={(e) => { e.stopPropagation(); handleDeleteDecision(decision.id); }}>
+                            <DeleteIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+            </Box>
+        );
+    };
 
     return (
         <Box sx={{ p: { xs: 2, md: 3 } }}>
@@ -238,6 +383,105 @@ const CaseDetail = () => {
                                         </Button>
                                     </Box>
                                 )}
+                            </Paper>
+                        </Grid>
+
+                        {/* ===== DECISIONS ===== */}
+                        <Grid item xs={12}>
+                            <Paper sx={{
+                                p: 3,
+                                borderRadius: 4,
+                                border: '2px solid',
+                                borderColor: 'primary.main',
+                                bgcolor: alpha('#6366f1', 0.06),
+                                boxShadow: (theme) => theme.palette.mode === 'dark' ? '0 4px 20px rgba(99,102,241,0.15)' : 'none'
+                            }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <BalanceIcon sx={{ color: 'primary.main' }} />
+                                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                                            Décisions
+                                        </Typography>
+                                        <Chip
+                                            label={`N° ${caseData.reference}`}
+                                            size="small"
+                                            sx={{
+                                                fontWeight: 700,
+                                                bgcolor: alpha('#6366f1', 0.1),
+                                                color: 'primary.main'
+                                            }}
+                                        />
+                                    </Box>
+                                    <Button
+                                        variant="contained"
+                                        size="small"
+                                        startIcon={<AddIcon />}
+                                        onClick={() => handleOpenDecisionDialog()}
+                                        sx={{
+                                            fontWeight: 700,
+                                            bgcolor: 'primary.main',
+                                            color: 'primary.contrastText',
+                                            '&:hover': { bgcolor: 'primary.dark', transform: 'scale(1.03)' },
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        + Ajouter une décision
+                                    </Button>
+                                </Box>
+
+                                <TableContainer>
+                                    <Table size="small" sx={{
+                                        '& .MuiTableCell-head': {
+                                            fontWeight: 800,
+                                            fontSize: '0.85rem',
+                                            borderBottom: '2px solid',
+                                            borderColor: 'divider',
+                                            py: 1.5
+                                        },
+                                        '& .MuiTableCell-body': {
+                                            verticalAlign: 'top',
+                                            py: 1.5,
+                                            borderRight: '1px solid',
+                                            borderRightColor: 'divider',
+                                            '&:last-child': { borderRight: 'none' }
+                                        }
+                                    }}>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell sx={{ width: '33%', bgcolor: alpha('#2196f3', 0.06) }}>Instance</TableCell>
+                                                <TableCell sx={{ width: '33%', bgcolor: alpha('#ff9800', 0.06) }}>Appel</TableCell>
+                                                <TableCell sx={{ width: '33%', bgcolor: alpha('#f44336', 0.06) }}>Pourvoi</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {decisions.length > 0 ? (
+                                                Array.from({ length: maxRows }).map((_, rowIndex) => (
+                                                    <TableRow key={rowIndex} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
+                                                        <TableCell>{renderDecisionCell(instanceDecisions[rowIndex])}</TableCell>
+                                                        <TableCell>{renderDecisionCell(appelDecisions[rowIndex])}</TableCell>
+                                                        <TableCell>{renderDecisionCell(pourvoiDecisions[rowIndex])}</TableCell>
+                                                    </TableRow>
+                                                ))
+                                            ) : (
+                                                <TableRow>
+                                                    <TableCell colSpan={3} align="center" sx={{ py: 4 }}>
+                                                        <BalanceIcon sx={{ fontSize: 40, mb: 1, display: 'block', mx: 'auto', color: 'primary.main', opacity: 0.5 }} />
+                                                        <Typography variant="body2" sx={{ mb: 1.5, color: 'text.secondary' }}>Aucune décision enregistrée.</Typography>
+                                                        <Button
+                                                            variant="contained"
+                                                            size="small"
+                                                            startIcon={<AddIcon />}
+                                                            onClick={() => handleOpenDecisionDialog()}
+                                                            sx={{ fontWeight: 700 }}
+                                                        >
+                                                            Ajouter une première décision
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
                             </Paper>
                         </Grid>
 
@@ -416,6 +660,115 @@ const CaseDetail = () => {
                     </Box>
                 </Grid>
             </Grid>
+
+            {/* Dialog Ajouter/Modifier Décision */}
+            <Dialog
+                open={decisionDialog}
+                onClose={() => setDecisionDialog(false)}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle>
+                    <BalanceIcon />
+                    {editingDecision ? 'Modifier la décision' : 'Nouvelle décision'}
+                    <Chip
+                        label={caseData?.reference}
+                        size="small"
+                        sx={{ ml: 'auto', bgcolor: 'rgba(255,255,255,0.2)', color: '#fff', fontWeight: 700 }}
+                    />
+                </DialogTitle>
+                <DialogContent>
+                    <Grid container spacing={2.5} sx={{ mt: 0 }}>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Type de décision"
+                                select
+                                fullWidth
+                                required
+                                value={decisionForm.decision_type}
+                                onChange={(e) => setDecisionForm({ ...decisionForm, decision_type: e.target.value })}
+                            >
+                                <MenuItem value="INSTANCE">
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#2196f3' }} />
+                                        Instance
+                                    </Box>
+                                </MenuItem>
+                                <MenuItem value="APPEL">
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#ff9800' }} />
+                                        Appel
+                                    </Box>
+                                </MenuItem>
+                                <MenuItem value="POURVOI">
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#f44336' }} />
+                                        Pourvoi
+                                    </Box>
+                                </MenuItem>
+                            </TextField>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Date de la décision"
+                                type="date"
+                                fullWidth
+                                InputLabelProps={{ shrink: true }}
+                                value={decisionForm.date_decision}
+                                onChange={(e) => setDecisionForm({ ...decisionForm, date_decision: e.target.value })}
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Juridiction"
+                                fullWidth
+                                value={decisionForm.juridiction}
+                                onChange={(e) => setDecisionForm({ ...decisionForm, juridiction: e.target.value })}
+                                placeholder="Ex: Tribunal de Grande Instance"
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                label="Numéro de la décision"
+                                fullWidth
+                                value={decisionForm.numero_decision}
+                                onChange={(e) => setDecisionForm({ ...decisionForm, numero_decision: e.target.value })}
+                                placeholder="Ex: 2024/0123"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                label="Résultat / Dispositif"
+                                fullWidth
+                                multiline
+                                rows={2}
+                                value={decisionForm.resultat}
+                                onChange={(e) => setDecisionForm({ ...decisionForm, resultat: e.target.value })}
+                                placeholder="Ex: Condamnation, Relaxe, Rejet..."
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                label="Observations"
+                                fullWidth
+                                multiline
+                                rows={2}
+                                value={decisionForm.observations}
+                                onChange={(e) => setDecisionForm({ ...decisionForm, observations: e.target.value })}
+                                placeholder="Notes et observations complémentaires"
+                            />
+                        </Grid>
+                    </Grid>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDecisionDialog(false)}>
+                        Annuler
+                    </Button>
+                    <Button onClick={handleSaveDecision} variant="contained">
+                        {editingDecision ? 'Mettre à jour' : 'Enregistrer'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
