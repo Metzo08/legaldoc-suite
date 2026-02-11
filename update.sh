@@ -13,17 +13,17 @@ echo "📥 [1/4] Git Pull..."
 git pull origin main
 echo "✅ Code récupéré."
 
-# 2. Appliquer les migrations Django
+# 2. Rebuilder les images Docker (pour installer les nouvelles dépendances)
 echo ""
-echo "🗄️  [2/4] Migrations base de données..."
-docker compose exec -T backend python manage.py migrate --noinput
-echo "✅ Migrations appliquées."
-
-# 3. Rebuilder les images Docker
-echo ""
-echo "🔨 [3/4] Rebuild des conteneurs (peut prendre quelques minutes)..."
+echo "🔨 [2/4] Rebuild des conteneurs (peut prendre quelques minutes)..."
 docker compose up -d --build
 echo "✅ Conteneurs reconstruits et relancés."
+
+# 3. Appliquer les migrations Django
+echo ""
+echo "🗄️  [3/4] Migrations base de données..."
+docker compose exec -T backend python manage.py migrate --noinput
+echo "✅ Migrations appliquées."
 
 # 4. Vérifier l'état
 echo ""
