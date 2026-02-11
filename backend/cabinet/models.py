@@ -65,6 +65,7 @@ class TeamMember(models.Model):
     
     linkedin_url = models.URLField("LinkedIn", blank=True)
     email = models.EmailField("Email professionnel", blank=True)
+    phone = models.CharField("Téléphone", max_length=50, blank=True)
 
     class Meta:
         verbose_name = "Membre de l'équipe"

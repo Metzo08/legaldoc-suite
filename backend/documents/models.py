@@ -477,6 +477,14 @@ class Deadline(models.Model):
         related_name='deadlines',
         verbose_name='Dossier'
     )
+    decision = models.OneToOneField(
+        'Decision',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='audience_deadline',
+        verbose_name='Décision associée'
+    )
     # Champs spécifiques pour les Audiences
     jurisdiction = models.CharField(max_length=255, blank=True, verbose_name='Juridiction')
     courtroom = models.CharField(max_length=100, blank=True, verbose_name='Salle d\'audience')

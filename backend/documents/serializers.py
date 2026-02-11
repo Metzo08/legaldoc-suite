@@ -282,6 +282,26 @@ class TagSerializer(serializers.ModelSerializer):
         return obj.cases.count()
 
 
+class DecisionSerializer(serializers.ModelSerializer):
+    """
+    Sérialiseur pour le modèle Decision.
+    """
+    case_reference = serializers.CharField(source='case.reference', read_only=True)
+    created_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Decision
+        fields = (
+            'id', 'case', 'case_reference', 'decision_type', 'date_decision',
+            'juridiction', 'numero_decision', 'resultat', 'observations',
+            'created_by', 'created_by_name', 'created_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
+
+    def get_created_by_name(self, obj):
+        return obj.created_by.get_full_name() if obj.created_by else None
+
+
 class DeadlineSerializer(serializers.ModelSerializer):
     """
     Sérialiseur pour les échéances.
@@ -293,12 +313,15 @@ class DeadlineSerializer(serializers.ModelSerializer):
     is_overdue = serializers.BooleanField(read_only=True)
     days_remaining = serializers.IntegerField(read_only=True)
     
+    decision = DecisionSerializer(required=False, allow_null=True)
+    
     class Meta:
         model = Deadline
         fields = (
             'id', 'case', 'case_reference', 'case_title', 'title', 'description',
             'deadline_type', 'due_date', 'reminder_days', 'is_completed',
             'jurisdiction', 'courtroom', 'result', 'action_requested',
+            'decision',
             'completed_at', 'completed_by', 'completed_by_name', 'created_by',
             'created_by_name', 'is_overdue', 'days_remaining', 'created_at', 'updated_at'
         )
@@ -315,6 +338,37 @@ class DeadlineSerializer(serializers.ModelSerializer):
     
     def get_completed_by_name(self, obj):
         return obj.completed_by.get_full_name() if obj.completed_by else None
+
+    def update(self, instance, validated_data):
+        decision_data = validated_data.pop('decision', None)
+        
+        # Mettre à jour l'instance Deadline
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        # Gérer la décision imbriquée
+        if decision_data:
+            from .models import Decision
+            decision = instance.decision
+            
+            # S'assurer que le dossier est le même que celui de l'audience
+            decision_data['case'] = instance.case
+            
+            if decision:
+                # Mise à jour
+                for attr, value in decision_data.items():
+                    setattr(decision, attr, value)
+                decision.save()
+            else:
+                # Création
+                # Note: On récupère l'user depuis le contexte si possible, sinon on laisse null
+                user = self.context['request'].user if 'request' in self.context else None
+                new_decision = Decision.objects.create(created_by=user, **decision_data)
+                instance.decision = new_decision
+                instance.save()
+                
+        return instance
 
 
 class DocumentVersionSerializer(serializers.ModelSerializer):
@@ -376,24 +430,6 @@ class DiligenceSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
 
 
-class DecisionSerializer(serializers.ModelSerializer):
-    """
-    Sérialiseur pour le modèle Decision.
-    """
-    case_reference = serializers.CharField(source='case.reference', read_only=True)
-    created_by_name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Decision
-        fields = (
-            'id', 'case', 'case_reference', 'decision_type', 'date_decision',
-            'juridiction', 'numero_decision', 'resultat', 'observations',
-            'created_by', 'created_by_name', 'created_at', 'updated_at'
-        )
-        read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
-
-    def get_created_by_name(self, obj):
-        return obj.created_by.get_full_name() if obj.created_by else None
 
 
 class TaskSerializer(serializers.ModelSerializer):

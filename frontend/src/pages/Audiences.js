@@ -7,6 +7,13 @@ import {
     Card,
     CardContent,
     Typography,
+    Paper,
+    Divider,
+    FormControlLabel,
+    Switch,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
     Dialog,
     DialogTitle,
     DialogContent,
@@ -16,14 +23,14 @@ import {
     Grid,
     Chip,
     IconButton,
-    Tooltip,
-    Paper
+    Tooltip
 } from '@mui/material';
 import {
     Add as AddIcon,
     Edit as EditIcon,
     Delete as DeleteIcon,
     CheckCircle as CheckIcon,
+    ExpandMore as ExpandMoreIcon,
     Event as EventIcon,
     Gavel as GavelIcon,
     Schedule as UpcomingIcon
@@ -52,7 +59,14 @@ function Audiences() {
         description: '',
         deadline_type: 'AUDIENCE',
         due_date: '',
-        reminder_days: 1
+        reminder_days: 1,
+        // Champs décision
+        record_decision: false,
+        decision_type: 'INSTANCE',
+        decision_date: '',
+        decision_number: '',
+        decision_resultat: '',
+        decision_observations: ''
     });
 
     const [deleteDialog, setDeleteDialog] = useState(false);
@@ -116,7 +130,13 @@ function Audiences() {
                 description: audience.description || '',
                 deadline_type: 'AUDIENCE',
                 due_date: formattedDate,
-                reminder_days: audience.reminder_days || 1
+                reminder_days: audience.reminder_days || 1,
+                record_decision: !!audience.decision,
+                decision_type: audience.decision?.decision_type || 'INSTANCE',
+                decision_date: audience.decision?.date_decision || '',
+                decision_number: audience.decision?.numero_decision || '',
+                decision_resultat: audience.decision?.resultat || '',
+                decision_observations: audience.decision?.observations || ''
             });
         } else {
             setEditingAudience(null);
@@ -130,7 +150,13 @@ function Audiences() {
                 description: '',
                 deadline_type: 'AUDIENCE',
                 due_date: '',
-                reminder_days: 1
+                reminder_days: 1,
+                record_decision: false,
+                decision_type: 'INSTANCE',
+                decision_date: '',
+                decision_number: '',
+                decision_resultat: '',
+                decision_observations: ''
             });
         }
         setOpenDialog(true);
@@ -144,7 +170,17 @@ function Audiences() {
     const handleSubmit = async () => {
         try {
             if (editingAudience) {
-                await deadlinesAPI.update(editingAudience.id, formData);
+                const payload = { ...formData };
+                if (formData.record_decision) {
+                    payload.decision = {
+                        decision_type: formData.decision_type,
+                        date_decision: formData.decision_date || null,
+                        numero_decision: formData.decision_number,
+                        resultat: formData.decision_resultat,
+                        observations: formData.decision_observations
+                    };
+                }
+                await deadlinesAPI.update(editingAudience.id, payload);
                 showNotification("Audience mise à jour.");
             } else {
                 await deadlinesAPI.create(formData);
@@ -398,7 +434,76 @@ function Audiences() {
                         <Grid item xs={12} sm={6}><TextField label="Salle" fullWidth value={formData.courtroom} onChange={(e) => setFormData({ ...formData, courtroom: e.target.value })} /></Grid>
                         <Grid item xs={12} sm={6}><TextField label="Date & Heure" type="datetime-local" fullWidth value={formData.due_date} onChange={(e) => setFormData({ ...formData, due_date: e.target.value })} required InputLabelProps={{ shrink: true }} /></Grid>
                         <Grid item xs={12}><TextField label="Diligence demandée" fullWidth value={formData.action_requested} onChange={(e) => setFormData({ ...formData, action_requested: e.target.value })} /></Grid>
-                        <Grid item xs={12}><TextField label="Observations / Résultat" fullWidth multiline rows={3} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} /></Grid>
+
+                        {editingAudience && (
+                            <Grid item xs={12}>
+                                <Divider sx={{ my: 2 }} />
+                                <Accordion expanded={formData.record_decision} onChange={(e, expanded) => setFormData({ ...formData, record_decision: expanded })} sx={{ bgcolor: 'action.hover', borderRadius: 2 }}>
+                                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <GavelIcon sx={{ color: formData.decision_type === 'APPEL' ? '#ed6c02' : formData.decision_type === 'POURVOI' ? '#d32f2f' : '#2196f3' }} />
+                                            <Typography sx={{ fontWeight: 700 }}>Décision rendue</Typography>
+                                        </Box>
+                                    </AccordionSummary>
+                                    <AccordionDetails>
+                                        <Grid container spacing={2}>
+                                            <Grid item xs={12} sm={6}>
+                                                <TextField
+                                                    select
+                                                    fullWidth
+                                                    label="Type de décision"
+                                                    value={formData.decision_type}
+                                                    onChange={(e) => setFormData({ ...formData, decision_type: e.target.value })}
+                                                >
+                                                    <MenuItem value="INSTANCE" sx={{ color: '#2196f3', fontWeight: 'bold' }}>Instance</MenuItem>
+                                                    <MenuItem value="APPEL" sx={{ color: '#ed6c02', fontWeight: 'bold' }}>Appel</MenuItem>
+                                                    <MenuItem value="POURVOI" sx={{ color: '#d32f2f', fontWeight: 'bold' }}>Pourvoi</MenuItem>
+                                                </TextField>
+                                            </Grid>
+                                            <Grid item xs={12} sm={6}>
+                                                <TextField
+                                                    fullWidth
+                                                    type="date"
+                                                    label="Date de décision"
+                                                    value={formData.decision_date}
+                                                    onChange={(e) => setFormData({ ...formData, decision_date: e.target.value })}
+                                                    InputLabelProps={{ shrink: true }}
+                                                />
+                                            </Grid>
+                                            <Grid item xs={12}>
+                                                <TextField
+                                                    fullWidth
+                                                    label="Numéro de la décision"
+                                                    value={formData.decision_number}
+                                                    onChange={(e) => setFormData({ ...formData, decision_number: e.target.value })}
+                                                    placeholder="Rempli par la personne qui reporte les décisions"
+                                                />
+                                            </Grid>
+                                            <Grid item xs={12}>
+                                                <TextField
+                                                    fullWidth
+                                                    multiline
+                                                    rows={3}
+                                                    label="Résultat / Dispositif"
+                                                    value={formData.decision_resultat}
+                                                    onChange={(e) => setFormData({ ...formData, decision_resultat: e.target.value })}
+                                                />
+                                            </Grid>
+                                            <Grid item xs={12}>
+                                                <TextField
+                                                    fullWidth
+                                                    multiline
+                                                    rows={2}
+                                                    label="Observations (Décision)"
+                                                    value={formData.decision_observations}
+                                                    onChange={(e) => setFormData({ ...formData, decision_observations: e.target.value })}
+                                                />
+                                            </Grid>
+                                        </Grid>
+                                    </AccordionDetails>
+                                </Accordion>
+                            </Grid>
+                        )}
                     </Grid>
                 </DialogContent>
                 <DialogActions><Button onClick={handleCloseDialog}>Annuler</Button><Button onClick={handleSubmit} variant="contained">Enregistrer</Button></DialogActions>

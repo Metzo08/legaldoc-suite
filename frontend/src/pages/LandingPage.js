@@ -24,7 +24,8 @@ import {
     LinkedIn,
     PhoneAndroid as MobileIcon,
     MailOutline as MailIcon,
-    Print as PrintIcon
+    Print as PrintIcon,
+    Payments as PaymentsIcon
 } from '@mui/icons-material';
 import { cabinetAPI } from '../services/api';
 import Footer from '../components/Footer';
@@ -58,7 +59,8 @@ function LandingPage() {
         phone: "(+221) 33 821 97 97",
         cel: "(00221) 77.633.88.81",
         email: "maitreimbengue@gmail.com",
-        opening_hours: "Lundi au Jeudi : 09h00 - 17h00\nRéception des clients : Lundi au Jeudi : 15h00 - 17h00",
+        opening_hours: "Lundi, Mardi et Jeudi : 15h00 - 17h00\nMercredi : Sur rendez-vous uniquement\nVendredi : Fermé au public",
+        consultation_fees: "Consultation orale : 50.000 à 200.000 FCFA\nRédaction d'acte : Forfait ou temps passé",
         primary_color: "#1a237e", // Bleu
         secondary_color: "#c2185b" // Violet
     };
@@ -78,6 +80,7 @@ function LandingPage() {
     const cel = (hasApiData && cabinet?.contact?.cel) ? cabinet.contact.cel : demoCabinet.cel;
     const email = (hasApiData && cabinet?.contact?.email) ? cabinet.contact.email : demoCabinet.email;
     const openingHours = (hasApiData && cabinet?.contact?.opening_hours) ? cabinet.contact.opening_hours : demoCabinet.opening_hours;
+    const consultationFees = (hasApiData && cabinet?.contact?.consultation_fees) ? cabinet.contact.consultation_fees : demoCabinet.consultation_fees;
 
     const getImageUrl = (path) => {
         if (!path) return null;
@@ -122,6 +125,7 @@ function LandingPage() {
             biography: "Juriste interne spécialisé en droit des Affaires. Certifié informatique et internet par FORCE-N Sénégal.",
             photo: "/images/team/augustin_ndao.jpg",
             email: "francoisndao@gmail.com",
+            phone: "774935564",
             linkedin_url: "https://www.linkedin.com/in/augustin-f-ndao/"
         },
         {
@@ -452,6 +456,16 @@ function LandingPage() {
                                                 <EmailIcon />
                                             </IconButton>
                                         )}
+                                        {member.phone && (
+                                            <IconButton
+                                                size="small"
+                                                component="a"
+                                                href={`tel:${member.phone.replace(/\s/g, '')}`}
+                                                sx={{ color: primaryColor }}
+                                            >
+                                                <PhoneIcon />
+                                            </IconButton>
+                                        )}
                                     </Stack>
                                 </Paper>
                             </Grid>
@@ -524,7 +538,42 @@ function LandingPage() {
                                     </Avatar>
                                     <Box>
                                         <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#00255c', mb: 0.5 }}>Horaires d'ouverture</Typography>
-                                        <Typography variant="body2" sx={{ color: '#4c6180', whiteSpace: 'pre-line' }}>{openingHours}</Typography>
+                                        <Typography variant="body2" sx={{ color: '#4c6180', whiteSpace: 'pre-line' }}>
+                                            {openingHours}
+                                        </Typography>
+                                        <Typography variant="caption" sx={{ color: '#d32f2f', fontWeight: 700, mt: 1, display: 'block' }}>
+                                            Mercredi : Sur rendez-vous uniquement. N'insistez pas SVP !
+                                        </Typography>
+                                    </Box>
+                                </Paper>
+                                <Paper
+                                    elevation={0}
+                                    sx={{
+                                        p: 3,
+                                        bgcolor: alpha('#ed6c02', 0.05),
+                                        borderRadius: 4,
+                                        display: 'flex',
+                                        gap: 3,
+                                        alignItems: 'center',
+                                        transition: 'all 0.3s ease',
+                                        border: '1px solid',
+                                        borderColor: alpha('#ed6c02', 0.2),
+                                        '&:hover': {
+                                            transform: 'translateY(-5px)',
+                                            bgcolor: 'white',
+                                            boxShadow: '0 10px 20px rgba(0,0,0,0.05)',
+                                            borderColor: '#ed6c02'
+                                        }
+                                    }}
+                                >
+                                    <Avatar sx={{ bgcolor: alpha('#ed6c02', 0.1), color: '#ed6c02' }}>
+                                        <PaymentsIcon />
+                                    </Avatar>
+                                    <Box>
+                                        <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#00255c', mb: 0.5 }}>Honoraires & Consultations</Typography>
+                                        <Typography variant="body2" sx={{ color: '#4c6180', whiteSpace: 'pre-line', fontWeight: 500 }}>
+                                            {consultationFees}
+                                        </Typography>
                                     </Box>
                                 </Paper>
                                 <Grid container spacing={2}>
