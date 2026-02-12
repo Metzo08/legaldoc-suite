@@ -1,5 +1,8 @@
 from django.core.management.base import BaseCommand
+from django.conf import settings
 from cabinet.models import Cabinet, TeamMember
+import shutil
+import os
 
 class Command(BaseCommand):
     help = 'Synchronise les données du cabinet et de l\'équipe avec les valeurs souhaitées.'
@@ -9,8 +12,8 @@ class Command(BaseCommand):
         cabinet = Cabinet.load()
         cabinet.name = "Cabinet de Maître Ibrahima Mbengue"
         cabinet.description = "L'excellence juridique au cœur de Dakar. Un cabinet de référence alliant rigueur, dévouement et expertise stratégique pour la défense de vos intérêts et l'accompagnement de vos ambitions."
-        cabinet.primary_color = "#1a237e" # Bleu profond (Gardé car préféré)
-        cabinet.secondary_color = "#c2185b" # Violet pour le dégradé (Gardé car préféré)
+        cabinet.primary_color = "#1a237e"
+        cabinet.secondary_color = "#c2185b"
         cabinet.address = "35, Avenue Malick SY, BP: 14887 Dakar Peytavin, Dakar - Sénégal"
         cabinet.phone = "(+221) 33 821 97 97"
         cabinet.cel = "(00221) 77.633.88.81"
@@ -18,14 +21,36 @@ class Command(BaseCommand):
         cabinet.opening_hours = "Lundi, Mardi et Jeudi : 15h00 - 17h00\nMercredi : Sur rendez-vous uniquement\nVendredi : Fermé au public"
         cabinet.consultation_fees = "Consultation orale : 50.000 à 200.000 FCFA\nRédaction d'acte : Forfait ou temps passé"
         cabinet.save()
-        self.stdout.write(self.style.SUCCESS("Configuration du Cabinet mise à jour avec les couleurs préférées."))
+        self.stdout.write(self.style.SUCCESS("Configuration du Cabinet mise à jour."))
 
-        # 2. Mise à jour de l'équipe (Sync avec les bios du localhost)
+        # 2. Copier les photos depuis fixtures vers media
+        fixtures_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'fixtures', 'team_photos')
+        fixtures_dir = os.path.abspath(fixtures_dir)
+        media_team_dir = os.path.join(settings.MEDIA_ROOT, 'cabinet', 'team')
+        os.makedirs(media_team_dir, exist_ok=True)
+
+        photo_map = {
+            "Maître Ibrahima MBENGUE": "ibrahima_mbengue.jpg",
+            "Me Khady SENE": "khady_sene.jpg",
+            "M. Augustin François NDAO": "augustin_ndao.jpg",
+            "M. Médoune MBENGUE": "medoune_mbengue.jpg",
+        }
+
+        for name, filename in photo_map.items():
+            src = os.path.join(fixtures_dir, filename)
+            dst = os.path.join(media_team_dir, filename)
+            if os.path.exists(src):
+                shutil.copy2(src, dst)
+                self.stdout.write(self.style.SUCCESS(f"Photo copiée: {filename}"))
+            else:
+                self.stdout.write(self.style.WARNING(f"Photo introuvable: {src}"))
+
+        # 3. Mise à jour de l'équipe
         team_data = [
             {
                 "name": "Maître Ibrahima MBENGUE",
                 "role": "Avocat à la cour",
-                "biography": "Avocat à la Cour, avec 35 ans d’expérience.\nBarreau du Sénégal.\nConseil inscrit à la Cour pénale internationale (CPI).\nConseil inscrit à la Cour africaine des droits de l’homme et des peuples (CADHP).\nSpécialisé en droit pénal, social et civil.",
+                "biography": "Avocat à la Cour, avec 35 ans d'expérience.\nBarreau du Sénégal.\nConseil inscrit à la Cour pénale internationale (CPI).\nConseil inscrit à la Cour africaine des droits de l'homme et des peuples (CADHP).\nSpécialisé en droit pénal, social et civil.",
                 "email": "maitreimbengue@gmail.com",
                 "order": 1
             },
@@ -55,8 +80,10 @@ class Command(BaseCommand):
             }
         ]
 
-        # Supprimer les doublons potentiels si les noms ont changé
         for member_info in team_data:
+            photo_filename = photo_map.get(member_info["name"], "")
+            photo_path = f"cabinet/team/{photo_filename}" if photo_filename else ""
+
             member, created = TeamMember.objects.update_or_create(
                 name=member_info["name"],
                 defaults={
@@ -66,8 +93,9 @@ class Command(BaseCommand):
                     "phone": member_info.get("phone", ""),
                     "linkedin_url": member_info.get("linkedin_url", ""),
                     "order": member_info["order"],
-                    "is_active": True
+                    "is_active": True,
+                    "photo": photo_path,
                 }
             )
             action = "Créé" if created else "Mis à jour"
-            self.stdout.write(self.style.SUCCESS(f"Membre {member.name} {action}."))
+            self.stdout.write(self.style.SUCCESS(f"Membre {member.name} {action} (photo: {photo_path})."))
