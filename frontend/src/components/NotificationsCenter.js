@@ -42,7 +42,7 @@ function NotificationsCenter() {
         try {
             if (notifications.length === 0) setLoading(true);
             const response = await notificationsAPI.getAll();
-            const data = response.data.results || response.data;
+            const data = Array.isArray(response.data.results) ? response.data.results : (Array.isArray(response.data) ? response.data : []);
 
             // Détecter si de nouvelles notifications non lues sont arrivées pour jouer le son
             const unreadNew = data.filter(n => !n.is_read && !prevNotificationsRef.current.find(pn => pn.id === n.id));

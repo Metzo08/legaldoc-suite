@@ -44,11 +44,11 @@ const DiligenceManager = ({ caseId = null, title = "Pense-bête", showCaseLink =
             setLoading(true);
             const params = caseId ? { case: caseId } : {};
             const diligencesRes = await diligencesAPI.getAll(params);
-            setDiligences(diligencesRes.data.results || diligencesRes.data);
+            setDiligences(Array.isArray(diligencesRes.data.results) ? diligencesRes.data.results : (Array.isArray(diligencesRes.data) ? diligencesRes.data : []));
 
             if (!caseId) {
                 const casesRes = await casesAPI.getAll();
-                setAllCases(casesRes.data.results || casesRes.data);
+                setAllCases(Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []));
             }
         } catch (error) {
             console.error('Erreur chargement diligences:', error);

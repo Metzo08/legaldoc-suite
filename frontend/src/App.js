@@ -5,6 +5,7 @@ import { createCustomTheme } from './theme';
 import authService from './services/authService';
 import { cabinetAPI } from './services/api';
 import Loading from './components/Loading';
+import ErrorBoundary from './components/ErrorBoundary';
 import { NotificationProvider } from './context/NotificationContext';
 
 // Lazy Loading Pages
@@ -123,29 +124,31 @@ function App() {
                                     element={
                                         <PrivateRoute>
                                             <Layout setIsAuthenticated={setIsAuthenticated}>
-                                                <Suspense fallback={<Loading />}>
-                                                    <Routes>
-                                                        <Route path="/dashboard" element={
-                                                            authService.getCurrentUser()?.role === 'CLIENT'
-                                                                ? <ClientDashboard />
-                                                                : <Dashboard />
-                                                        } />
-                                                        <Route path="/clients" element={<Clients />} />
-                                                        <Route path="/cases" element={<Cases />} />
-                                                        <Route path="/cases/:id" element={<CaseDetail />} />
-                                                        <Route path="/documents" element={<Documents />} />
-                                                        <Route path="/audiences" element={<Audiences />} />
-                                                        <Route path="/deadlines" element={<Deadlines />} />
-                                                        <Route path="/tags" element={<Tags />} />
-                                                        <Route path="/tasks" element={<Tasks />} />
-                                                        <Route path="/search" element={<Search />} />
-                                                        <Route path="/users" element={<Users />} />
-                                                        <Route path="/audit" element={<AuditLog />} />
-                                                        <Route path="/profile" element={<Profile />} />
-                                                        <Route path="/agenda" element={<Agenda />} />
-                                                        <Route path="*" element={<Navigate to="/dashboard" />} />
-                                                    </Routes>
-                                                </Suspense>
+                                                <ErrorBoundary>
+                                                    <Suspense fallback={<Loading />}>
+                                                        <Routes>
+                                                            <Route path="/dashboard" element={
+                                                                authService.getCurrentUser()?.role === 'CLIENT'
+                                                                    ? <ClientDashboard />
+                                                                    : <Dashboard />
+                                                            } />
+                                                            <Route path="/clients" element={<Clients />} />
+                                                            <Route path="/cases" element={<Cases />} />
+                                                            <Route path="/cases/:id" element={<CaseDetail />} />
+                                                            <Route path="/documents" element={<Documents />} />
+                                                            <Route path="/audiences" element={<Audiences />} />
+                                                            <Route path="/deadlines" element={<Deadlines />} />
+                                                            <Route path="/tags" element={<Tags />} />
+                                                            <Route path="/tasks" element={<Tasks />} />
+                                                            <Route path="/search" element={<Search />} />
+                                                            <Route path="/users" element={<Users />} />
+                                                            <Route path="/audit" element={<AuditLog />} />
+                                                            <Route path="/profile" element={<Profile />} />
+                                                            <Route path="/agenda" element={<Agenda />} />
+                                                            <Route path="*" element={<Navigate to="/dashboard" />} />
+                                                        </Routes>
+                                                    </Suspense>
+                                                </ErrorBoundary>
                                             </Layout>
                                         </PrivateRoute>
                                     }
