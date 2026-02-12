@@ -16,6 +16,7 @@ class Command(BaseCommand):
         cabinet.cel = "(00221) 77.633.88.81"
         cabinet.email = "maitreimbengue@gmail.com"
         cabinet.opening_hours = "Lundi, Mardi et Jeudi : 15h00 - 17h00\nMercredi : Sur rendez-vous uniquement\nVendredi : Fermé au public"
+        cabinet.consultation_fees = "Consultation orale : 50.000 à 200.000 FCFA\nRédaction d'acte : Forfait ou temps passé"
         cabinet.save()
         self.stdout.write(self.style.SUCCESS("Configuration du Cabinet mise à jour avec les couleurs préférées."))
 

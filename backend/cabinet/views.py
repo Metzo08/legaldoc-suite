@@ -34,6 +34,7 @@ class PublicCabinetInfoView(APIView):
                 'email': cabinet_data.get('email'),
                 'website': cabinet_data.get('website'),
                 'opening_hours': cabinet_data.get('opening_hours'),
+                'consultation_fees': cabinet_data.get('consultation_fees'),
             },
             'team': TeamMemberSerializer(team, many=True, context={'request': request}).data
         })

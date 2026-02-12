@@ -28,6 +28,7 @@ class Cabinet(models.Model):
     email = models.EmailField("Email de contact", blank=True)
     website = models.URLField("Site web", blank=True)
     opening_hours = models.TextField("Horaires d'ouverture", blank=True, help_text="Ex: Lundi-Vendredi: 9h-18h")
+    consultation_fees = models.TextField("Honoraires & Consultations", blank=True, help_text="Détails des tarifs")
     
     updated_at = models.DateTimeField(auto_now=True)
 
