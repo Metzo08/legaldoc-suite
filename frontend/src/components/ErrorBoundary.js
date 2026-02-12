@@ -47,7 +47,7 @@ class ErrorBoundary extends React.Component {
                     <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 500 }}>
                         La page n'a pas pu se charger correctement. Cela peut être dû à un problème temporaire.
                     </Typography>
-                    {process.env.NODE_ENV === 'development' && this.state.error && (
+                    {this.state.error && (
                         <Box sx={{ mb: 3, p: 2, bgcolor: 'action.hover', borderRadius: 2, maxWidth: 600, overflow: 'auto', textAlign: 'left' }}>
                             <Typography variant="caption" component="pre" sx={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
                                 {this.state.error.toString()}

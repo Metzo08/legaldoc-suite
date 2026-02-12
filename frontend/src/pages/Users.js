@@ -119,7 +119,7 @@ function Users() {
     const handleToggleStatus = async (user) => {
         try {
             if (user.is_active) {
-                await usersAPI.deactive(user.id);
+                await usersAPI.deactivate(user.id);
                 showNotification("Utilisateur désactivé.");
             } else {
                 await usersAPI.activate(user.id);
