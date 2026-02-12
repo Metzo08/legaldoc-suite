@@ -58,7 +58,7 @@ function Users() {
         try {
             setLoading(true);
             const response = await usersAPI.getAll();
-            setUsers(response.data.results || response.data);
+            setUsers(Array.isArray(response.data.results) ? response.data.results : (Array.isArray(response.data) ? response.data : []));
         } catch (err) {
             console.error(err);
             showNotification("Erreur lors du chargement des utilisateurs.", "error");

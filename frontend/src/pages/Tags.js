@@ -60,7 +60,7 @@ function Tags() {
         try {
             setLoading(true);
             const response = await tagsAPI.getAll();
-            setTags(response.data.results || response.data);
+            setTags(Array.isArray(response.data.results) ? response.data.results : (Array.isArray(response.data) ? response.data : []));
         } catch (error) {
             console.error('Erreur chargement tags:', error);
             showNotification('Erreur lors du chargement des tags', 'error');

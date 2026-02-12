@@ -92,8 +92,8 @@ function Deadlines() {
                 deadlinesAPI.getAll(),
                 casesAPI.getAll()
             ]);
-            setDeadlines(deadlinesRes.data.results || deadlinesRes.data);
-            setCases(casesRes.data.results || casesRes.data);
+            setDeadlines(Array.isArray(deadlinesRes.data.results) ? deadlinesRes.data.results : (Array.isArray(deadlinesRes.data) ? deadlinesRes.data : []));
+            setCases(Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []));
         } catch (error) {
             console.error('Erreur chargement:', error);
             showNotification("Erreur lors du chargement des données.", "error");

@@ -203,9 +203,9 @@ const Tasks = () => {
                 usersAPI.getAll(),
                 casesAPI.getAll()
             ]);
-            setTasks(tasksRes.data.results || tasksRes.data); // Handle pagination format if needed
-            setUsers(usersRes.data.results || usersRes.data);
-            setCases(casesRes.data.results || casesRes.data);
+            setTasks(Array.isArray(tasksRes.data.results) ? tasksRes.data.results : (Array.isArray(tasksRes.data) ? tasksRes.data : []));
+            setUsers(Array.isArray(usersRes.data.results) ? usersRes.data.results : (Array.isArray(usersRes.data) ? usersRes.data : []));
+            setCases(Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []));
         } catch (error) {
             console.error("Erreur chargement données:", error);
             showNotification('Erreur lors du chargement des tâches', 'error');

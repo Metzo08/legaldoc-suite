@@ -44,7 +44,7 @@ function AuditLog() {
         try {
             setLoading(true);
             const response = await auditAPI.getAll();
-            setLogs(response.data.results || response.data);
+            setLogs(Array.isArray(response.data.results) ? response.data.results : (Array.isArray(response.data) ? response.data : []));
         } catch (error) {
             console.error('Erreur chargement logs:', error);
             showNotification("Erreur lors du chargement des logs.", "error");

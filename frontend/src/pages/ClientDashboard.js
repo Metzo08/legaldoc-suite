@@ -43,7 +43,7 @@ function ClientDashboard() {
                 documentsAPI.getAll({ ordering: '-created_at', page_size: 5 })
             ]);
 
-            const allCases = casesRes.data.results || casesRes.data;
+            const allCases = Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []);
             const myActiveCases = allCases.filter(c => c.status !== 'CLOS' && c.status !== 'ARCHIVE');
 
             setStats({
@@ -52,7 +52,7 @@ function ClientDashboard() {
             });
 
             setActiveCases(myActiveCases.slice(0, 3));
-            setRecentDocuments(documentsRes.data.results || documentsRes.data);
+            setRecentDocuments(Array.isArray(documentsRes.data.results) ? documentsRes.data.results : (Array.isArray(documentsRes.data) ? documentsRes.data : []));
 
         } catch (error) {
             console.error('Erreur chargement dashboard client:', error);

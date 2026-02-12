@@ -108,31 +108,32 @@ function Dashboard() {
                 tagsAPI.getAll()
             ]);
 
-            const allCasesData = casesRes.data.results || casesRes.data;
+            const allCasesData = Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []);
 
             setStats({
-                clients: clientsRes.data.count || clientsRes.data.length,
-                cases: casesRes.data.count || casesRes.data.length,
-                documents: documentsRes.data.count || documentsRes.data.length,
-                deadlines: deadlinesRes.data.count || deadlinesRes.data.length,
-                tags: tagsRes.data.count || tagsRes.data.length
+                clients: clientsRes.data.count || (Array.isArray(clientsRes.data) ? clientsRes.data.length : 0),
+                cases: casesRes.data.count || (Array.isArray(casesRes.data) ? casesRes.data.length : 0),
+                documents: documentsRes.data.count || (Array.isArray(documentsRes.data) ? documentsRes.data.length : 0),
+                deadlines: deadlinesRes.data.count || (Array.isArray(deadlinesRes.data) ? deadlinesRes.data.length : 0),
+                tags: tagsRes.data.count || (Array.isArray(tagsRes.data) ? tagsRes.data.length : 0)
             });
 
             // Groupe Civil & Autres (Civil, Commercial, Social)
-            const civilCases = allCasesData.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(c.category));
+            const civilCases = allCasesData.filter(c => c && ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(c.category));
             // Groupe Pénal & Correctionnel
-            const penalCases = allCasesData.filter(c => ['PENAL', 'CORRECTIONNEL'].includes(c.category));
+            const penalCases = allCasesData.filter(c => c && ['PENAL', 'CORRECTIONNEL'].includes(c.category));
             setCasesByCategory({
                 civil: civilCases.length,
                 penal: penalCases.length
             });
 
-            setRecentDocuments(documentsRes.data.results || documentsRes.data);
-            setUpcomingDeadlines((deadlinesRes.data.results || deadlinesRes.data).slice(0, 5));
+            setRecentDocuments(Array.isArray(documentsRes.data.results) ? documentsRes.data.results : (Array.isArray(documentsRes.data) ? documentsRes.data : []));
+            const deadlinesList = Array.isArray(deadlinesRes.data.results) ? deadlinesRes.data.results : (Array.isArray(deadlinesRes.data) ? deadlinesRes.data : []);
+            setUpcomingDeadlines(deadlinesList.slice(0, 5));
 
-            const allTags = tagsRes.data.results || tagsRes.data;
-            const sortedTags = allTags
-                .sort((a, b) => (b.document_count + b.case_count) - (a.document_count + a.case_count))
+            const allTags = Array.isArray(tagsRes.data.results) ? tagsRes.data.results : (Array.isArray(tagsRes.data) ? tagsRes.data : []);
+            const sortedTags = [...allTags]
+                .sort((a, b) => ((b.document_count || 0) + (b.case_count || 0)) - ((a.document_count || 0) + (a.case_count || 0)))
                 .slice(0, 5);
             setTopTags(sortedTags);
 

@@ -89,8 +89,8 @@ function Cases() {
                 casesAPI.getAll(),
                 clientsAPI.getAll()
             ]);
-            const fetchedCases = casesRes.data.results || casesRes.data;
-            const fetchedClients = clientsRes.data.results || clientsRes.data;
+            const fetchedCases = Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []);
+            const fetchedClients = Array.isArray(clientsRes.data.results) ? clientsRes.data.results : (Array.isArray(clientsRes.data) ? clientsRes.data : []);
             setCases(fetchedCases);
             setClients(fetchedClients);
             return { fetchedCases, fetchedClients };

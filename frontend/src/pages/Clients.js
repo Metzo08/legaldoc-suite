@@ -98,7 +98,7 @@ function Clients() {
         try {
             setLoading(true);
             const response = await clientsAPI.getAll();
-            setClients(response.data.results || response.data);
+            setClients(Array.isArray(response.data.results) ? response.data.results : (Array.isArray(response.data) ? response.data : []));
         } catch (error) {
             console.error('Erreur chargement clients:', error);
             showNotification("Erreur lors du chargement des clients.", "error");

@@ -85,9 +85,9 @@ function Audiences() {
                 casesAPI.getAll()
             ]);
             // Filter only AUDIENCE type for this page
-            const allDeadlines = deadlinesRes.data.results || deadlinesRes.data;
+            const allDeadlines = Array.isArray(deadlinesRes.data.results) ? deadlinesRes.data.results : (Array.isArray(deadlinesRes.data) ? deadlinesRes.data : []);
             setAudiences(allDeadlines.filter(d => d.deadline_type === 'AUDIENCE'));
-            setCases(casesRes.data.results || casesRes.data);
+            setCases(Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []));
         } catch (error) {
             console.error('Erreur chargement:', error);
             showNotification("Erreur lors du chargement des audiences.", "error");

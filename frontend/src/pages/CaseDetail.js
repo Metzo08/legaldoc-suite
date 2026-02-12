@@ -84,8 +84,8 @@ const CaseDetail = () => {
                 deadlinesAPI.getAll({ case: id, type: 'AUDIENCE' })
             ]);
             setCaseData(caseRes.data);
-            setDocuments(docsRes.data.results || docsRes.data);
-            setHearings(hearingsRes.data.results || hearingsRes.data);
+            setDocuments(Array.isArray(docsRes.data.results) ? docsRes.data.results : (Array.isArray(docsRes.data) ? docsRes.data : []));
+            setHearings(Array.isArray(hearingsRes.data.results) ? hearingsRes.data.results : (Array.isArray(hearingsRes.data) ? hearingsRes.data : []));
             // Les décisions sont incluses dans le detail du dossier
             setDecisions(caseRes.data.decisions || []);
         } catch (error) {

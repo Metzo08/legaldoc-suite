@@ -115,9 +115,9 @@ function Documents() {
                 casesAPI.getAll(),
                 clientsAPI.getAll()
             ]);
-            setDocuments(docsRes.data.results || docsRes.data);
-            setCases(casesRes.data.results || casesRes.data);
-            setClients(clientsRes.data.results || clientsRes.data);
+            setDocuments(Array.isArray(docsRes.data.results) ? docsRes.data.results : (Array.isArray(docsRes.data) ? docsRes.data : []));
+            setCases(Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []));
+            setClients(Array.isArray(clientsRes.data.results) ? clientsRes.data.results : (Array.isArray(clientsRes.data) ? clientsRes.data : []));
         } catch (error) {
             console.error('Erreur chargement:', error);
             showNotification("Erreur lors du chargement des documents.", "error");
