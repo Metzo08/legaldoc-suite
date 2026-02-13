@@ -100,7 +100,7 @@ function NotificationsCenter() {
             } else if (notification.entity_type === 'DOCUMENT' && notification.entity_id) {
                 navigate(`/documents`);
             } else if (notification.entity_type === 'DEADLINE') {
-                navigate('/deadlines');
+                navigate('/agenda');
             }
         } catch (error) {
             console.error('Error handling notification click:', error);

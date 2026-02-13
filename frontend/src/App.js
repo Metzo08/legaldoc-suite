@@ -136,7 +136,7 @@ function App() {
                                                             <Route path="/cases" element={<Cases />} />
                                                             <Route path="/cases/:id" element={<CaseDetail />} />
                                                             <Route path="/documents" element={<Documents />} />
-                                                            <Route path="/audiences" element={<Audiences />} />
+                                                            <Route path="/audiences" element={<Navigate to="/agenda" replace />} />
                                                             <Route path="/deadlines" element={<Deadlines />} />
                                                             <Route path="/tags" element={<Tags />} />
                                                             <Route path="/tasks" element={<Tasks />} />

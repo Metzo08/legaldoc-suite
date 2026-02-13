@@ -1,295 +1,316 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
     Box, Typography, Paper, Button, IconButton, Dialog, DialogTitle, DialogContent,
     DialogActions, TextField, MenuItem, Chip, Tooltip, Badge, Grid,
     ToggleButton, ToggleButtonGroup, Select, FormControl, InputLabel,
-    FormControlLabel, Checkbox, Alert, Divider, useTheme, alpha, Card, CardContent
+    Alert, useTheme, alpha, Card, CardContent, Snackbar, InputAdornment,
+    Tabs, Tab, Collapse, LinearProgress
 } from '@mui/material';
 import {
     ChevronLeft, ChevronRight, Today as TodayIcon, Add as AddIcon,
     CalendarMonth as CalendarIcon, ViewWeek as WeekIcon, ViewDay as DayIcon,
-    Event as EventIcon, AccessTime as TimeIcon, LocationOn as LocationIcon,
-    Archive as ArchiveIcon, Delete as DeleteIcon, Edit as EditIcon,
-    Circle as CircleIcon
+    AccessTime as TimeIcon, LocationOn as LocationIcon,
+    Delete as DeleteIcon, Edit as EditIcon, Circle as CircleIcon,
+    Search as SearchIcon, Gavel as GavelIcon, EventRepeat as ReportIcon,
+    CheckCircle as CheckIcon, Cancel as CancelIcon, History as HistoryIcon,
+    Close as CloseIcon, FilterList as FilterIcon, ContentCopy as CopyIcon
 } from '@mui/icons-material';
 import {
     format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths,
     subMonths, addWeeks, subWeeks, isSameMonth, isToday, parseISO,
-    getYear, setYear, setHours, setMinutes
+    getYear, setYear
 } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { agendaAPI, casesAPI } from '../services/api';
 
-// Couleurs et config par type d'événement
-const EVENT_TYPES = {
-    AUDIENCE: { label: 'Audience', color: '#2196f3', icon: '⚖️' },
-    RDV: { label: 'RDV Client', color: '#4caf50', icon: '👤' },
-    REUNION: { label: 'Réunion', color: '#9c27b0', icon: '🤝' },
-    DEPLACEMENT: { label: 'Déplacement', color: '#00bcd4', icon: '🚗' },
-    RAPPEL: { label: 'Rappel', color: '#78909c', icon: '🔔' },
-    CONFERENCE: { label: 'Conférence', color: '#3f51b5', icon: '🎤' },
-    FORMATION: { label: 'Formation', color: '#009688', icon: '📚' },
-    DECISION: { label: 'Décision', color: '#ff9800', icon: '📋' },
-    TACHE: { label: 'Tâche', color: '#ffc107', icon: '✅' },
-    DEPOT: { label: 'Dépôt de pièce', color: '#ff9800', icon: '📁' },
-    REPONSE: { label: 'Réponse', color: '#9c27b0', icon: '✉️' },
-    DELAI: { label: 'Délai de recours', color: '#f44336', icon: '⏰' },
-    CONGES: { label: 'Congés', color: '#78909c', icon: '🏖️' },
+// ═══════ CONFIG ═══════
+const CHAMBRE_COLORS = {
+    CA_CORRECTIONNEL: { label: 'CA Correctionnel', color: '#2196f3', icon: '⚖️' },
+    CA_CRIMINELLE: { label: 'CA Criminelle', color: '#f44336', icon: '🔴' },
+    CA_SOCIAL: { label: 'CA Social', color: '#4caf50', icon: '🤝' },
+    TRIBUNAL_TRAVAIL: { label: 'Tribunal Travail', color: '#ff9800', icon: '👷' },
+    FDTR: { label: 'FDTR', color: '#9c27b0', icon: '📋' },
+    TRIBUNAL_COMMERCE: { label: 'Tribunal de Commerce', color: '#00bcd4', icon: '💼' },
+    TRIBUNAL_INSTANCE: { label: "Tribunal d'Instance", color: '#795548', icon: '🏛️' },
+    TRIBUNAL_GRANDE_INSTANCE: { label: 'TGI', color: '#3f51b5', icon: '🏛️' },
+    COUR_SUPREME: { label: 'Cour Suprême', color: '#b71c1c', icon: '👨‍⚖️' },
     AUTRE: { label: 'Autre', color: '#607d8b', icon: '📌' },
 };
 
-const DAYS_FR = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-const HOURS = Array.from({ length: 14 }, (_, i) => i + 7); // 7h-20h
+const STATUT_CONFIG = {
+    PREVU: { label: 'Prévu', color: '#2196f3', icon: '📅' },
+    REPORTE: { label: 'Reporté', color: '#ff9800', icon: '🔄' },
+    TERMINE: { label: 'Terminé', color: '#4caf50', icon: '✅' },
+    ANNULE: { label: 'Annulé', color: '#f44336', icon: '❌' },
+};
 
-const emptyEvent = {
-    title: '', event_type: 'RDV', start_datetime: '', end_datetime: '',
-    all_day: false, case: '', description: '', location: '', color: '#4caf50',
-    reminder_minutes: 30
+const DAYS_FR = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+const HOURS = Array.from({ length: 11 }, (_, i) => i + 8); // 8h-18h
+
+const emptyForm = {
+    title: '', event_type: 'AUDIENCE', type_chambre: 'CA_CORRECTIONNEL', type_chambre_autre: '',
+    dossier_numero: '', dossier_nom: '', date_audience: '', heure_audience: '09:00',
+    case: '', notes: '', location: '', color: '#2196f3'
 };
 
 function Agenda() {
     const theme = useTheme();
     const isDark = theme.palette.mode === 'dark';
 
+    // ── State ──
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedYear, setSelectedYear] = useState(getYear(new Date()));
     const [viewMode, setViewMode] = useState('month');
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(false);
     const [cases, setCases] = useState([]);
+    const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
 
-    // Dialog state
+    // Dialogs
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState(null);
-    const [formData, setFormData] = useState({ ...emptyEvent });
-
-    // Day detail
+    const [formData, setFormData] = useState({ ...emptyForm });
     const [selectedDay, setSelectedDay] = useState(null);
     const [dayDialogOpen, setDayDialogOpen] = useState(false);
+    const [reportDialogOpen, setReportDialogOpen] = useState(false);
+    const [reportTarget, setReportTarget] = useState(null);
+    const [reportForm, setReportForm] = useState({ nouvelle_date: '', nouvelle_heure: '09:00', motif: '', notes: '' });
+    const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+    const [historyData, setHistoryData] = useState(null);
 
     // Filters
-    const [typeFilter, setTypeFilter] = useState('ALL');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [chambreFilter, setChambreFilter] = useState('ALL');
+    const [statutFilter, setStatutFilter] = useState('ALL');
+    const [searchParams] = useSearchParams();
 
-    // Archive years available
     const currentYear = getYear(new Date());
     const years = useMemo(() => {
         const arr = [];
-        for (let y = currentYear; y >= currentYear - 5; y--) arr.push(y);
+        for (let y = currentYear + 1; y >= currentYear - 5; y--) arr.push(y);
         return arr;
     }, [currentYear]);
 
-    const isArchived = selectedYear < currentYear;
+    const showNotif = (message, severity = 'success') => setSnack({ open: true, message, severity });
 
-    // Load events
+    // ── Data Loading ──
     const loadEvents = useCallback(async () => {
         setLoading(true);
         try {
             const month = format(currentDate, 'M');
-            const res = await agendaAPI.getAggregated({ year: selectedYear, month });
-            setEvents(res.data || []);
+            const params = { year: selectedYear, month };
+            if (searchQuery) params.search = searchQuery;
+            if (chambreFilter !== 'ALL') params.type_chambre = chambreFilter;
+            if (statutFilter !== 'ALL') params.statut = statutFilter;
+            const res = await agendaAPI.getAll(params);
+            const data = res.data?.results || res.data || [];
+            setEvents(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error('Erreur chargement agenda:', err);
         } finally {
             setLoading(false);
         }
-    }, [currentDate, selectedYear]);
+    }, [currentDate, selectedYear, searchQuery, chambreFilter, statutFilter]);
 
     const loadCases = useCallback(async () => {
         try {
             const res = await casesAPI.getAll({ page_size: 500 });
             setCases(res.data?.results || res.data || []);
-        } catch (err) {
-            console.error('Erreur chargement dossiers:', err);
-        }
+        } catch (err) { console.error(err); }
     }, []);
 
     useEffect(() => { loadEvents(); }, [loadEvents]);
     useEffect(() => { loadCases(); }, [loadCases]);
 
-    // Navigation
-    const goToday = () => {
-        setCurrentDate(new Date());
-        setSelectedYear(currentYear);
-    };
-    const navigate = (dir) => {
-        if (viewMode === 'month') {
-            setCurrentDate(prev => dir > 0 ? addMonths(prev, 1) : subMonths(prev, 1));
-        } else if (viewMode === 'week') {
-            setCurrentDate(prev => dir > 0 ? addWeeks(prev, 1) : subWeeks(prev, 1));
-        } else {
-            setCurrentDate(prev => addDays(prev, dir));
+    useEffect(() => {
+        const caseId = searchParams.get('caseId');
+        if (caseId && cases.length > 0) {
+            const foundCase = cases.find(c => c.id === parseInt(caseId));
+            if (foundCase) {
+                setFormData(p => ({
+                    ...p,
+                    case: foundCase.id,
+                    dossier_numero: foundCase.reference,
+                    dossier_nom: foundCase.title
+                }));
+                setDialogOpen(true);
+            }
         }
+    }, [searchParams, cases]);
+
+    // ── Navigation ──
+    const goToday = () => { setCurrentDate(new Date()); setSelectedYear(currentYear); };
+    const navigate = (dir) => {
+        if (viewMode === 'month') setCurrentDate(prev => dir > 0 ? addMonths(prev, 1) : subMonths(prev, 1));
+        else if (viewMode === 'week') setCurrentDate(prev => dir > 0 ? addWeeks(prev, 1) : subWeeks(prev, 1));
+        else setCurrentDate(prev => addDays(prev, dir));
     };
+    const handleYearChange = (yr) => { setSelectedYear(yr); setCurrentDate(setYear(currentDate, yr)); };
 
-    // Year change
-    const handleYearChange = (yr) => {
-        setSelectedYear(yr);
-        setCurrentDate(setYear(currentDate, yr));
-    };
-
-    // Filter events
-    const filteredEvents = useMemo(() => {
-        if (typeFilter === 'ALL') return events;
-        return events.filter(e => e.event_type === typeFilter);
-    }, [events, typeFilter]);
-
-    // Events for a specific day
+    // ── Events for day ──
     const getEventsForDay = (day) => {
         const dayStr = format(day, 'yyyy-MM-dd');
-        return filteredEvents.filter(ev => {
-            if (!ev.start) return false;
-            const evDate = ev.start.substring(0, 10);
-            return evDate === dayStr;
-        });
+        return events.filter(ev => ev.date_audience === dayStr);
     };
 
-    // Calendar grid for month view
+    // ── Calendar Grid ──
     const calendarDays = useMemo(() => {
         const monthStart = startOfMonth(currentDate);
         const monthEnd = endOfMonth(currentDate);
         const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
         const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
-        const days = [];
-        let d = calStart;
-        while (d <= calEnd) {
-            days.push(d);
-            d = addDays(d, 1);
-        }
+        const days = []; let d = calStart;
+        while (d <= calEnd) { days.push(d); d = addDays(d, 1); }
         return days;
     }, [currentDate]);
 
-    // Week days for week view
     const weekDays = useMemo(() => {
         const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
         return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
     }, [currentDate]);
 
-    // Dialog handlers
+    // ── CRUD Handlers ──
     const openCreateDialog = (day) => {
-        const dateStr = format(day || new Date(), "yyyy-MM-dd'T'HH:mm");
+        const dateStr = format(day || new Date(), 'yyyy-MM-dd');
         setEditingEvent(null);
-        setFormData({ ...emptyEvent, start_datetime: dateStr });
+        setFormData({ ...emptyForm, date_audience: dateStr });
         setDialogOpen(true);
     };
 
     const openEditDialog = (ev) => {
-        if (ev.source !== 'agenda') return; // Only edit agenda events
         setEditingEvent(ev);
         setFormData({
-            title: ev.title || '',
-            event_type: ev.event_type || 'RDV',
-            start_datetime: ev.start ? ev.start.substring(0, 16) : '',
-            end_datetime: ev.end ? ev.end.substring(0, 16) : '',
-            all_day: ev.all_day || false,
-            case: ev.case_id || '',
-            description: ev.description || '',
-            location: ev.location || '',
-            color: ev.color || '#4caf50',
-            reminder_minutes: 30
+            title: ev.title || '', event_type: ev.event_type || 'AUDIENCE',
+            type_chambre: ev.type_chambre || 'AUTRE', type_chambre_autre: ev.type_chambre_autre || '',
+            dossier_numero: ev.dossier_numero || '', dossier_nom: ev.dossier_nom || '',
+            date_audience: ev.date_audience || '', heure_audience: ev.heure_audience?.substring(0, 5) || '09:00',
+            case: ev.case || '', notes: ev.notes || '', location: ev.location || '',
+            color: ev.color || '#2196f3'
         });
         setDialogOpen(true);
     };
 
     const handleSave = async () => {
         try {
-            const payload = {
-                title: formData.title,
-                event_type: formData.event_type,
-                start_datetime: formData.start_datetime,
-                end_datetime: formData.end_datetime || null,
-                all_day: formData.all_day,
-                case: formData.case || null,
-                description: formData.description,
-                location: formData.location,
-                color: formData.color,
-                reminder_minutes: formData.reminder_minutes || 0,
-            };
+            const payload = { ...formData, case: formData.case || null };
             if (editingEvent) {
-                await agendaAPI.update(editingEvent.source_id, payload);
+                await agendaAPI.update(editingEvent.id, payload);
+                showNotif('Audience modifiée avec succès');
             } else {
                 await agendaAPI.create(payload);
+                showNotif('Audience créée avec succès');
             }
             setDialogOpen(false);
             loadEvents();
         } catch (err) {
-            console.error('Erreur sauvegarde:', err);
             const detail = err.response?.data;
-            const msg = detail ? JSON.stringify(detail) : 'Erreur lors de la sauvegarde';
-            alert(msg);
+            showNotif(detail ? JSON.stringify(detail) : 'Erreur lors de la sauvegarde', 'error');
         }
     };
 
     const handleDelete = async (ev) => {
-        if (ev.source !== 'agenda') return;
-        if (!window.confirm('Supprimer cet événement ?')) return;
+        if (!window.confirm(`Supprimer l'audience "${ev.dossier_numero || ev.title}" ?`)) return;
         try {
-            await agendaAPI.delete(ev.source_id);
+            await agendaAPI.delete(ev.id);
+            showNotif('Audience supprimée');
             loadEvents();
             setDayDialogOpen(false);
-        } catch (err) {
-            console.error('Erreur suppression:', err);
-        }
+        } catch (err) { showNotif('Erreur lors de la suppression', 'error'); }
     };
 
-    // Stats
+    // ── Report Handler ──
+    const openReportDialog = (ev) => {
+        setReportTarget(ev);
+        setReportForm({ nouvelle_date: '', nouvelle_heure: '09:00', motif: '', notes: '' });
+        setReportDialogOpen(true);
+    };
+
+    const handleReport = async () => {
+        if (!reportForm.nouvelle_date) { showNotif('La nouvelle date est obligatoire', 'error'); return; }
+        try {
+            await agendaAPI.reporter(reportTarget.id, reportForm);
+            showNotif(`Audience reportée au ${reportForm.nouvelle_date}`);
+            setReportDialogOpen(false);
+            setDayDialogOpen(false);
+            loadEvents();
+        } catch (err) { showNotif('Erreur lors du report', 'error'); }
+    };
+
+    // ── Status Handlers ──
+    const handleTerminer = async (ev) => {
+        try {
+            await agendaAPI.terminer(ev.id);
+            showNotif('Audience marquée comme terminée');
+            loadEvents(); setDayDialogOpen(false);
+        } catch (err) { showNotif('Erreur', 'error'); }
+    };
+
+    const handleAnnuler = async (ev) => {
+        if (!window.confirm('Annuler cette audience ?')) return;
+        try {
+            await agendaAPI.annuler(ev.id, {});
+            showNotif('Audience annulée');
+            loadEvents(); setDayDialogOpen(false);
+        } catch (err) { showNotif('Erreur', 'error'); }
+    };
+
+    // ── History ──
+    const openHistory = async (dossierNumero) => {
+        try {
+            const res = await agendaAPI.historiqueDossier({ dossier_numero: dossierNumero });
+            setHistoryData(res.data);
+            setHistoryDialogOpen(true);
+        } catch (err) { showNotif('Erreur chargement historique', 'error'); }
+    };
+
+    // ── Stats ──
     const stats = useMemo(() => {
-        const s = { total: filteredEvents.length, audiences: 0, rdv: 0, deadlines: 0, decisions: 0, tasks: 0 };
-        filteredEvents.forEach(e => {
-            if (e.event_type === 'AUDIENCE') s.audiences++;
-            else if (e.event_type === 'RDV') s.rdv++;
-            else if (['DEPOT', 'REPONSE', 'DELAI', 'CONGES'].includes(e.event_type)) s.deadlines++;
-            else if (e.event_type === 'DECISION') s.decisions++;
-            else if (e.event_type === 'TACHE') s.tasks++;
+        const s = { total: events.length, prevu: 0, reporte: 0, termine: 0, annule: 0 };
+        events.forEach(e => {
+            if (e.statut === 'PREVU') s.prevu++;
+            else if (e.statut === 'REPORTE') s.reporte++;
+            else if (e.statut === 'TERMINE') s.termine++;
+            else if (e.statut === 'ANNULE') s.annule++;
         });
         return s;
-    }, [filteredEvents]);
-
-    // Upcoming events (next 7)
-    const upcoming = useMemo(() => {
-        const todayStr = format(new Date(), 'yyyy-MM-dd');
-        return filteredEvents
-            .filter(e => e.start && e.start.substring(0, 10) >= todayStr)
-            .slice(0, 7);
-    }, [filteredEvents]);
+    }, [events]);
 
     // ═══════ EVENT CHIP ═══════
     const EventChip = ({ ev, compact }) => {
-        const cfg = EVENT_TYPES[ev.event_type] || EVENT_TYPES.AUTRE;
+        const cfg = CHAMBRE_COLORS[ev.type_chambre] || CHAMBRE_COLORS.AUTRE;
+        const statCfg = STATUT_CONFIG[ev.statut] || STATUT_CONFIG.PREVU;
         return (
-            <Tooltip
-                title={
-                    <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{ev.title}</Typography>
-                        {ev.case_reference && <Typography variant="caption">📁 {ev.case_reference}</Typography>}
-                        {ev.location && <Typography variant="caption" display="block">📍 {ev.location}</Typography>}
-                        {ev.start && <Typography variant="caption" display="block">🕐 {format(parseISO(ev.start), 'HH:mm', { locale: fr })}</Typography>}
-                    </Box>
-                }
-                arrow
-            >
+            <Tooltip title={
+                <Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{ev.dossier_numero || ev.title}</Typography>
+                    <Typography variant="caption" display="block">{cfg.icon} {cfg.label}</Typography>
+                    {ev.dossier_nom && <Typography variant="caption" display="block">👥 {ev.dossier_nom}</Typography>}
+                    <Typography variant="caption" display="block">🕐 {ev.heure_audience?.substring(0, 5)} · {statCfg.icon} {statCfg.label}</Typography>
+                </Box>
+            } arrow>
                 <Box
-                    onClick={(e) => { e.stopPropagation(); ev.source === 'agenda' ? openEditDialog(ev) : setDayDialogOpen(true); }}
+                    onClick={(e) => { e.stopPropagation(); setSelectedDay(parseISO(ev.date_audience)); setDayDialogOpen(true); }}
                     sx={{
                         display: 'flex', alignItems: 'center', gap: 0.5,
-                        px: 0.8, py: 0.2, mb: 0.3,
-                        borderRadius: '6px',
+                        px: 0.8, py: 0.2, mb: 0.3, borderRadius: '6px',
                         bgcolor: alpha(cfg.color, isDark ? 0.25 : 0.15),
                         borderLeft: `3px solid ${cfg.color}`,
-                        cursor: 'pointer',
-                        transition: 'all 0.15s',
+                        cursor: 'pointer', transition: 'all 0.15s', overflow: 'hidden',
+                        opacity: ev.statut === 'ANNULE' ? 0.5 : ev.statut === 'REPORTE' ? 0.7 : 1,
+                        textDecoration: ev.statut === 'ANNULE' ? 'line-through' : 'none',
                         '&:hover': { bgcolor: alpha(cfg.color, isDark ? 0.4 : 0.25), transform: 'scale(1.02)' },
-                        overflow: 'hidden',
                     }}
                 >
                     <Typography sx={{ fontSize: '0.65rem', lineHeight: 1 }}>{cfg.icon}</Typography>
                     <Typography noWrap sx={{
-                        fontSize: compact ? '0.65rem' : '0.7rem',
-                        fontWeight: 600,
-                        color: isDark ? alpha(cfg.color, 1) : cfg.color,
-                        lineHeight: 1.3,
+                        fontSize: compact ? '0.65rem' : '0.7rem', fontWeight: 600,
+                        color: isDark ? alpha(cfg.color, 1) : cfg.color, lineHeight: 1.3,
                     }}>
-                        {compact && ev.start ? format(parseISO(ev.start), 'HH:mm') + ' ' : ''}{ev.title}
+                        {compact && ev.heure_audience ? ev.heure_audience.substring(0, 5) + ' ' : ''}{ev.dossier_numero || ev.title}
                     </Typography>
+                    {ev.statut === 'REPORTE' && <Typography sx={{ fontSize: '0.55rem' }}>🔄</Typography>}
+                    {ev.statut === 'TERMINE' && <Typography sx={{ fontSize: '0.55rem' }}>✅</Typography>}
                 </Box>
             </Tooltip>
         );
@@ -302,40 +323,28 @@ function Agenda() {
             border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
             borderRadius: 3, overflow: 'hidden',
         }}>
-            {/* Day headers */}
             {DAYS_FR.map(d => (
                 <Box key={d} sx={{
-                    py: 1.2, textAlign: 'center',
-                    fontWeight: 700, fontSize: '0.8rem',
+                    py: 1.2, textAlign: 'center', fontWeight: 700, fontSize: '0.8rem',
                     bgcolor: isDark ? alpha('#6366f1', 0.15) : alpha('#6366f1', 0.08),
                     color: isDark ? '#a5b4fc' : '#4338ca',
                     borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
                 }}>{d}</Box>
             ))}
-
-            {/* Calendar cells */}
             {calendarDays.map((day, idx) => {
                 const dayEvents = getEventsForDay(day);
                 const isCurrentMonth = isSameMonth(day, currentDate);
                 const isActive = isToday(day);
                 return (
-                    <Box
-                        key={idx}
+                    <Box key={idx}
                         onClick={() => { setSelectedDay(day); setDayDialogOpen(true); }}
                         sx={{
-                            minHeight: 100,
-                            p: 0.5,
+                            minHeight: 100, p: 0.5,
                             borderRight: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9'}`,
                             borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9'}`,
-                            bgcolor: isActive
-                                ? alpha('#6366f1', isDark ? 0.12 : 0.06)
-                                : !isCurrentMonth
-                                    ? (isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)')
-                                    : 'transparent',
-                            cursor: 'pointer',
-                            transition: 'background 0.15s',
+                            bgcolor: isActive ? alpha('#6366f1', isDark ? 0.12 : 0.06) : !isCurrentMonth ? (isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)') : 'transparent',
+                            cursor: 'pointer', transition: 'background 0.15s', opacity: isCurrentMonth ? 1 : 0.4,
                             '&:hover': { bgcolor: isDark ? 'rgba(99,102,241,0.08)' : 'rgba(99,102,241,0.04)' },
-                            opacity: isCurrentMonth ? 1 : 0.4,
                         }}
                     >
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.3 }}>
@@ -345,18 +354,12 @@ function Agenda() {
                                 bgcolor: isActive ? alpha('#6366f1', 0.15) : 'transparent',
                                 borderRadius: '50%', width: 26, height: 26,
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            }}>
-                                {format(day, 'd')}
-                            </Typography>
+                            }}>{format(day, 'd')}</Typography>
                             {dayEvents.length > 0 && (
-                                <Badge badgeContent={dayEvents.length} color="primary" sx={{
-                                    '& .MuiBadge-badge': { fontSize: '0.6rem', minWidth: 16, height: 16 }
-                                }} />
+                                <Badge badgeContent={dayEvents.length} color="primary" sx={{ '& .MuiBadge-badge': { fontSize: '0.6rem', minWidth: 16, height: 16 } }} />
                             )}
                         </Box>
-                        {dayEvents.slice(0, 3).map((ev, i) => (
-                            <EventChip key={ev.id} ev={ev} compact />
-                        ))}
+                        {dayEvents.slice(0, 3).map(ev => <EventChip key={ev.id} ev={ev} compact />)}
                         {dayEvents.length > 3 && (
                             <Typography sx={{ fontSize: '0.6rem', color: 'text.disabled', pl: 0.5, fontWeight: 600 }}>
                                 +{dayEvents.length - 3} autres
@@ -371,12 +374,10 @@ function Agenda() {
     // ═══════ WEEK VIEW ═══════
     const WeekView = () => (
         <Box sx={{
-            display: 'grid',
-            gridTemplateColumns: '60px repeat(7, 1fr)',
+            display: 'grid', gridTemplateColumns: '60px repeat(7, 1fr)',
             border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
             borderRadius: 3, overflow: 'hidden',
         }}>
-            {/* Header */}
             <Box sx={{ borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`, bgcolor: isDark ? alpha('#6366f1', 0.1) : alpha('#6366f1', 0.05) }} />
             {weekDays.map((d, i) => (
                 <Box key={i} sx={{
@@ -384,42 +385,26 @@ function Agenda() {
                     borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
                     bgcolor: isToday(d) ? alpha('#6366f1', isDark ? 0.2 : 0.1) : (isDark ? alpha('#6366f1', 0.1) : alpha('#6366f1', 0.05)),
                 }}>
-                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: isToday(d) ? '#6366f1' : 'text.secondary' }}>
-                        {DAYS_FR[i]}
-                    </Typography>
-                    <Typography sx={{ fontSize: '1.1rem', fontWeight: isToday(d) ? 800 : 500, color: isToday(d) ? '#6366f1' : 'text.primary' }}>
-                        {format(d, 'd')}
-                    </Typography>
+                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: isToday(d) ? '#6366f1' : 'text.secondary' }}>{DAYS_FR[i]}</Typography>
+                    <Typography sx={{ fontSize: '1.1rem', fontWeight: isToday(d) ? 800 : 500, color: isToday(d) ? '#6366f1' : 'text.primary' }}>{format(d, 'd')}</Typography>
                 </Box>
             ))}
-
-            {/* Time slots */}
             {HOURS.map(hour => (
                 <React.Fragment key={hour}>
-                    <Box sx={{
-                        py: 1, px: 0.5, textAlign: 'right',
-                        borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc'}`,
-                        color: 'text.disabled', fontSize: '0.7rem', fontWeight: 600,
-                    }}>
-                        {hour}h
-                    </Box>
+                    <Box sx={{ py: 1, px: 0.5, textAlign: 'right', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc'}`, color: 'text.disabled', fontSize: '0.7rem', fontWeight: 600 }}>{hour}h</Box>
                     {weekDays.map((d, i) => {
                         const dayEvents = getEventsForDay(d).filter(ev => {
-                            if (!ev.start || ev.all_day) return hour === 7;
-                            const h = parseInt(ev.start.substring(11, 13), 10);
-                            return h === hour;
+                            if (!ev.heure_audience) return hour === 8;
+                            return parseInt(ev.heure_audience.substring(0, 2), 10) === hour;
                         });
                         return (
-                            <Box key={i} onClick={() => openCreateDialog(setHours(setMinutes(d, 0), hour))} sx={{
+                            <Box key={i} onClick={() => openCreateDialog(d)} sx={{
                                 minHeight: 48, p: 0.3,
                                 borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc'}`,
                                 borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.03)' : '#f8fafc'}`,
-                                cursor: 'pointer',
-                                '&:hover': { bgcolor: isDark ? 'rgba(99,102,241,0.06)' : 'rgba(99,102,241,0.03)' },
+                                cursor: 'pointer', '&:hover': { bgcolor: isDark ? 'rgba(99,102,241,0.06)' : 'rgba(99,102,241,0.03)' },
                             }}>
-                                {dayEvents.map(ev => (
-                                    <EventChip key={ev.id} ev={ev} compact={false} />
-                                ))}
+                                {dayEvents.map(ev => <EventChip key={ev.id} ev={ev} compact={false} />)}
                             </Box>
                         );
                     })}
@@ -430,42 +415,25 @@ function Agenda() {
 
     // ═══════ DAY VIEW ═══════
     const DayView = () => (
-        <Box sx={{
-            border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`,
-            borderRadius: 3, overflow: 'hidden',
-        }}>
-            <Box sx={{
-                py: 1.5, textAlign: 'center',
-                bgcolor: isDark ? alpha('#6366f1', 0.15) : alpha('#6366f1', 0.08),
-            }}>
-                <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: isDark ? '#a5b4fc' : '#4338ca' }}>
+        <Box sx={{ border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0'}`, borderRadius: 3, overflow: 'hidden' }}>
+            <Box sx={{ py: 1.5, textAlign: 'center', bgcolor: isDark ? alpha('#6366f1', 0.15) : alpha('#6366f1', 0.08) }}>
+                <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: isDark ? '#a5b4fc' : '#4338ca', textTransform: 'capitalize' }}>
                     {format(currentDate, 'EEEE d MMMM yyyy', { locale: fr })}
                 </Typography>
             </Box>
             {HOURS.map(hour => {
                 const hourEvents = getEventsForDay(currentDate).filter(ev => {
-                    if (!ev.start || ev.all_day) return hour === 7;
-                    const h = parseInt(ev.start.substring(11, 13), 10);
-                    return h === hour;
+                    if (!ev.heure_audience) return hour === 8;
+                    return parseInt(ev.heure_audience.substring(0, 2), 10) === hour;
                 });
                 return (
-                    <Box key={hour} onClick={() => openCreateDialog(setHours(setMinutes(currentDate, 0), hour))} sx={{
-                        display: 'flex',
-                        borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9'}`,
-                        cursor: 'pointer',
-                        '&:hover': { bgcolor: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.02)' },
+                    <Box key={hour} onClick={() => openCreateDialog(currentDate)} sx={{
+                        display: 'flex', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9'}`,
+                        cursor: 'pointer', '&:hover': { bgcolor: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.02)' },
                     }}>
-                        <Box sx={{
-                            width: 70, py: 1.5, textAlign: 'right', pr: 1.5,
-                            color: 'text.disabled', fontSize: '0.8rem', fontWeight: 600,
-                            borderRight: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9'}`,
-                        }}>
-                            {hour}:00
-                        </Box>
+                        <Box sx={{ width: 70, py: 1.5, textAlign: 'right', pr: 1.5, color: 'text.disabled', fontSize: '0.8rem', fontWeight: 600, borderRight: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9'}` }}>{hour}:00</Box>
                         <Box sx={{ flex: 1, p: 0.5, minHeight: 52 }}>
-                            {hourEvents.map(ev => (
-                                <EventChip key={ev.id} ev={ev} compact={false} />
-                            ))}
+                            {hourEvents.map(ev => <EventChip key={ev.id} ev={ev} compact={false} />)}
                         </Box>
                     </Box>
                 );
@@ -477,103 +445,94 @@ function Agenda() {
     return (
         <Box sx={{ pb: 4 }}>
             {/* ── HEADER ── */}
-            <Box sx={{
-                display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between',
-                alignItems: 'center', mb: 3, gap: 2,
-            }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <CalendarIcon sx={{ fontSize: 36, color: '#6366f1' }} />
+                    <GavelIcon sx={{ fontSize: 36, color: '#6366f1' }} />
                     <Box>
-                        <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: '-0.02em' }}>
-                            Agenda
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                            Cabinet de Maître Ibrahima Mbengue
-                        </Typography>
+                        <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: '-0.02em' }}>Agenda juridique</Typography>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>Gestion des audiences et procès</Typography>
                     </Box>
                 </Box>
-
-                {!isArchived && (
-                    <Button variant="contained" startIcon={<AddIcon />} onClick={() => openCreateDialog()}
-                        sx={{ borderRadius: 2, px: 3, fontWeight: 700 }}>
-                        Nouvel événement
-                    </Button>
-                )}
+                <Button variant="contained" startIcon={<AddIcon />} onClick={() => openCreateDialog()}
+                    sx={{ borderRadius: 2, px: 3, fontWeight: 700, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+                    Nouvelle audience
+                </Button>
             </Box>
 
-            {/* Archive banner */}
-            {isArchived && (
-                <Alert severity="info" icon={<ArchiveIcon />} sx={{ mb: 2, borderRadius: 2 }}>
-                    <Typography sx={{ fontWeight: 700 }}>
-                        📦 Agenda archivé — {selectedYear}
-                    </Typography>
-                    <Typography variant="body2">
-                        Cet agenda est en lecture seule. Les événements ne peuvent plus être modifiés.
-                    </Typography>
-                </Alert>
-            )}
+            {/* ── STATS CARDS ── */}
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+                {[
+                    { label: 'Total', value: stats.total, color: '#6366f1', icon: '📊' },
+                    { label: 'Prévues', value: stats.prevu, color: '#2196f3', icon: '📅' },
+                    { label: 'Reportées', value: stats.reporte, color: '#ff9800', icon: '🔄' },
+                    { label: 'Terminées', value: stats.termine, color: '#4caf50', icon: '✅' },
+                    { label: 'Annulées', value: stats.annule, color: '#f44336', icon: '❌' },
+                ].map(s => (
+                    <Grid item xs={6} sm={2.4} key={s.label}>
+                        <Paper elevation={0} sx={{
+                            p: 2, borderRadius: 3, textAlign: 'center',
+                            border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
+                            background: isDark ? alpha(s.color, 0.08) : alpha(s.color, 0.04),
+                        }}>
+                            <Typography sx={{ fontSize: '1.5rem' }}>{s.icon}</Typography>
+                            <Typography sx={{ fontWeight: 900, fontSize: '1.5rem', color: s.color }}>{s.value}</Typography>
+                            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', fontWeight: 600 }}>{s.label}</Typography>
+                        </Paper>
+                    </Grid>
+                ))}
+            </Grid>
 
-            {/* TOOLBAR */}
+            {/* ── TOOLBAR ── */}
             <Paper elevation={0} sx={{
                 p: 2, mb: 3, borderRadius: 3,
                 border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
-                display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between',
-                alignItems: 'center', gap: 2,
+                display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 2,
             }}>
-                {/* Left: Year selector + Nav */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <FormControl size="small" sx={{ minWidth: 110 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                    <FormControl size="small" sx={{ minWidth: 100 }}>
                         <InputLabel>Année</InputLabel>
-                        <Select value={selectedYear} label="Année"
-                            onChange={(e) => handleYearChange(e.target.value)}>
-                            {years.map(y => (
-                                <MenuItem key={y} value={y}>
-                                    {y}{y < currentYear ? ' 📦' : y === currentYear ? ' ✨' : ''}
-                                </MenuItem>
-                            ))}
+                        <Select value={selectedYear} label="Année" onChange={(e) => handleYearChange(e.target.value)}>
+                            {years.map(y => <MenuItem key={y} value={y}>{y}</MenuItem>)}
                         </Select>
                     </FormControl>
-
-                    <Divider orientation="vertical" flexItem />
-
-                    <IconButton onClick={() => navigate(-1)} size="small">
-                        <ChevronLeft />
-                    </IconButton>
-                    <Button onClick={goToday} size="small" variant="outlined" startIcon={<TodayIcon />}
-                        sx={{ textTransform: 'none', fontWeight: 600 }}>
-                        Aujourd'hui
-                    </Button>
-                    <IconButton onClick={() => navigate(1)} size="small">
-                        <ChevronRight />
-                    </IconButton>
-
+                    <IconButton onClick={() => navigate(-1)} size="small"><ChevronLeft /></IconButton>
+                    <Button onClick={goToday} size="small" variant="outlined" startIcon={<TodayIcon />} sx={{ textTransform: 'none', fontWeight: 600 }}>Aujourd'hui</Button>
+                    <IconButton onClick={() => navigate(1)} size="small"><ChevronRight /></IconButton>
                     <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', textTransform: 'capitalize', minWidth: 180 }}>
                         {viewMode === 'month' && format(currentDate, 'MMMM yyyy', { locale: fr })}
                         {viewMode === 'week' && `Semaine du ${format(weekDays[0], 'd MMM', { locale: fr })}`}
                         {viewMode === 'day' && format(currentDate, 'EEEE d MMM yyyy', { locale: fr })}
                     </Typography>
                 </Box>
-
-                {/* Right: View toggle + Filter */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                    <TextField size="small" placeholder="Rechercher..." value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 18 }} /></InputAdornment> }}
+                        sx={{ minWidth: 180 }}
+                    />
                     <FormControl size="small" sx={{ minWidth: 140 }}>
-                        <InputLabel>Filtrer</InputLabel>
-                        <Select value={typeFilter} label="Filtrer"
-                            onChange={(e) => setTypeFilter(e.target.value)}>
-                            <MenuItem value="ALL">Tous les types</MenuItem>
-                            {Object.entries(EVENT_TYPES).map(([key, cfg]) => (
+                        <InputLabel>Chambre</InputLabel>
+                        <Select value={chambreFilter} label="Chambre" onChange={(e) => setChambreFilter(e.target.value)}>
+                            <MenuItem value="ALL">Toutes</MenuItem>
+                            {Object.entries(CHAMBRE_COLORS).map(([key, cfg]) => (
                                 <MenuItem key={key} value={key}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <CircleIcon sx={{ fontSize: 10, color: cfg.color }} />
-                                        {cfg.label}
+                                        <CircleIcon sx={{ fontSize: 10, color: cfg.color }} />{cfg.label}
                                     </Box>
                                 </MenuItem>
                             ))}
                         </Select>
                     </FormControl>
-
-                    <ToggleButtonGroup value={viewMode} exclusive
-                        onChange={(e, v) => v && setViewMode(v)} size="small">
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                        <InputLabel>Statut</InputLabel>
+                        <Select value={statutFilter} label="Statut" onChange={(e) => setStatutFilter(e.target.value)}>
+                            <MenuItem value="ALL">Tous</MenuItem>
+                            {Object.entries(STATUT_CONFIG).map(([key, cfg]) => (
+                                <MenuItem key={key} value={key}>{cfg.icon} {cfg.label}</MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <ToggleButtonGroup value={viewMode} exclusive onChange={(e, v) => v && setViewMode(v)} size="small">
                         <ToggleButton value="month"><CalendarIcon sx={{ mr: 0.5, fontSize: 18 }} />Mois</ToggleButton>
                         <ToggleButton value="week"><WeekIcon sx={{ mr: 0.5, fontSize: 18 }} />Semaine</ToggleButton>
                         <ToggleButton value="day"><DayIcon sx={{ mr: 0.5, fontSize: 18 }} />Jour</ToggleButton>
@@ -581,172 +540,103 @@ function Agenda() {
                 </Box>
             </Paper>
 
-            {/* MAIN CONTENT */}
-            <Grid container spacing={3}>
-                {/* Calendar */}
-                <Grid item xs={12} md={9}>
-                    <Paper elevation={0} sx={{
-                        borderRadius: 3, overflow: 'hidden',
-                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
-                    }}>
-                        {loading ? (
-                            <Box sx={{ p: 8, textAlign: 'center' }}>
-                                <Typography color="text.secondary">Chargement de l'agenda...</Typography>
-                            </Box>
-                        ) : (
-                            <>
-                                {viewMode === 'month' && <MonthView />}
-                                {viewMode === 'week' && <WeekView />}
-                                {viewMode === 'day' && <DayView />}
-                            </>
-                        )}
-                    </Paper>
-                </Grid>
+            {/* ── LOADING ── */}
+            {loading && <LinearProgress sx={{ mb: 1, borderRadius: 2 }} />}
 
-                {/* Sidebar */}
-                <Grid item xs={12} md={3}>
-                    {/* Stats */}
-                    <Paper elevation={0} sx={{
-                        p: 2.5, borderRadius: 3, mb: 2,
-                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
-                    }}>
-                        <Typography sx={{ fontWeight: 800, mb: 2, fontSize: '0.95rem' }}>
-                            📊 Résumé du mois
-                        </Typography>
-                        {[
-                            { label: 'Total événements', value: stats.total, color: '#6366f1' },
-                            { label: 'Audiences', value: stats.audiences, color: '#2196f3' },
-                            { label: 'RDV Client', value: stats.rdv, color: '#4caf50' },
-                            { label: 'Échéances', value: stats.deadlines, color: '#f44336' },
-                            { label: 'Décisions', value: stats.decisions, color: '#ff9800' },
-                            { label: 'Tâches', value: stats.tasks, color: '#ffc107' },
-                        ].map(s => (
-                            <Box key={s.label} sx={{
-                                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                py: 0.8, borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : '#f1f5f9'}`,
-                            }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <CircleIcon sx={{ fontSize: 8, color: s.color }} />
-                                    <Typography sx={{ fontSize: '0.82rem', color: 'text.secondary' }}>{s.label}</Typography>
-                                </Box>
-                                <Typography sx={{ fontWeight: 800, fontSize: '0.9rem', color: s.color }}>{s.value}</Typography>
-                            </Box>
-                        ))}
-                    </Paper>
+            {/* ── CALENDAR ── */}
+            <Paper elevation={0} sx={{ borderRadius: 3, overflow: 'hidden', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}` }}>
+                {viewMode === 'month' && <MonthView />}
+                {viewMode === 'week' && <WeekView />}
+                {viewMode === 'day' && <DayView />}
+            </Paper>
 
-                    {/* Upcoming */}
-                    <Paper elevation={0} sx={{
-                        p: 2.5, borderRadius: 3, mb: 2,
-                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
-                    }}>
-                        <Typography sx={{ fontWeight: 800, mb: 2, fontSize: '0.95rem' }}>
-                            📋 Prochains événements
-                        </Typography>
-                        {upcoming.length === 0 ? (
-                            <Typography sx={{ fontSize: '0.8rem', color: 'text.disabled', fontStyle: 'italic' }}>
-                                Aucun événement à venir
-                            </Typography>
-                        ) : (
-                            upcoming.map(ev => {
-                                const cfg = EVENT_TYPES[ev.event_type] || EVENT_TYPES.AUTRE;
-                                return (
-                                    <Box key={ev.id} sx={{
-                                        display: 'flex', gap: 1, py: 0.8, alignItems: 'flex-start',
-                                        borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : '#f1f5f9'}`,
-                                    }}>
-                                        <Typography sx={{ fontSize: '0.9rem', mt: 0.2 }}>{cfg.icon}</Typography>
-                                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                                            <Typography noWrap sx={{ fontSize: '0.78rem', fontWeight: 600 }}>{ev.title}</Typography>
-                                            <Typography sx={{ fontSize: '0.68rem', color: 'text.disabled' }}>
-                                                {ev.start && format(parseISO(ev.start), 'dd/MM · HH:mm', { locale: fr })}
-                                                {ev.case_reference && ` · ${ev.case_reference}`}
-                                            </Typography>
-                                        </Box>
-                                    </Box>
-                                );
-                            })
-                        )}
-                    </Paper>
-
-                    {/* Legend */}
-                    <Paper elevation={0} sx={{
-                        p: 2.5, borderRadius: 3,
-                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
-                    }}>
-                        <Typography sx={{ fontWeight: 800, mb: 1.5, fontSize: '0.95rem' }}>
-                            🎨 Légende
-                        </Typography>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
-                            {Object.entries(EVENT_TYPES).slice(0, 10).map(([key, cfg]) => (
-                                <Chip key={key} label={`${cfg.icon} ${cfg.label}`} size="small" sx={{
-                                    bgcolor: alpha(cfg.color, isDark ? 0.2 : 0.12),
-                                    color: isDark ? alpha(cfg.color, 1) : cfg.color,
-                                    fontWeight: 600, fontSize: '0.7rem',
-                                    border: `1px solid ${alpha(cfg.color, 0.3)}`,
-                                }} />
-                            ))}
-                        </Box>
-                    </Paper>
-                </Grid>
-            </Grid>
+            {/* ── LÉGENDE ── */}
+            <Paper elevation={0} sx={{ p: 2, mt: 2, borderRadius: 3, border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}` }}>
+                <Typography sx={{ fontWeight: 800, mb: 1, fontSize: '0.85rem' }}>🎨 Chambres</Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
+                    {Object.entries(CHAMBRE_COLORS).map(([key, cfg]) => (
+                        <Chip key={key} label={`${cfg.icon} ${cfg.label}`} size="small"
+                            onClick={() => setChambreFilter(chambreFilter === key ? 'ALL' : key)}
+                            sx={{
+                                bgcolor: alpha(cfg.color, chambreFilter === key ? 0.4 : (isDark ? 0.2 : 0.12)),
+                                color: isDark ? alpha(cfg.color, 1) : cfg.color,
+                                fontWeight: 600, fontSize: '0.7rem', border: `1px solid ${alpha(cfg.color, 0.3)}`,
+                                cursor: 'pointer',
+                            }} />
+                    ))}
+                </Box>
+            </Paper>
 
             {/* ═══ DAY DETAIL DIALOG ═══ */}
             <Dialog open={dayDialogOpen} onClose={() => setDayDialogOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle>
-                    <EventIcon sx={{ mr: 1 }} />
-                    {selectedDay && format(selectedDay, 'EEEE d MMMM yyyy', { locale: fr })}
+                <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <GavelIcon />
+                        <span>{selectedDay && format(selectedDay, 'EEEE d MMMM yyyy', { locale: fr })}</span>
+                    </Box>
+                    <IconButton onClick={() => setDayDialogOpen(false)} size="small"><CloseIcon /></IconButton>
                 </DialogTitle>
                 <DialogContent>
                     {selectedDay && getEventsForDay(selectedDay).length === 0 ? (
-                        <Typography sx={{ py: 3, textAlign: 'center', color: 'text.disabled' }}>
-                            Aucun événement ce jour
-                        </Typography>
+                        <Typography sx={{ py: 3, textAlign: 'center', color: 'text.disabled' }}>Aucune audience ce jour</Typography>
                     ) : (
                         selectedDay && getEventsForDay(selectedDay).map(ev => {
-                            const cfg = EVENT_TYPES[ev.event_type] || EVENT_TYPES.AUTRE;
+                            const cfg = CHAMBRE_COLORS[ev.type_chambre] || CHAMBRE_COLORS.AUTRE;
+                            const statCfg = STATUT_CONFIG[ev.statut] || STATUT_CONFIG.PREVU;
                             return (
                                 <Card key={ev.id} elevation={0} sx={{
                                     mb: 1.5, border: `1px solid ${alpha(cfg.color, 0.3)}`,
                                     borderLeft: `4px solid ${cfg.color}`, borderRadius: 2,
+                                    opacity: ev.statut === 'ANNULE' ? 0.6 : 1,
                                 }}>
                                     <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                            <Box>
-                                                <Typography sx={{ fontWeight: 700, fontSize: '0.9rem' }}>
-                                                    {cfg.icon} {ev.title}
-                                                </Typography>
-                                                <Box sx={{ display: 'flex', gap: 2, mt: 0.5, flexWrap: 'wrap' }}>
-                                                    {ev.start && (
-                                                        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.3 }}>
-                                                            <TimeIcon sx={{ fontSize: 13 }} />{format(parseISO(ev.start), 'HH:mm')}
-                                                        </Typography>
-                                                    )}
-                                                    {ev.location && (
-                                                        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.3 }}>
-                                                            <LocationIcon sx={{ fontSize: 13 }} />{ev.location}
-                                                        </Typography>
-                                                    )}
-                                                    {ev.case_reference && (
-                                                        <Chip label={ev.case_reference} size="small" sx={{ height: 20, fontSize: '0.65rem' }} />
-                                                    )}
+                                            <Box sx={{ flex: 1 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                                    <Typography sx={{ fontWeight: 700, fontSize: '0.95rem' }}>{cfg.icon} {ev.dossier_numero || ev.title}</Typography>
+                                                    <Chip label={statCfg.label} size="small" sx={{
+                                                        bgcolor: alpha(statCfg.color, 0.15), color: statCfg.color,
+                                                        fontWeight: 700, fontSize: '0.65rem', height: 22,
+                                                    }} />
                                                 </Box>
-                                                {ev.description && (
-                                                    <Typography sx={{ fontSize: '0.75rem', color: 'text.disabled', mt: 0.5 }}>
-                                                        {ev.description}
+                                                {ev.dossier_nom && <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', mb: 0.3 }}>👥 {ev.dossier_nom}</Typography>}
+                                                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                                                    <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.3 }}>
+                                                        <TimeIcon sx={{ fontSize: 13 }} />{ev.heure_audience?.substring(0, 5)}
+                                                    </Typography>
+                                                    <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>{cfg.label}</Typography>
+                                                    {ev.location && <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.3 }}>
+                                                        <LocationIcon sx={{ fontSize: 13 }} />{ev.location}
+                                                    </Typography>}
+                                                </Box>
+                                                {ev.notes && <Typography sx={{ fontSize: '0.75rem', color: 'text.disabled', mt: 0.5, fontStyle: 'italic' }}>{ev.notes}</Typography>}
+                                                {ev.reporte_de_info && (
+                                                    <Typography sx={{ fontSize: '0.7rem', color: '#ff9800', mt: 0.5 }}>
+                                                        🔄 Reporté depuis le {ev.reporte_de_info.date_audience}
+                                                    </Typography>
+                                                )}
+                                                {ev.nb_reports > 0 && (
+                                                    <Typography sx={{ fontSize: '0.7rem', color: '#ff9800', mt: 0.3 }}>
+                                                        ↪ {ev.nb_reports} report(s) suivant(s)
                                                     </Typography>
                                                 )}
                                             </Box>
-                                            {ev.source === 'agenda' && !isArchived && (
-                                                <Box>
-                                                    <IconButton size="small" onClick={() => openEditDialog(ev)}>
-                                                        <EditIcon sx={{ fontSize: 16 }} />
-                                                    </IconButton>
-                                                    <IconButton size="small" onClick={() => handleDelete(ev)} color="error">
-                                                        <DeleteIcon sx={{ fontSize: 16 }} />
-                                                    </IconButton>
+                                            {ev.statut === 'PREVU' && (
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                    <Tooltip title="Modifier"><IconButton size="small" onClick={() => { setDayDialogOpen(false); openEditDialog(ev); }}><EditIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
+                                                    <Tooltip title="Reporter"><IconButton size="small" onClick={() => openReportDialog(ev)} sx={{ color: '#ff9800' }}><ReportIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
+                                                    <Tooltip title="Terminé"><IconButton size="small" onClick={() => handleTerminer(ev)} sx={{ color: '#4caf50' }}><CheckIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
+                                                    <Tooltip title="Annuler"><IconButton size="small" onClick={() => handleAnnuler(ev)} sx={{ color: '#f44336' }}><CancelIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
+                                                    <Tooltip title="Supprimer"><IconButton size="small" onClick={() => handleDelete(ev)} color="error"><DeleteIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
                                                 </Box>
                                             )}
                                         </Box>
+                                        {ev.dossier_numero && (
+                                            <Button size="small" startIcon={<HistoryIcon />} onClick={() => openHistory(ev.dossier_numero)}
+                                                sx={{ mt: 1, textTransform: 'none', fontSize: '0.7rem' }}>
+                                                Historique du dossier
+                                            </Button>
+                                        )}
                                     </CardContent>
                                 </Card>
                             );
@@ -754,12 +644,10 @@ function Agenda() {
                     )}
                 </DialogContent>
                 <DialogActions>
-                    {!isArchived && (
-                        <Button variant="contained" startIcon={<AddIcon />}
-                            onClick={() => { setDayDialogOpen(false); openCreateDialog(selectedDay); }}>
-                            Ajouter ici
-                        </Button>
-                    )}
+                    <Button variant="contained" startIcon={<AddIcon />}
+                        onClick={() => { setDayDialogOpen(false); openCreateDialog(selectedDay); }}>
+                        Ajouter ici
+                    </Button>
                     <Button onClick={() => setDayDialogOpen(false)}>Fermer</Button>
                 </DialogActions>
             </Dialog>
@@ -767,88 +655,158 @@ function Agenda() {
             {/* ═══ CREATE / EDIT DIALOG ═══ */}
             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
                 <DialogTitle>
-                    {editingEvent ? <><EditIcon sx={{ mr: 1 }} />Modifier l'événement</> : <><AddIcon sx={{ mr: 1 }} />Nouvel événement</>}
+                    {editingEvent ? <><EditIcon sx={{ mr: 1 }} />Modifier l'audience</> : <><AddIcon sx={{ mr: 1 }} />Nouvelle audience</>}
                 </DialogTitle>
                 <DialogContent>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 1 }}>
-                        <TextField label="Titre" fullWidth required
-                            value={formData.title}
-                            onChange={e => setFormData(p => ({ ...p, title: e.target.value }))}
-                        />
-
-                        <TextField label="Type d'événement" select fullWidth
-                            value={formData.event_type}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+                        <TextField label="Type de chambre" select fullWidth required value={formData.type_chambre}
                             onChange={e => {
                                 const t = e.target.value;
-                                const cfg = EVENT_TYPES[t] || EVENT_TYPES.AUTRE;
-                                setFormData(p => ({ ...p, event_type: t, color: cfg.color }));
+                                const cfg = CHAMBRE_COLORS[t] || CHAMBRE_COLORS.AUTRE;
+                                setFormData(p => ({ ...p, type_chambre: t, color: cfg.color }));
                             }}>
-                            {['AUDIENCE', 'RDV', 'REUNION', 'DEPLACEMENT', 'RAPPEL', 'CONFERENCE', 'FORMATION', 'AUTRE'].map(k => (
-                                <MenuItem key={k} value={k}>
+                            {Object.entries(CHAMBRE_COLORS).map(([key, cfg]) => (
+                                <MenuItem key={key} value={key}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <CircleIcon sx={{ fontSize: 10, color: EVENT_TYPES[k].color }} />
-                                        {EVENT_TYPES[k].icon} {EVENT_TYPES[k].label}
+                                        <CircleIcon sx={{ fontSize: 10, color: cfg.color }} />{cfg.icon} {cfg.label}
                                     </Box>
                                 </MenuItem>
                             ))}
                         </TextField>
-
+                        {formData.type_chambre === 'AUTRE' && (
+                            <TextField label="Précisez la chambre" fullWidth value={formData.type_chambre_autre}
+                                onChange={e => setFormData(p => ({ ...p, type_chambre_autre: e.target.value }))} />
+                        )}
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <TextField label="Début" type="datetime-local" fullWidth
-                                InputLabelProps={{ shrink: true }}
-                                value={formData.start_datetime}
-                                onChange={e => setFormData(p => ({ ...p, start_datetime: e.target.value }))}
-                            />
-                            <TextField label="Fin" type="datetime-local" fullWidth
-                                InputLabelProps={{ shrink: true }}
-                                value={formData.end_datetime}
-                                onChange={e => setFormData(p => ({ ...p, end_datetime: e.target.value }))}
-                            />
+                            <TextField label="Numéro de dossier" fullWidth required value={formData.dossier_numero}
+                                onChange={e => setFormData(p => ({ ...p, dossier_numero: e.target.value }))} />
+                            <TextField label="Titre" fullWidth required value={formData.title}
+                                onChange={e => setFormData(p => ({ ...p, title: e.target.value }))} />
                         </Box>
-
-                        <FormControlLabel
-                            control={<Checkbox checked={formData.all_day}
-                                onChange={e => setFormData(p => ({ ...p, all_day: e.target.checked }))} />}
-                            label="Journée entière"
-                        />
-
-                        <TextField label="Dossier lié" select fullWidth
-                            value={formData.case}
+                        <TextField label="Nom du dossier / parties" fullWidth required value={formData.dossier_nom}
+                            onChange={e => setFormData(p => ({ ...p, dossier_nom: e.target.value }))} />
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                            <TextField label="Date de l'audience" type="date" fullWidth required
+                                InputLabelProps={{ shrink: true }} value={formData.date_audience}
+                                onChange={e => setFormData(p => ({ ...p, date_audience: e.target.value }))} />
+                            <TextField label="Heure de l'audience" type="time" fullWidth required
+                                InputLabelProps={{ shrink: true }} value={formData.heure_audience}
+                                onChange={e => setFormData(p => ({ ...p, heure_audience: e.target.value }))} />
+                        </Box>
+                        <TextField label="Dossier lié (optionnel)" select fullWidth value={formData.case}
                             onChange={e => setFormData(p => ({ ...p, case: e.target.value }))}>
-                            <MenuItem value="">Aucun dossier</MenuItem>
-                            {cases.map(c => (
-                                <MenuItem key={c.id} value={c.id}>
-                                    {c.reference} — {c.title || 'Sans titre'}
-                                </MenuItem>
+                            <MenuItem value="">— Aucun —</MenuItem>
+                            {Array.isArray(cases) && cases.map(c => (
+                                <MenuItem key={c.id} value={c.id}>{c.reference} — {c.title}</MenuItem>
                             ))}
                         </TextField>
-
-                        <TextField label="Lieu" fullWidth
-                            value={formData.location}
-                            onChange={e => setFormData(p => ({ ...p, location: e.target.value }))}
-                            placeholder="Tribunal, bureau, adresse..."
-                        />
-
-                        <TextField label="Description" multiline rows={3} fullWidth
-                            value={formData.description}
-                            onChange={e => setFormData(p => ({ ...p, description: e.target.value }))}
-                        />
-
-                        <TextField label="Rappel (minutes avant)" type="number" fullWidth
-                            value={formData.reminder_minutes}
-                            onChange={e => setFormData(p => ({ ...p, reminder_minutes: parseInt(e.target.value) || 0 }))}
-                            helperText="0 = pas de rappel"
-                        />
+                        <TextField label="Lieu" fullWidth value={formData.location}
+                            onChange={e => setFormData(p => ({ ...p, location: e.target.value }))} />
+                        <TextField label="Notes et observations" fullWidth multiline rows={3} value={formData.notes}
+                            onChange={e => setFormData(p => ({ ...p, notes: e.target.value }))} />
                     </Box>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setDialogOpen(false)}>Annuler</Button>
                     <Button variant="contained" onClick={handleSave}
-                        disabled={!formData.title || !formData.start_datetime}>
-                        {editingEvent ? 'Enregistrer' : 'Créer'}
+                        disabled={!formData.date_audience || !formData.heure_audience || !formData.title}>
+                        {editingEvent ? 'Modifier' : 'Créer'}
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {/* ═══ REPORT DIALOG ═══ */}
+            <Dialog open={reportDialogOpen} onClose={() => setReportDialogOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle><ReportIcon sx={{ mr: 1, color: '#ff9800' }} />Reporter l'audience</DialogTitle>
+                <DialogContent>
+                    {reportTarget && (
+                        <Box sx={{ mb: 2 }}>
+                            <Alert severity="info" sx={{ mb: 2 }}>
+                                <Typography variant="subtitle2">{reportTarget.dossier_numero} — {reportTarget.dossier_nom}</Typography>
+                                <Typography variant="caption">
+                                    Date actuelle : {reportTarget.date_audience} à {reportTarget.heure_audience?.substring(0, 5)}
+                                </Typography>
+                            </Alert>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                    <TextField label="Nouvelle date" type="date" fullWidth required
+                                        InputLabelProps={{ shrink: true }} value={reportForm.nouvelle_date}
+                                        onChange={e => setReportForm(p => ({ ...p, nouvelle_date: e.target.value }))} />
+                                    <TextField label="Nouvelle heure" type="time" fullWidth required
+                                        InputLabelProps={{ shrink: true }} value={reportForm.nouvelle_heure}
+                                        onChange={e => setReportForm(p => ({ ...p, nouvelle_heure: e.target.value }))} />
+                                </Box>
+                                <TextField label="Motif du report" fullWidth multiline rows={2} value={reportForm.motif}
+                                    onChange={e => setReportForm(p => ({ ...p, motif: e.target.value }))} />
+                                <TextField label="Notes pour la nouvelle audience" fullWidth multiline rows={2} value={reportForm.notes}
+                                    onChange={e => setReportForm(p => ({ ...p, notes: e.target.value }))} />
+                            </Box>
+                        </Box>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setReportDialogOpen(false)}>Annuler</Button>
+                    <Button variant="contained" onClick={handleReport} disabled={!reportForm.nouvelle_date}
+                        sx={{ bgcolor: '#ff9800', '&:hover': { bgcolor: '#f57c00' } }}>
+                        Reporter
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* ═══ HISTORY DIALOG ═══ */}
+            <Dialog open={historyDialogOpen} onClose={() => setHistoryDialogOpen(false)} maxWidth="md" fullWidth>
+                <DialogTitle><HistoryIcon sx={{ mr: 1 }} />Historique du dossier {historyData?.dossier_numero}</DialogTitle>
+                <DialogContent>
+                    {historyData && (
+                        <Box>
+                            <Typography sx={{ fontWeight: 700, mb: 1 }}>📅 Audiences ({historyData.entries?.length || 0})</Typography>
+                            {historyData.entries?.map(entry => {
+                                const cfg = CHAMBRE_COLORS[entry.type_chambre] || CHAMBRE_COLORS.AUTRE;
+                                const statCfg = STATUT_CONFIG[entry.statut] || STATUT_CONFIG.PREVU;
+                                return (
+                                    <Card key={entry.id} elevation={0} sx={{
+                                        mb: 1, borderLeft: `4px solid ${statCfg.color}`,
+                                        border: `1px solid ${alpha(statCfg.color, 0.3)}`, borderRadius: 2,
+                                    }}>
+                                        <CardContent sx={{ py: 1, '&:last-child': { pb: 1 } }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <Box>
+                                                    <Typography sx={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                                                        {entry.date_audience} à {entry.heure_audience?.substring(0, 5)} — {cfg.label}
+                                                    </Typography>
+                                                    <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>{entry.dossier_nom}</Typography>
+                                                    {entry.motif_report && <Typography sx={{ fontSize: '0.7rem', color: '#ff9800', fontStyle: 'italic' }}>Motif : {entry.motif_report}</Typography>}
+                                                </Box>
+                                                <Chip label={statCfg.label} size="small" sx={{ bgcolor: alpha(statCfg.color, 0.15), color: statCfg.color, fontWeight: 700 }} />
+                                            </Box>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
+                            <Typography sx={{ fontWeight: 700, mb: 1, mt: 2 }}>📝 Journal des modifications ({historyData.history?.length || 0})</Typography>
+                            {historyData.history?.map(h => (
+                                <Box key={h.id} sx={{ display: 'flex', gap: 1, py: 0.8, borderBottom: '1px solid', borderColor: 'divider' }}>
+                                    <Typography sx={{ fontSize: '0.7rem', color: 'text.disabled', minWidth: 120 }}>
+                                        {h.date_action && format(parseISO(h.date_action), 'dd/MM/yy HH:mm')}
+                                    </Typography>
+                                    <Chip label={h.type_action_display} size="small" sx={{ fontSize: '0.65rem', height: 20 }} />
+                                    <Typography sx={{ fontSize: '0.75rem', flex: 1 }}>{h.commentaire}</Typography>
+                                    <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>{h.utilisateur_name}</Typography>
+                                </Box>
+                            ))}
+                        </Box>
+                    )}
+                </DialogContent>
+                <DialogActions><Button onClick={() => setHistoryDialogOpen(false)}>Fermer</Button></DialogActions>
+            </Dialog>
+
+            {/* ── SNACKBAR ── */}
+            <Snackbar open={snack.open} autoHideDuration={4000} onClose={() => setSnack(s => ({ ...s, open: false }))}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+                <Alert severity={snack.severity} onClose={() => setSnack(s => ({ ...s, open: false }))} sx={{ width: '100%' }}>
+                    {snack.message}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }

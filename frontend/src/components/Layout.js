@@ -52,8 +52,6 @@ const menuItems = [
     { text: 'Clients', icon: <PeopleIcon />, path: '/clients' },
     { text: 'Dossiers', icon: <FolderIcon />, path: '/cases' },
     { text: 'Documents', icon: <DescriptionIcon />, path: '/documents' },
-    { text: 'Échéances', icon: <EventIcon />, path: '/deadlines' },
-    { text: 'Audiences', icon: <EventIcon />, path: '/audiences', excludeClient: true },
     { text: 'Tags', icon: <LabelIcon />, path: '/tags', excludeClient: true },
     { text: 'Recherche', icon: <SearchIcon />, path: '/search', excludeClient: true },
     { text: 'Utilisateurs', icon: <PersonIcon />, path: '/users', adminOnly: true },

@@ -30,7 +30,7 @@ import {
     RestartAlt as ResetIcon,
     Contrast as ContrastIcon
 } from '@mui/icons-material';
-import { clientsAPI, casesAPI, documentsAPI, deadlinesAPI, tagsAPI } from '../services/api';
+import { clientsAPI, casesAPI, documentsAPI, deadlinesAPI, tagsAPI, agendaAPI } from '../services/api';
 import StatCard from '../components/StatCard';
 import DiligenceManager from '../components/DiligenceManager';
 
@@ -104,7 +104,7 @@ function Dashboard() {
                 clientsAPI.getAll(),
                 casesAPI.getAll(),
                 documentsAPI.getAll({ ordering: '-created_at', page_size: 5 }),
-                deadlinesAPI.getAll({ upcoming_days: 7, is_completed: false }),
+                agendaAPI.getAll({ statut: 'PREVU', page_size: 5 }),
                 tagsAPI.getAll()
             ]);
 
@@ -248,7 +248,7 @@ function Dashboard() {
                         icon={<EventIcon />}
                         color="warning"
                         secondaryValue="Prochains 7 jours"
-                        onClick={() => navigate('/deadlines')}
+                        onClick={() => navigate('/agenda')}
                     />
                 </Grid>
             </Grid>
@@ -266,7 +266,7 @@ function Dashboard() {
                         boxShadow: 'none'
                     }}>
                         <Box
-                            onClick={() => navigate('/deadlines')}
+                            onClick={() => navigate('/agenda')}
                             sx={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -296,7 +296,7 @@ function Dashboard() {
                                         key={deadline.id}
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            navigate(`/deadlines?search=${encodeURIComponent(deadline.title)}`);
+                                            navigate(`/agenda?search=${encodeURIComponent(deadline.title)}`);
                                         }}
                                         sx={{
                                             p: 2,
@@ -312,17 +312,17 @@ function Dashboard() {
                                                 {deadline.title}
                                             </Typography>
                                             <Chip
-                                                label={deadline.days_remaining === 0 ? "Aujourd'hui" : `${deadline.days_remaining}j`}
+                                                label={deadline.heure_audience?.slice(0, 5) || '--:--'}
                                                 size="small"
-                                                color={getDeadlineColor(deadline)}
+                                                color="primary"
                                                 sx={{ height: 20, fontSize: '0.65rem', fontWeight: 700 }}
                                             />
                                         </Box>
                                         <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                            Réf: {deadline.case_reference}
+                                            Réf: {deadline.dossier_numero}
                                         </Typography>
                                         <Typography variant="caption" color="text.secondary">
-                                            {new Date(deadline.due_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+                                            {new Date(deadline.date_audience).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
                                         </Typography>
                                     </Box>
                                 ))}

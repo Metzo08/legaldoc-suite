@@ -10,13 +10,13 @@ import logging
 import threading
 from django.db import transaction
 from django.db.models import Q
-from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence, Task, Decision, AgendaEvent
+from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence, Task, Decision, AgendaEvent, AgendaHistory, AgendaNotification
 from .serializers import (
     ClientSerializer, CaseListSerializer, CaseDetailSerializer,
     DocumentSerializer, DocumentUploadSerializer, DocumentPermissionSerializer,
     AuditLogSerializer, TagSerializer, DeadlineSerializer, DocumentVersionSerializer,
     NotificationSerializer, DiligenceSerializer, TaskSerializer, DecisionSerializer,
-    AgendaEventSerializer
+    AgendaEventSerializer, ReportAgendaSerializer, AgendaHistorySerializer
 )
 from .permissions import IsAdminOrReadOnly, CanDeleteDocuments, HasDocumentPermission
 from .ocr import process_document_ocr
@@ -1069,142 +1069,238 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 class AgendaViewSet(viewsets.ModelViewSet):
     """
-    CRUD pour les événements d'agenda + vue agrégée.
+    CRUD complet pour l'agenda juridique.
+    Gère les audiences, reports, historique et filtres avancés.
     """
     serializer_class = AgendaEventSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = AgendaEvent.objects.select_related('case', 'created_by').all()
+        qs = AgendaEvent.objects.select_related('case', 'created_by', 'reporte_de').all()
         year = self.request.query_params.get('year')
         month = self.request.query_params.get('month')
         case_id = self.request.query_params.get('case')
         event_type = self.request.query_params.get('event_type')
+        type_chambre = self.request.query_params.get('type_chambre')
+        statut = self.request.query_params.get('statut')
+        dossier = self.request.query_params.get('dossier')
+        search = self.request.query_params.get('search')
 
         if year:
             qs = qs.filter(year=int(year))
         if month and year:
-            qs = qs.filter(start_datetime__month=int(month))
+            qs = qs.filter(date_audience__month=int(month))
         if case_id:
             qs = qs.filter(case_id=case_id)
         if event_type:
             qs = qs.filter(event_type=event_type)
+        if type_chambre:
+            qs = qs.filter(type_chambre=type_chambre)
+        if statut:
+            qs = qs.filter(statut=statut)
+        if dossier:
+            qs = qs.filter(
+                Q(dossier_numero__icontains=dossier) |
+                Q(dossier_nom__icontains=dossier)
+            )
+        if search:
+            qs = qs.filter(
+                Q(title__icontains=search) |
+                Q(dossier_numero__icontains=search) |
+                Q(dossier_nom__icontains=search) |
+                Q(notes__icontains=search) |
+                Q(location__icontains=search)
+            )
         return qs
 
+    def _serialize_entry(self, entry):
+        """Transforme une entrée en dict pour l'historique."""
+        return {
+            'title': entry.title,
+            'type_chambre': entry.type_chambre,
+            'dossier_numero': entry.dossier_numero,
+            'dossier_nom': entry.dossier_nom,
+            'date_audience': str(entry.date_audience),
+            'heure_audience': str(entry.heure_audience),
+            'statut': entry.statut,
+            'notes': entry.notes,
+            'location': entry.location,
+        }
+
     def perform_create(self, serializer):
-        start = serializer.validated_data.get('start_datetime')
-        year = start.year if start else None
-        serializer.save(created_by=self.request.user, year=year)
+        instance = serializer.save(created_by=self.request.user)
+        # Log dans l'historique
+        AgendaHistory.objects.create(
+            agenda_entry=instance,
+            type_action='CREATION',
+            nouvelle_valeur=self._serialize_entry(instance),
+            utilisateur=self.request.user,
+            commentaire=f"Audience créée : {instance.dossier_numero or instance.title}"
+        )
+
+    def perform_update(self, serializer):
+        old_data = self._serialize_entry(serializer.instance)
+        instance = serializer.save()
+        new_data = self._serialize_entry(instance)
+        AgendaHistory.objects.create(
+            agenda_entry=instance,
+            type_action='MODIFICATION',
+            ancienne_valeur=old_data,
+            nouvelle_valeur=new_data,
+            utilisateur=self.request.user,
+            commentaire=f"Audience modifiée : {instance.dossier_numero or instance.title}"
+        )
+
+    def perform_destroy(self, instance):
+        AgendaHistory.objects.create(
+            agenda_entry=instance,
+            type_action='SUPPRESSION',
+            ancienne_valeur=self._serialize_entry(instance),
+            utilisateur=self.request.user,
+            commentaire=f"Audience supprimée : {instance.dossier_numero or instance.title}"
+        )
+        instance.delete()
+
+    @action(detail=True, methods=['post'])
+    def reporter(self, request, pk=None):
+        """
+        Reporte une audience à une nouvelle date.
+        Crée automatiquement une nouvelle entrée et met à jour le statut de l'originale.
+        """
+        entry = self.get_object()
+        serializer = ReportAgendaSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        nouvelle_date = serializer.validated_data['nouvelle_date']
+        nouvelle_heure = serializer.validated_data['nouvelle_heure']
+        motif = serializer.validated_data.get('motif', '')
+        new_chambre = serializer.validated_data.get('type_chambre', '') or entry.type_chambre
+        new_notes = serializer.validated_data.get('notes', '')
+
+        # 1. Marquer l'originale comme reportée
+        old_data = self._serialize_entry(entry)
+        entry.statut = 'REPORTE'
+        entry.motif_report = motif
+        entry.save()
+
+        # 2. Créer la nouvelle entrée
+        new_entry = AgendaEvent(
+            title=entry.title,
+            event_type=entry.event_type,
+            type_chambre=new_chambre,
+            type_chambre_autre=entry.type_chambre_autre,
+            dossier_numero=entry.dossier_numero,
+            dossier_nom=entry.dossier_nom,
+            date_audience=nouvelle_date,
+            heure_audience=nouvelle_heure,
+            statut='PREVU',
+            reporte_de=entry,
+            notes=new_notes,
+            case=entry.case,
+            location=entry.location,
+            color=entry.color,
+            created_by=request.user,
+        )
+        new_entry.save()
+
+        # 3. Log dans l'historique
+        AgendaHistory.objects.create(
+            agenda_entry=entry,
+            type_action='REPORT',
+            ancienne_valeur=old_data,
+            nouvelle_valeur={
+                'nouvelle_date': str(nouvelle_date),
+                'nouvelle_heure': str(nouvelle_heure),
+                'new_entry_id': new_entry.id,
+            },
+            utilisateur=request.user,
+            commentaire=f"Report vers le {nouvelle_date.strftime('%d/%m/%Y')} à {nouvelle_heure.strftime('%H:%M')}. Motif : {motif}"
+        )
+
+        return Response(
+            AgendaEventSerializer(new_entry).data,
+            status=status.HTTP_201_CREATED
+        )
+
+    @action(detail=True, methods=['post'])
+    def terminer(self, request, pk=None):
+        """Marque une audience comme terminée."""
+        entry = self.get_object()
+        old_data = self._serialize_entry(entry)
+        entry.statut = 'TERMINE'
+        entry.save()
+        AgendaHistory.objects.create(
+            agenda_entry=entry,
+            type_action='TERMINATION',
+            ancienne_valeur=old_data,
+            nouvelle_valeur=self._serialize_entry(entry),
+            utilisateur=request.user,
+            commentaire="Audience marquée comme terminée"
+        )
+        return Response(AgendaEventSerializer(entry).data)
+
+    @action(detail=True, methods=['post'])
+    def annuler(self, request, pk=None):
+        """Annule une audience."""
+        entry = self.get_object()
+        old_data = self._serialize_entry(entry)
+        entry.statut = 'ANNULE'
+        entry.save()
+        AgendaHistory.objects.create(
+            agenda_entry=entry,
+            type_action='ANNULATION',
+            ancienne_valeur=old_data,
+            nouvelle_valeur=self._serialize_entry(entry),
+            utilisateur=request.user,
+            commentaire=request.data.get('motif', 'Audience annulée')
+        )
+        return Response(AgendaEventSerializer(entry).data)
 
     @action(detail=False, methods=['get'])
-    def aggregated(self, request):
+    def historique_dossier(self, request):
         """
-        Retourne tous les événements agrégés (agenda + échéances + décisions + tâches)
-        pour une année/mois donnés.
+        Retourne l'historique complet d'un dossier par numéro.
+        Inclut toutes les audiences et leurs reports.
         """
+        dossier_numero = request.query_params.get('dossier_numero')
+        if not dossier_numero:
+            return Response(
+                {'error': 'Le paramètre dossier_numero est requis.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        # Toutes les entrées pour ce dossier
+        entries = AgendaEvent.objects.filter(
+            dossier_numero=dossier_numero
+        ).select_related('case', 'created_by', 'reporte_de').order_by('date_audience')
+        # Historique des modifications
+        history = AgendaHistory.objects.filter(
+            agenda_entry__dossier_numero=dossier_numero
+        ).select_related('utilisateur').order_by('-date_action')
+
+        return Response({
+            'dossier_numero': dossier_numero,
+            'entries': AgendaEventSerializer(entries, many=True).data,
+            'history': AgendaHistorySerializer(history, many=True).data,
+        })
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """Statistiques de l'agenda pour le dashboard."""
         year = request.query_params.get('year')
         month = request.query_params.get('month')
-        events = []
+        qs = self.get_queryset()
 
-        # 1. Événements d'agenda
-        agenda_qs = self.get_queryset()
-        for ev in agenda_qs:
-            events.append({
-                'id': f'agenda_{ev.id}',
-                'source': 'agenda',
-                'source_id': ev.id,
-                'title': ev.title,
-                'event_type': ev.event_type,
-                'start': ev.start_datetime.isoformat(),
-                'end': ev.end_datetime.isoformat() if ev.end_datetime else None,
-                'all_day': ev.all_day,
-                'color': ev.color,
-                'case_id': ev.case_id,
-                'case_reference': ev.case.reference if ev.case else None,
-                'location': ev.location,
-                'description': ev.description,
-            })
+        total = qs.count()
+        par_statut = {}
+        for s in ['PREVU', 'REPORTE', 'TERMINE', 'ANNULE']:
+            par_statut[s] = qs.filter(statut=s).count()
+        par_chambre = {}
+        for entry in qs.values('type_chambre').distinct():
+            chambre = entry['type_chambre']
+            par_chambre[chambre] = qs.filter(type_chambre=chambre).count()
 
-        # 2. Échéances (audiences et autres)
-        deadline_qs = Deadline.objects.select_related('case').all()
-        if year:
-            deadline_qs = deadline_qs.filter(due_date__year=int(year))
-        if month:
-            deadline_qs = deadline_qs.filter(due_date__month=int(month))
-        for dl in deadline_qs:
-            color_map = {
-                'AUDIENCE': '#2196f3',
-                'DEPOT': '#ff9800',
-                'REPONSE': '#9c27b0',
-                'DELAI': '#f44336',
-                'CONGES': '#78909c',
-                'AUTRE': '#607d8b',
-            }
-            events.append({
-                'id': f'deadline_{dl.id}',
-                'source': 'deadline',
-                'source_id': dl.id,
-                'title': dl.title,
-                'event_type': dl.deadline_type,
-                'start': dl.due_date.isoformat() if dl.due_date else None,
-                'end': None,
-                'all_day': True,
-                'color': color_map.get(dl.deadline_type, '#607d8b'),
-                'case_id': dl.case_id,
-                'case_reference': dl.case.reference if dl.case else None,
-                'location': dl.location if hasattr(dl, 'location') else '',
-                'description': dl.description,
-                'is_completed': dl.is_completed,
-            })
-
-        # 3. Décisions
-        decision_qs = Decision.objects.select_related('case').all()
-        if year:
-            decision_qs = decision_qs.filter(date_decision__year=int(year))
-        if month:
-            decision_qs = decision_qs.filter(date_decision__month=int(month))
-        for dec in decision_qs:
-            events.append({
-                'id': f'decision_{dec.id}',
-                'source': 'decision',
-                'source_id': dec.id,
-                'title': f'Décision {dec.get_decision_type_display()} - {dec.juridiction or ""}',
-                'event_type': 'DECISION',
-                'start': dec.date_decision.isoformat() if dec.date_decision else None,
-                'end': None,
-                'all_day': True,
-                'color': '#ff9800',
-                'case_id': dec.case_id,
-                'case_reference': dec.case.reference if dec.case else None,
-                'location': dec.juridiction or '',
-                'description': dec.resultat or '',
-            })
-
-        # 4. Tâches avec date d'échéance
-        task_qs = Task.objects.select_related('case', 'assigned_to').filter(due_date__isnull=False)
-        if year:
-            task_qs = task_qs.filter(due_date__year=int(year))
-        if month:
-            task_qs = task_qs.filter(due_date__month=int(month))
-        for task in task_qs:
-            events.append({
-                'id': f'task_{task.id}',
-                'source': 'task',
-                'source_id': task.id,
-                'title': task.title,
-                'event_type': 'TACHE',
-                'start': task.due_date.isoformat() if task.due_date else None,
-                'end': None,
-                'all_day': True,
-                'color': '#ffc107',
-                'case_id': task.case_id if task.case else None,
-                'case_reference': task.case.reference if task.case else None,
-                'location': '',
-                'description': task.description,
-                'status': task.status,
-            })
-
-        # Trier par date de début
-        events.sort(key=lambda e: e.get('start') or '')
-
-        return Response(events)
+        return Response({
+            'total': total,
+            'par_statut': par_statut,
+            'par_chambre': par_chambre,
+        })

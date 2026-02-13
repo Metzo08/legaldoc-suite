@@ -2,7 +2,7 @@
 Administration Django pour la gestion documentaire.
 """
 from django.contrib import admin
-from .models import Client, Case, Document, DocumentPermission, AuditLog, Task, Decision, AgendaEvent
+from .models import Client, Case, Document, DocumentPermission, AuditLog, Task, Decision, AgendaEvent, AgendaHistory, AgendaNotification
 
 
 @admin.register(Client)
@@ -175,9 +175,32 @@ class DecisionAdmin(admin.ModelAdmin):
 @admin.register(AgendaEvent)
 class AgendaEventAdmin(admin.ModelAdmin):
     """
-    Administration pour les événements d'agenda.
+    Administration pour les entrées d'agenda juridique.
     """
-    list_display = ('title', 'event_type', 'start_datetime', 'case', 'year', 'is_archived', 'created_by')
-    list_filter = ('event_type', 'year', 'is_archived')
-    search_fields = ('title', 'description', 'location', 'case__reference')
-    readonly_fields = ('created_at', 'updated_at')
+    list_display = ('title', 'type_chambre', 'dossier_numero', 'date_audience', 'heure_audience', 'statut', 'case', 'created_by')
+    list_filter = ('type_chambre', 'statut', 'event_type', 'year', 'is_archived')
+    search_fields = ('title', 'dossier_numero', 'dossier_nom', 'notes', 'location', 'case__reference')
+    readonly_fields = ('start_datetime', 'created_at', 'updated_at')
+    raw_id_fields = ('case', 'reporte_de', 'created_by')
+
+
+@admin.register(AgendaHistory)
+class AgendaHistoryAdmin(admin.ModelAdmin):
+    """
+    Administration pour l'historique des modifications d'agenda.
+    """
+    list_display = ('agenda_entry', 'type_action', 'utilisateur', 'date_action')
+    list_filter = ('type_action',)
+    search_fields = ('agenda_entry__dossier_numero', 'commentaire')
+    readonly_fields = ('date_action',)
+
+
+@admin.register(AgendaNotification)
+class AgendaNotificationAdmin(admin.ModelAdmin):
+    """
+    Administration pour les notifications de rappel d'agenda.
+    """
+    list_display = ('agenda_entry', 'utilisateur', 'type_notification', 'statut', 'date_envoi_prevue')
+    list_filter = ('type_notification', 'statut')
+    search_fields = ('agenda_entry__dossier_numero',)
+

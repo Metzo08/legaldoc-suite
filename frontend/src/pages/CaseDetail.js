@@ -47,7 +47,7 @@ import {
     Delete as DeleteIcon,
     Balance as BalanceIcon
 } from '@mui/icons-material';
-import { casesAPI, documentsAPI, deadlinesAPI, decisionsAPI } from '../services/api';
+import { casesAPI, documentsAPI, deadlinesAPI, decisionsAPI, agendaAPI } from '../services/api';
 import authService from '../services/authService';
 import DiligenceManager from '../components/DiligenceManager';
 
@@ -81,7 +81,7 @@ const CaseDetail = () => {
             const [caseRes, docsRes, hearingsRes] = await Promise.all([
                 casesAPI.getOne(id),
                 documentsAPI.getAll({ case: id }),
-                deadlinesAPI.getAll({ case: id, type: 'AUDIENCE' })
+                agendaAPI.getAll({ case: id })
             ]);
             setCaseData(caseRes.data);
             setDocuments(Array.isArray(docsRes.data.results) ? docsRes.data.results : (Array.isArray(docsRes.data) ? docsRes.data : []));
@@ -327,7 +327,7 @@ const CaseDetail = () => {
                                     <Typography variant="h6" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center' }}>
                                         <GavelIcon sx={{ mr: 1, color: 'primary.main' }} /> Audiences
                                     </Typography>
-                                    <Button variant="outlined" size="small" startIcon={<EventIcon />} onClick={() => navigate(`/audiences?caseId=${id}&new=true`)}>
+                                    <Button variant="outlined" size="small" startIcon={<EventIcon />} onClick={() => navigate(`/agenda?caseId=${id}`)}>
                                         Gérer
                                     </Button>
                                 </Box>
@@ -340,10 +340,10 @@ const CaseDetail = () => {
                                                     primary={
                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                             <Typography variant="subtitle2" fontWeight={700}>
-                                                                {new Date(hearing.due_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                                                                {new Date(hearing.date_audience).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                                                             </Typography>
                                                             <Chip
-                                                                label={new Date(hearing.due_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                                                label={hearing.heure_audience.slice(0, 5)}
                                                                 size="small"
                                                                 variant="outlined"
                                                                 color="primary"
@@ -356,19 +356,14 @@ const CaseDetail = () => {
                                                                 {hearing.title}
                                                             </Typography>
                                                             <Typography variant="caption" color="text.secondary" display="block">
-                                                                {hearing.jurisdiction || 'Juridiction non définie'} {hearing.courtroom ? ` - Salle ${hearing.courtroom}` : ''}
+                                                                {hearing.type_chambre_display || 'Chambre non définie'} {hearing.location ? ` - ${hearing.location}` : ''}
                                                             </Typography>
-                                                            {hearing.result && (
-                                                                <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 600, mt: 0.5, display: 'block' }}>
-                                                                    Résultat: {hearing.result}
-                                                                </Typography>
-                                                            )}
                                                         </Box>
                                                     }
                                                 />
                                                 <Chip
-                                                    label={hearing.is_completed ? "Terminée" : "À venir"}
-                                                    color={hearing.is_completed ? "success" : "warning"}
+                                                    label={hearing.statut === 'TERMINE' ? "Terminée" : (hearing.statut === 'REPORTE' ? "Reportée" : "À venir")}
+                                                    color={hearing.statut === 'TERMINE' ? "success" : (hearing.statut === 'REPORTE' ? "warning" : "primary")}
                                                     size="small"
                                                     sx={{ fontWeight: 700 }}
                                                 />
@@ -378,7 +373,7 @@ const CaseDetail = () => {
                                 ) : (
                                     <Box sx={{ textAlign: 'center', py: 3, opacity: 0.7 }}>
                                         <Typography variant="body2">Aucune audience programmée pour ce dossier.</Typography>
-                                        <Button sx={{ mt: 1 }} size="small" onClick={() => navigate(`/audiences?caseId=${id}&new=true`)}>
+                                        <Button sx={{ mt: 1 }} size="small" onClick={() => navigate(`/agenda?caseId=${id}`)}>
                                             Ajouter une audience
                                         </Button>
                                     </Box>

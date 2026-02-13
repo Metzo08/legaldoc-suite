@@ -823,51 +823,111 @@ class Task(models.Model):
 
 class AgendaEvent(models.Model):
     """
-    Événements de l'agenda du cabinet.
-    Chaque événement appartient à une année judiciaire pour l'archivage.
+    Entrées de l'agenda juridique du cabinet.
+    Gère les audiences, procès et rendez-vous avec suivi des reports.
     """
+
+    class TypeChambre(models.TextChoices):
+        CA_CORRECTIONNEL = 'CA_CORRECTIONNEL', 'CA Correctionnel'
+        CA_CRIMINELLE = 'CA_CRIMINELLE', 'CA Criminelle'
+        CA_SOCIAL = 'CA_SOCIAL', 'CA Social'
+        TRIBUNAL_TRAVAIL = 'TRIBUNAL_TRAVAIL', 'Tribunal Travail'
+        FDTR = 'FDTR', 'FDTR'
+        TRIBUNAL_COMMERCE = 'TRIBUNAL_COMMERCE', 'Tribunal de Commerce'
+        TRIBUNAL_INSTANCE = 'TRIBUNAL_INSTANCE', "Tribunal d'Instance"
+        TRIBUNAL_GRANDE_INSTANCE = 'TRIBUNAL_GRANDE_INSTANCE', 'Tribunal de Grande Instance'
+        COUR_SUPREME = 'COUR_SUPREME', 'Cour Suprême'
+        AUTRE = 'AUTRE', 'Autre'
+
+    class Statut(models.TextChoices):
+        PREVU = 'PREVU', 'Prévu'
+        REPORTE = 'REPORTE', 'Reporté'
+        TERMINE = 'TERMINE', 'Terminé'
+        ANNULE = 'ANNULE', 'Annulé'
+
     class EventType(models.TextChoices):
         AUDIENCE = 'AUDIENCE', 'Audience'
         RDV = 'RDV', 'Rendez-vous client'
         REUNION = 'REUNION', 'Réunion'
         DEPLACEMENT = 'DEPLACEMENT', 'Déplacement'
-        RAPPEL = 'RAPPEL', 'Rappel'
-        CONFERENCE = 'CONFERENCE', 'Conférence'
-        FORMATION = 'FORMATION', 'Formation'
         AUTRE = 'AUTRE', 'Autre'
 
+    # ── Informations principales ──
     title = models.CharField(max_length=255, verbose_name='Titre')
     event_type = models.CharField(
         max_length=20,
         choices=EventType.choices,
-        default=EventType.RDV,
+        default=EventType.AUDIENCE,
         verbose_name="Type d'événement"
     )
-    start_datetime = models.DateTimeField(verbose_name='Date et heure de début')
-    end_datetime = models.DateTimeField(null=True, blank=True, verbose_name='Date et heure de fin')
-    all_day = models.BooleanField(default=False, verbose_name='Journée entière')
+    type_chambre = models.CharField(
+        max_length=30,
+        choices=TypeChambre.choices,
+        default=TypeChambre.AUTRE,
+        verbose_name='Type de chambre'
+    )
+    type_chambre_autre = models.CharField(
+        max_length=100, blank=True,
+        verbose_name='Chambre (autre)',
+        help_text='Si "Autre" est sélectionné, précisez ici.'
+    )
+    dossier_numero = models.CharField(
+        max_length=100, blank=True,
+        verbose_name='Numéro de dossier'
+    )
+    dossier_nom = models.CharField(
+        max_length=255, blank=True,
+        verbose_name='Nom du dossier / parties'
+    )
+
+    # ── Date et heure ──
+    date_audience = models.DateField(verbose_name="Date de l'audience")
+    heure_audience = models.TimeField(verbose_name="Heure de l'audience")
+    start_datetime = models.DateTimeField(
+        verbose_name='Date et heure de début',
+        help_text='Calculé automatiquement depuis date_audience + heure_audience'
+    )
+    end_datetime = models.DateTimeField(
+        null=True, blank=True,
+        verbose_name='Date et heure de fin'
+    )
+
+    # ── Statut et report ──
+    statut = models.CharField(
+        max_length=10,
+        choices=Statut.choices,
+        default=Statut.PREVU,
+        verbose_name='Statut'
+    )
+    reporte_de = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='reports_suivants',
+        verbose_name="Reporté depuis (audience d'origine)"
+    )
+    motif_report = models.TextField(
+        blank=True,
+        verbose_name='Motif du report'
+    )
+
+    # ── Informations complémentaires ──
     case = models.ForeignKey(
         Case,
         on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        null=True, blank=True,
         related_name='agenda_events',
         verbose_name='Dossier lié'
     )
-    description = models.TextField(blank=True, verbose_name='Description')
+    notes = models.TextField(blank=True, verbose_name='Notes et observations')
     location = models.CharField(max_length=255, blank=True, verbose_name='Lieu')
-    color = models.CharField(max_length=7, default='#6366f1', verbose_name='Couleur')
-    reminder_minutes = models.IntegerField(
-        null=True, blank=True,
-        verbose_name='Rappel (minutes avant)'
-    )
-    is_recurring = models.BooleanField(default=False, verbose_name='Récurrent')
-    recurrence_rule = models.CharField(
-        max_length=255, blank=True,
-        verbose_name='Règle de récurrence'
-    )
+    color = models.CharField(max_length=7, default='#2196f3', verbose_name='Couleur')
+
+    # ── Archivage ──
     year = models.IntegerField(verbose_name="Année d'archivage")
     is_archived = models.BooleanField(default=False, verbose_name='Archivé')
+
+    # ── Traçabilité ──
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -879,15 +939,141 @@ class AgendaEvent(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Dernière modification')
 
     class Meta:
-        verbose_name = "Événement d'agenda"
-        verbose_name_plural = "Événements d'agenda"
-        ordering = ['start_datetime']
+        verbose_name = "Entrée d'agenda"
+        verbose_name_plural = "Entrées d'agenda"
+        ordering = ['date_audience', 'heure_audience']
         indexes = [
-            models.Index(fields=['year', 'start_datetime']),
-            models.Index(fields=['event_type']),
+            models.Index(fields=['year', 'date_audience']),
+            models.Index(fields=['type_chambre']),
+            models.Index(fields=['statut']),
+            models.Index(fields=['dossier_numero']),
             models.Index(fields=['case']),
             models.Index(fields=['created_by', 'year']),
         ]
 
     def __str__(self):
-        return f"{self.title} - {self.start_datetime.strftime('%d/%m/%Y %H:%M')}"
+        chambre = self.get_type_chambre_display() if self.type_chambre != 'AUTRE' else self.type_chambre_autre
+        return f"{self.dossier_numero or self.title} - {chambre} - {self.date_audience.strftime('%d/%m/%Y')} {self.heure_audience.strftime('%H:%M')}"
+
+    def save(self, *args, **kwargs):
+        """Calcule start_datetime et year automatiquement."""
+        from datetime import datetime
+        if self.date_audience and self.heure_audience:
+            self.start_datetime = datetime.combine(self.date_audience, self.heure_audience)
+        if self.date_audience:
+            self.year = self.date_audience.year
+        super().save(*args, **kwargs)
+
+
+class AgendaHistory(models.Model):
+    """
+    Historique complet de toutes les modifications sur les entrées d'agenda.
+    """
+
+    class TypeAction(models.TextChoices):
+        CREATION = 'CREATION', 'Création'
+        MODIFICATION = 'MODIFICATION', 'Modification'
+        REPORT = 'REPORT', 'Report'
+        ANNULATION = 'ANNULATION', 'Annulation'
+        TERMINATION = 'TERMINATION', 'Terminé'
+        SUPPRESSION = 'SUPPRESSION', 'Suppression'
+
+    agenda_entry = models.ForeignKey(
+        AgendaEvent,
+        on_delete=models.CASCADE,
+        related_name='historique',
+        verbose_name="Entrée d'agenda"
+    )
+    type_action = models.CharField(
+        max_length=20,
+        choices=TypeAction.choices,
+        verbose_name="Type d'action"
+    )
+    ancienne_valeur = models.JSONField(
+        null=True, blank=True,
+        verbose_name='État avant modification'
+    )
+    nouvelle_valeur = models.JSONField(
+        null=True, blank=True,
+        verbose_name='État après modification'
+    )
+    commentaire = models.TextField(
+        blank=True,
+        verbose_name='Commentaire'
+    )
+    utilisateur = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='agenda_history',
+        verbose_name='Utilisateur'
+    )
+    date_action = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Date de l'action"
+    )
+
+    class Meta:
+        verbose_name = "Historique d'agenda"
+        verbose_name_plural = "Historiques d'agenda"
+        ordering = ['-date_action']
+
+    def __str__(self):
+        return f"{self.get_type_action_display()} - {self.agenda_entry} - {self.date_action.strftime('%d/%m/%Y %H:%M')}"
+
+
+class AgendaNotification(models.Model):
+    """
+    Notifications de rappel pour les audiences à venir.
+    """
+
+    class TypeNotification(models.TextChoices):
+        SEPT_JOURS = '7_JOURS', '7 jours avant'
+        TROIS_JOURS = '3_JOURS', '3 jours avant'
+        UN_JOUR = '1_JOUR', '1 jour avant'
+        DEUX_HEURES = '2_HEURES', '2 heures avant'
+
+    class StatutNotification(models.TextChoices):
+        EN_ATTENTE = 'EN_ATTENTE', 'En attente'
+        ENVOYEE = 'ENVOYEE', 'Envoyée'
+        ECHOUEE = 'ECHOUEE', 'Échouée'
+
+    agenda_entry = models.ForeignKey(
+        AgendaEvent,
+        on_delete=models.CASCADE,
+        related_name='notifications',
+        verbose_name="Entrée d'agenda"
+    )
+    utilisateur = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='agenda_notifications',
+        verbose_name='Utilisateur à notifier'
+    )
+    type_notification = models.CharField(
+        max_length=10,
+        choices=TypeNotification.choices,
+        verbose_name='Type de rappel'
+    )
+    date_envoi_prevue = models.DateTimeField(
+        verbose_name="Date d'envoi prévue"
+    )
+    statut = models.CharField(
+        max_length=10,
+        choices=StatutNotification.choices,
+        default=StatutNotification.EN_ATTENTE,
+        verbose_name='Statut'
+    )
+    date_envoi_effectif = models.DateTimeField(
+        null=True, blank=True,
+        verbose_name="Date d'envoi effective"
+    )
+
+    class Meta:
+        verbose_name = "Notification d'agenda"
+        verbose_name_plural = "Notifications d'agenda"
+        ordering = ['date_envoi_prevue']
+        unique_together = ['agenda_entry', 'utilisateur', 'type_notification']
+
+    def __str__(self):
+        return f"Rappel {self.get_type_notification_display()} - {self.agenda_entry}"
