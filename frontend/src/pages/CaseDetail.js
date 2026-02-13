@@ -1,5 +1,3 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import {
     Box,
     Grid,
@@ -29,7 +27,9 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Tooltip
+    Tooltip,
+    ToggleButton,
+    ToggleButtonGroup
 } from '@mui/material';
 import {
     NavigateNext as NavigateNextIcon,
@@ -45,11 +45,38 @@ import {
     CloudUpload as UploadIcon,
     Add as AddIcon,
     Delete as DeleteIcon,
-    Balance as BalanceIcon
+    Balance as BalanceIcon,
+    History as HistoryIcon,
+    CalendarMonth as CalendarIcon,
+    List as ListIcon,
+    Circle as CircleIcon,
+    ChevronLeft as ChevronLeftIcon,
+    ChevronRight as ChevronRightIcon,
+    Close as CloseIcon
 } from '@mui/icons-material';
 import { casesAPI, documentsAPI, deadlinesAPI, decisionsAPI, agendaAPI } from '../services/api';
 import authService from '../services/authService';
 import DiligenceManager from '../components/DiligenceManager';
+
+const CHAMBRE_COLORS = {
+    CA_CORRECTIONNEL: { label: 'CA Correctionnel', color: '#2196f3', icon: '⚖️' },
+    CA_CRIMINELLE: { label: 'CA Criminelle', color: '#f44336', icon: '🔴' },
+    CA_SOCIAL: { label: 'CA Social', color: '#4caf50', icon: '🤝' },
+    TRIBUNAL_TRAVAIL: { label: 'Tribunal Travail', color: '#ff9800', icon: '👷' },
+    FDTR: { label: 'FDTR', color: '#9c27b0', icon: '📋' },
+    TRIBUNAL_COMMERCE: { label: 'Tribunal de Commerce', color: '#00bcd4', icon: '💼' },
+    TRIBUNAL_INSTANCE: { label: "Tribunal d'Instance", color: '#795548', icon: '🏛️' },
+    TRIBUNAL_GRANDE_INSTANCE: { label: 'TGI', color: '#3f51b5', icon: '🏛️' },
+    COUR_SUPREME: { label: 'Cour Suprême', color: '#b71c1c', icon: '👨‍⚖️' },
+    AUTRE: { label: 'Autre', color: '#607d8b', icon: '📌' },
+};
+
+const STATUT_CONFIG = {
+    PREVU: { label: 'Prévu', color: '#2196f3', icon: '📅' },
+    REPORTE: { label: 'Reporté', color: '#ff9800', icon: '🔄' },
+    TERMINE: { label: 'Terminé', color: '#4caf50', icon: '✅' },
+    ANNULE: { label: 'Annulé', color: '#f44336', icon: '❌' },
+};
 
 const CaseDetail = () => {
     const { id } = useParams();
@@ -71,6 +98,12 @@ const CaseDetail = () => {
         resultat: '',
         observations: ''
     });
+
+    // Agenda Section state
+    const [agendaViewMode, setAgendaViewMode] = useState('list');
+    const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+    const [historyData, setHistoryData] = useState(null);
 
     const currentUser = authService.getCurrentUser();
     const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.is_staff || false;
@@ -158,6 +191,18 @@ const CaseDetail = () => {
             alert('Erreur lors de la suppression.');
         }
     };
+
+    const handleOpenHistory = async () => {
+        if (!caseData?.reference) return;
+        try {
+            const res = await agendaAPI.historiqueDossier({ dossier_numero: caseData.reference });
+            setHistoryData(res.data);
+            setHistoryDialogOpen(true);
+        } catch (err) {
+            console.error('Erreur chargement historique:', err);
+        }
+    };
+
 
     // Grouper les décisions par type
     const instanceDecisions = decisions.filter(d => d.decision_type === 'INSTANCE');
@@ -320,62 +365,217 @@ const CaseDetail = () => {
                             </Paper>
                         </Grid>
 
-                        {/* Audiences */}
+                        {/* Agenda du Dossier */}
                         <Grid item xs={12}>
                             <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center' }}>
-                                        <GavelIcon sx={{ mr: 1, color: 'primary.main' }} /> Audiences
-                                    </Typography>
-                                    <Button variant="outlined" size="small" startIcon={<EventIcon />} onClick={() => navigate(`/agenda?caseId=${id}`)}>
-                                        Gérer
-                                    </Button>
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                        <GavelIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+                                        <Box>
+                                            <Typography variant="h6" sx={{ fontWeight: 800 }}>Agenda du Dossier</Typography>
+                                            <Typography variant="caption" color="text.secondary">Gestion des audiences et procédures</Typography>
+                                        </Box>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <ToggleButtonGroup
+                                            size="small"
+                                            value={agendaViewMode}
+                                            exclusive
+                                            onChange={(e, v) => v && setAgendaViewMode(v)}
+                                            sx={{ mr: 1, '& .MuiToggleButton-root': { py: 0.5, px: 1.5 } }}
+                                        >
+                                            <ToggleButton value="list">
+                                                <ListIcon sx={{ mr: 0.5, fontSize: 18 }} /> Liste
+                                            </ToggleButton>
+                                            <ToggleButton value="calendar">
+                                                <CalendarIcon sx={{ mr: 0.5, fontSize: 18 }} /> Calendrier
+                                            </ToggleButton>
+                                        </ToggleButtonGroup>
+                                        <Tooltip title="Historique">
+                                            <IconButton size="small" onClick={handleOpenHistory}>
+                                                <HistoryIcon />
+                                            </IconButton>
+                                        </Tooltip>
+                                        <Button
+                                            variant="contained"
+                                            size="small"
+                                            startIcon={<AddIcon />}
+                                            onClick={() => navigate(`/agenda?caseId=${id}`)}
+                                            sx={{ borderRadius: 2, fontWeight: 700 }}
+                                        >
+                                            Gérer
+                                        </Button>
+                                    </Box>
                                 </Box>
 
-                                {hearings.length > 0 ? (
-                                    <List disablePadding>
-                                        {hearings.map((hearing) => (
-                                            <ListItem key={hearing.id} divider sx={{ px: 0 }}>
-                                                <ListItemText
-                                                    primary={
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <Typography variant="subtitle2" fontWeight={700}>
-                                                                {new Date(hearing.date_audience).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                                                            </Typography>
-                                                            <Chip
-                                                                label={hearing.heure_audience.slice(0, 5)}
-                                                                size="small"
-                                                                variant="outlined"
-                                                                color="primary"
+                                {agendaViewMode === 'list' ? (
+                                    <Box>
+                                        {hearings.length > 0 ? (
+                                            <List disablePadding>
+                                                {[...hearings].sort((a, b) => new Date(a.date_audience) - new Date(b.date_audience)).map((hearing) => {
+                                                    const isPast = new Date(hearing.date_audience) < new Date().setHours(0, 0, 0, 0);
+                                                    const cfg = CHAMBRE_COLORS[hearing.type_chambre] || CHAMBRE_COLORS.AUTRE;
+                                                    const statCfg = STATUT_CONFIG[hearing.statut] || STATUT_CONFIG.PREVU;
+
+                                                    return (
+                                                        <ListItem
+                                                            key={hearing.id}
+                                                            divider
+                                                            sx={{
+                                                                px: 0,
+                                                                py: 2,
+                                                                opacity: isPast && hearing.statut !== 'TERMINE' ? 0.7 : 1
+                                                            }}
+                                                        >
+                                                            <ListItemIcon sx={{ minWidth: 45 }}>
+                                                                <Box sx={{
+                                                                    display: 'flex',
+                                                                    flexDirection: 'column',
+                                                                    alignItems: 'center',
+                                                                    bgcolor: alpha(cfg.color, 0.1),
+                                                                    borderRadius: 2,
+                                                                    p: 1,
+                                                                    minWidth: 45,
+                                                                    border: '1px solid',
+                                                                    borderColor: alpha(cfg.color, 0.2)
+                                                                }}>
+                                                                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 800, color: cfg.color, textTransform: 'uppercase' }}>
+                                                                        {format(parseISO(hearing.date_audience), 'MMM', { locale: fr })}
+                                                                    </Typography>
+                                                                    <Typography sx={{ fontSize: '1.1rem', fontWeight: 900, color: cfg.color, lineHeight: 1 }}>
+                                                                        {format(parseISO(hearing.date_audience), 'dd')}
+                                                                    </Typography>
+                                                                </Box>
+                                                            </ListItemIcon>
+                                                            <ListItemText
+                                                                sx={{ ml: 2 }}
+                                                                primary={
+                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                                                        <Typography variant="subtitle2" fontWeight={800} sx={{ color: 'text.primary' }}>
+                                                                            {hearing.title}
+                                                                        </Typography>
+                                                                        <Chip
+                                                                            label={hearing.heure_audience.slice(0, 5)}
+                                                                            size="small"
+                                                                            variant="outlined"
+                                                                            sx={{ height: 20, fontSize: '0.65rem', fontWeight: 700 }}
+                                                                        />
+                                                                    </Box>
+                                                                }
+                                                                secondary={
+                                                                    <Box>
+                                                                        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                                            <CircleIcon sx={{ fontSize: 8, color: cfg.color }} />
+                                                                            {cfg.label} {hearing.location ? ` • ${hearing.location}` : ''}
+                                                                        </Typography>
+                                                                        {hearing.notes && (
+                                                                            <Typography variant="caption" sx={{ display: 'block', mt: 0.5, fontStyle: 'italic', opacity: 0.8 }}>
+                                                                                "{hearing.notes}"
+                                                                            </Typography>
+                                                                        )}
+                                                                    </Box>
+                                                                }
                                                             />
-                                                        </Box>
-                                                    }
-                                                    secondary={
-                                                        <Box sx={{ mt: 0.5 }}>
-                                                            <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
-                                                                {hearing.title}
-                                                            </Typography>
-                                                            <Typography variant="caption" color="text.secondary" display="block">
-                                                                {hearing.type_chambre_display || 'Chambre non définie'} {hearing.location ? ` - ${hearing.location}` : ''}
-                                                            </Typography>
-                                                        </Box>
-                                                    }
-                                                />
-                                                <Chip
-                                                    label={hearing.statut === 'TERMINE' ? "Terminée" : (hearing.statut === 'REPORTE' ? "Reportée" : "À venir")}
-                                                    color={hearing.statut === 'TERMINE' ? "success" : (hearing.statut === 'REPORTE' ? "warning" : "primary")}
+                                                            <Box sx={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-end' }}>
+                                                                <Chip
+                                                                    label={statCfg.label}
+                                                                    color={hearing.statut === 'TERMINE' ? "success" : (hearing.statut === 'REPORTE' ? "warning" : "primary")}
+                                                                    size="small"
+                                                                    variant={hearing.statut === 'ANNULE' ? 'outlined' : 'filled'}
+                                                                    sx={{ fontWeight: 800, fontSize: '0.65rem', height: 22 }}
+                                                                />
+                                                                {isPast && hearing.statut === 'PREVU' && (
+                                                                    <Typography variant="caption" color="error.main" sx={{ fontWeight: 700, fontSize: '0.6rem' }}>
+                                                                        En retard
+                                                                    </Typography>
+                                                                )}
+                                                            </Box>
+                                                        </ListItem>
+                                                    );
+                                                })}
+                                            </List>
+                                        ) : (
+                                            <Box sx={{ textAlign: 'center', py: 5, opacity: 0.6 }}>
+                                                <CalendarIcon sx={{ fontSize: 48, mb: 1, color: 'text.disabled' }} />
+                                                <Typography variant="body2">Aucun événement programmé pour ce dossier.</Typography>
+                                                <Button
+                                                    variant="outlined"
                                                     size="small"
-                                                    sx={{ fontWeight: 700 }}
-                                                />
-                                            </ListItem>
-                                        ))}
-                                    </List>
+                                                    sx={{ mt: 2, borderRadius: 2 }}
+                                                    onClick={() => navigate(`/agenda?caseId=${id}`)}
+                                                >
+                                                    Ajouter une audience
+                                                </Button>
+                                            </Box>
+                                        )}
+                                    </Box>
                                 ) : (
-                                    <Box sx={{ textAlign: 'center', py: 3, opacity: 0.7 }}>
-                                        <Typography variant="body2">Aucune audience programmée pour ce dossier.</Typography>
-                                        <Button sx={{ mt: 1 }} size="small" onClick={() => navigate(`/agenda?caseId=${id}`)}>
-                                            Ajouter une audience
-                                        </Button>
+                                    <Box>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mb: 2 }}>
+                                            <IconButton size="small" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeftIcon /></IconButton>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 800, minWidth: 120, textAlign: 'center', textTransform: 'capitalize' }}>
+                                                {format(currentMonth, 'MMMM yyyy', { locale: fr })}
+                                            </Typography>
+                                            <IconButton size="small" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}><ChevronRightIcon /></IconButton>
+                                        </Box>
+
+                                        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5 }}>
+                                            {['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'].map(d => (
+                                                <Typography key={d} variant="caption" sx={{ textAlign: 'center', fontWeight: 700, p: 0.5, color: 'text.secondary' }}>{d}</Typography>
+                                            ))}
+                                            {(() => {
+                                                const monthStart = startOfMonth(currentMonth);
+                                                const monthEnd = endOfMonth(currentMonth);
+                                                const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+                                                const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+                                                const days = [];
+                                                let d = calStart;
+                                                while (d <= calEnd) {
+                                                    const dayEvents = hearings.filter(h => h.date_audience === format(d, 'yyyy-MM-dd'));
+                                                    const isCurrentMonth = isSameMonth(d, monthStart);
+                                                    const active = isToday(d);
+                                                    days.push(
+                                                        <Box
+                                                            key={d.toISOString()}
+                                                            sx={{
+                                                                aspectRatio: '1/1',
+                                                                border: '1px solid',
+                                                                borderColor: active ? 'primary.main' : 'divider',
+                                                                borderRadius: 1,
+                                                                p: 0.5,
+                                                                display: 'flex',
+                                                                flexDirection: 'column',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                bgcolor: active ? alpha('#6366f1', 0.1) : (isCurrentMonth ? 'transparent' : alpha('#000', 0.03)),
+                                                                opacity: isCurrentMonth ? 1 : 0.4,
+                                                                cursor: 'pointer',
+                                                                '&:hover': { bgcolor: alpha('#6366f1', 0.05) }
+                                                            }}
+                                                            onClick={() => dayEvents.length > 0 && setAgendaViewMode('list')}
+                                                        >
+                                                            <Typography sx={{ fontSize: '0.7rem', fontWeight: active ? 800 : 500 }}>
+                                                                {format(d, 'd')}
+                                                            </Typography>
+                                                            <Box sx={{ display: 'flex', gap: 0.3, flexWrap: 'wrap', justifyContent: 'center', mt: 0.3 }}>
+                                                                {dayEvents.slice(0, 3).map(ev => (
+                                                                    <Box
+                                                                        key={ev.id}
+                                                                        sx={{
+                                                                            width: 4, height: 4,
+                                                                            borderRadius: '50%',
+                                                                            bgcolor: (CHAMBRE_COLORS[ev.type_chambre] || CHAMBRE_COLORS.AUTRE).color
+                                                                        }}
+                                                                    />
+                                                                ))}
+                                                            </Box>
+                                                        </Box>
+                                                    );
+                                                    d = addDays(d, 1);
+                                                }
+                                                return days;
+                                            })()}
+                                        </Box>
                                     </Box>
                                 )}
                             </Paper>
@@ -762,6 +962,109 @@ const CaseDetail = () => {
                     <Button onClick={handleSaveDecision} variant="contained">
                         {editingDecision ? 'Mettre à jour' : 'Enregistrer'}
                     </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Dialog Historique Agenda */}
+            <Dialog
+                open={historyDialogOpen}
+                onClose={() => setHistoryDialogOpen(false)}
+                maxWidth="md"
+                fullWidth
+            >
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <HistoryIcon color="primary" />
+                    Historique de l'Agenda du Dossier {historyData?.dossier_numero}
+                    <IconButton size="small" onClick={() => setHistoryDialogOpen(false)} sx={{ ml: 'auto' }}>
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent dividers>
+                    {historyData && (
+                        <Box>
+                            <Typography sx={{ fontWeight: 800, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <CalendarIcon fontSize="small" /> Audiences ({historyData.entries?.length || 0})
+                            </Typography>
+                            {historyData.entries?.length > 0 ? (
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                    {[...historyData.entries].sort((a, b) => new Date(b.date_audience) - new Date(a.date_audience)).map(entry => {
+                                        const cfg = CHAMBRE_COLORS[entry.type_chambre] || CHAMBRE_COLORS.AUTRE;
+                                        const statCfg = STATUT_CONFIG[entry.statut] || STATUT_CONFIG.PREVU;
+                                        return (
+                                            <Paper key={entry.id} variant="outlined" sx={{
+                                                p: 2,
+                                                borderLeft: `4px solid ${statCfg.color}`,
+                                                bgcolor: alpha(statCfg.color, 0.02)
+                                            }}>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <Box>
+                                                        <Typography sx={{ fontWeight: 800, fontSize: '0.9rem' }}>
+                                                            {format(parseISO(entry.date_audience), 'eeee d MMMM yyyy', { locale: fr })}
+                                                        </Typography>
+                                                        <Typography variant="caption" color="text.secondary" display="block">
+                                                            {entry.heure_audience?.substring(0, 5)} — {cfg.label}
+                                                        </Typography>
+                                                        {entry.motif_report && (
+                                                            <Typography variant="caption" sx={{ color: '#ff9800', fontWeight: 700, mt: 0.5, display: 'block' }}>
+                                                                Motif du report : {entry.motif_report}
+                                                            </Typography>
+                                                        )}
+                                                    </Box>
+                                                    <Chip
+                                                        label={statCfg.label}
+                                                        size="small"
+                                                        sx={{
+                                                            bgcolor: alpha(statCfg.color, 0.1),
+                                                            color: statCfg.color,
+                                                            fontWeight: 800,
+                                                            fontSize: '0.6rem'
+                                                        }}
+                                                    />
+                                                </Box>
+                                            </Paper>
+                                        );
+                                    })}
+                                </Box>
+                            ) : (
+                                <Typography variant="body2" sx={{ textAlign: 'center', py: 2, opacity: 0.6 }}>
+                                    Aucun historique d'audiences disponible.
+                                </Typography>
+                            )}
+
+                            <Typography sx={{ fontWeight: 800, mb: 1, mt: 4, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <HistoryIcon fontSize="small" /> Journal des modifications
+                            </Typography>
+                            <Box sx={{ bgcolor: alpha('#000', 0.02), borderRadius: 2, p: 1 }}>
+                                {historyData.history?.length > 0 ? (
+                                    historyData.history.map((h, idx) => (
+                                        <Box key={h.id} sx={{
+                                            display: 'flex',
+                                            gap: 2,
+                                            py: 1,
+                                            px: 1,
+                                            borderBottom: idx === historyData.history.length - 1 ? 'none' : '1px solid',
+                                            borderColor: 'divider',
+                                            alignItems: 'center'
+                                        }}>
+                                            <Typography sx={{ fontSize: '0.65rem', color: 'text.disabled', minWidth: 100, fontWeight: 700 }}>
+                                                {h.date_action && format(parseISO(h.date_action), 'dd/MM/yy HH:mm')}
+                                            </Typography>
+                                            <Chip label={h.type_action_display} size="small" sx={{ fontSize: '0.6rem', height: 18, fontWeight: 700 }} />
+                                            <Typography sx={{ fontSize: '0.75rem', flex: 1, fontWeight: 500 }}>{h.commentaire}</Typography>
+                                            <Typography sx={{ fontSize: '0.7rem', color: 'primary.main', fontWeight: 700 }}>{h.utilisateur_name}</Typography>
+                                        </Box>
+                                    ))
+                                ) : (
+                                    <Typography variant="caption" sx={{ textAlign: 'center', display: 'block', py: 1, opacity: 0.5 }}>
+                                        Aucune modification enregistrée dans le journal.
+                                    </Typography>
+                                )}
+                            </Box>
+                        </Box>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setHistoryDialogOpen(false)} variant="contained" size="small">Fermer</Button>
                 </DialogActions>
             </Dialog>
         </Box>
