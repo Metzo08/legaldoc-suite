@@ -30,7 +30,7 @@ import {
     RestartAlt as ResetIcon,
     Contrast as ContrastIcon
 } from '@mui/icons-material';
-import { clientsAPI, casesAPI, documentsAPI, deadlinesAPI, tagsAPI, agendaAPI } from '../services/api';
+import { clientsAPI, casesAPI, documentsAPI, tagsAPI, agendaAPI } from '../services/api';
 import StatCard from '../components/StatCard';
 import DiligenceManager from '../components/DiligenceManager';
 
@@ -142,12 +142,6 @@ function Dashboard() {
         } finally {
             setLoading(false);
         }
-    };
-
-    const getDeadlineColor = (deadline) => {
-        if (deadline.is_overdue) return 'error';
-        if (deadline.days_remaining <= 1) return 'warning';
-        return 'info';
     };
 
     if (loading) {

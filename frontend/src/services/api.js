@@ -36,6 +36,10 @@ export const documentsAPI = {
     search: (query) => apiClient.get('/documents/documents/search/', {
         params: { q: query }
     }),
+    get: (id) => apiClient.get(`/documents/documents/${id}/`),
+    addPage: (id, formData) => apiClient.post(`/documents/documents/${id}/add-page/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
     reprocessOcr: (id) => apiClient.post(`/documents/documents/${id}/reprocess-ocr/`)
 };
 
@@ -147,9 +151,14 @@ export const decisionsAPI = {
 
 export const agendaAPI = {
     getAll: (params) => apiClient.get('/documents/agenda/', { params }),
-    getAggregated: (params) => apiClient.get('/documents/agenda/aggregated/', { params }),
+    getOne: (id) => apiClient.get(`/documents/agenda/${id}/`),
     create: (data) => apiClient.post('/documents/agenda/', data),
     update: (id, data) => apiClient.put(`/documents/agenda/${id}/`, data),
-    delete: (id) => apiClient.delete(`/documents/agenda/${id}/`)
+    delete: (id) => apiClient.delete(`/documents/agenda/${id}/`),
+    reporter: (id, data) => apiClient.post(`/documents/agenda/${id}/reporter/`, data),
+    terminer: (id) => apiClient.post(`/documents/agenda/${id}/terminer/`),
+    annuler: (id, data) => apiClient.post(`/documents/agenda/${id}/annuler/`, data),
+    historiqueDossier: (params) => apiClient.get('/documents/agenda/historique_dossier/', { params }),
+    stats: (params) => apiClient.get('/documents/agenda/stats/', { params }),
 };
 

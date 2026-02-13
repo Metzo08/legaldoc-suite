@@ -296,6 +296,7 @@ class Document(models.Model):
         verbose_name='Tags'
     )
     
+    is_multi_page = models.BooleanField(default=False, verbose_name='Multi-pages')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Date d\'upload')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Dernière modification')
     
@@ -322,6 +323,41 @@ class Document(models.Model):
             self.file_size = self.file.size
             self.file_extension = os.path.splitext(self.file.name)[1].lower().replace('.', '')
         super().save(*args, **kwargs)
+
+
+def document_page_upload_path(instance, filename):
+    """
+    Génère le chemin de stockage pour les pages de documents.
+    """
+    return f'documents/client_{instance.document.case.client.id}/case_{instance.document.case.id}/doc_{instance.document.id}/page_{instance.page_number}_{filename}'
+
+
+class DocumentPage(models.Model):
+    """
+    Modèle représentant une page individuelle d'un document (image/scan).
+    """
+    document = models.ForeignKey(
+        'Document',
+        on_delete=models.CASCADE,
+        related_name='pages',
+        verbose_name='Document'
+    )
+    file = models.FileField(
+        upload_to=document_page_upload_path,
+        max_length=500,
+        verbose_name='Fichier de la page'
+    )
+    page_number = models.PositiveIntegerField(verbose_name='Numéro de page')
+    ocr_text = models.TextField(blank=True, verbose_name='Texte OCR de la page')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Date d\'ajout')
+
+    class Meta:
+        verbose_name = 'Page de document'
+        verbose_name_plural = 'Pages de document'
+        ordering = ['page_number']
+
+    def __str__(self):
+        return f"Page {self.page_number} - {self.document.title}"
 
 
 class DocumentPermission(models.Model):

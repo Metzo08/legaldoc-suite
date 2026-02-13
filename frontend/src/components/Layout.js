@@ -30,7 +30,6 @@ import {
     Logout as LogoutIcon,
     Brightness4 as DarkModeIcon,
     Brightness7 as LightModeIcon,
-    Event as EventIcon,
     Label as LabelIcon,
     AssignmentTurnedIn as TaskIcon,
     CalendarMonth as CalendarMonthIcon
@@ -58,7 +57,7 @@ const menuItems = [
     { text: 'Journal d\'audit', icon: <AssignmentIcon />, path: '/audit', excludeClient: true },
 ];
 
-function Layout({ children, setIsAuthenticated }) {
+function Layout({ children }) {
     const navigate = useNavigate();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
@@ -85,7 +84,6 @@ function Layout({ children, setIsAuthenticated }) {
 
     const handleLogout = () => {
         authService.logout();
-        setIsAuthenticated(false);
         navigate('/login');
     };
 

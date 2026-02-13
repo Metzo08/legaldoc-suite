@@ -2,7 +2,7 @@
 Sérialiseurs pour l'API de gestion documentaire.
 """
 from rest_framework import serializers
-from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence, Task, Decision, AgendaEvent, AgendaHistory, AgendaNotification
+from .models import Client, Case, Document, DocumentPage, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence, Task, Decision, AgendaEvent, AgendaHistory, AgendaNotification
 from users.serializers import UserSerializer
 
 
@@ -132,6 +132,23 @@ class DocumentVersionSerializer(serializers.ModelSerializer):
         return None
 
 
+class DocumentPageSerializer(serializers.ModelSerializer):
+    """
+    Sérialiseur pour les pages de documents.
+    """
+    file_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = DocumentPage
+        fields = ('id', 'document', 'file', 'file_url', 'page_number', 'ocr_text', 'created_at')
+    
+    def get_file_url(self, obj):
+        request = self.context.get('request')
+        if obj.file and request:
+            return request.build_absolute_uri(obj.file.url)
+        return None
+
+
 class DocumentSerializer(serializers.ModelSerializer):
     """
     Sérialiseur pour le modèle Document.
@@ -148,7 +165,7 @@ class DocumentSerializer(serializers.ModelSerializer):
         source='tags'
     )
     
-    versions = DocumentVersionSerializer(many=True, read_only=True)
+    pages = DocumentPageSerializer(many=True, read_only=True)
     
     class Meta:
         model = Document
@@ -157,7 +174,7 @@ class DocumentSerializer(serializers.ModelSerializer):
             'document_type', 'file', 'file_url', 'file_name', 'file_size',
             'file_extension', 'ocr_text', 'ocr_processed', 'ocr_error',
             'uploaded_by', 'uploaded_by_name', 'is_confidential', 'tags',
-            'tags_list', 'versions', 'created_at', 'updated_at'
+            'tags_list', 'versions', 'is_multi_page', 'pages', 'created_at', 'updated_at'
         )
         read_only_fields = (
             'id', 'file_name', 'file_size', 'file_extension', 'ocr_text',
@@ -190,11 +207,13 @@ class DocumentUploadSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Document
-        fields = ('title', 'description', 'case', 'document_type', 'file', 'is_confidential')
+        fields = ('title', 'description', 'case', 'document_type', 'file', 'is_confidential', 'is_multi_page')
         extra_kwargs = {
             'description': {'required': False},
             'document_type': {'required': False},
             'is_confidential': {'required': False},
+            'file': {'required': False, 'allow_null': True},
+            'is_multi_page': {'required': False},
         }
     
     def validate_file(self, value):

@@ -9,8 +9,6 @@ import {
     Typography,
     Paper,
     Divider,
-    FormControlLabel,
-    Switch,
     Accordion,
     AccordionSummary,
     AccordionDetails,

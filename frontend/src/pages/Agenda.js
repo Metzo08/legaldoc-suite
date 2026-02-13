@@ -5,7 +5,7 @@ import {
     DialogActions, TextField, MenuItem, Chip, Tooltip, Badge, Grid,
     ToggleButton, ToggleButtonGroup, Select, FormControl, InputLabel,
     Alert, useTheme, alpha, Card, CardContent, Snackbar, InputAdornment,
-    Tabs, Tab, Collapse, LinearProgress
+    LinearProgress
 } from '@mui/material';
 import {
     ChevronLeft, ChevronRight, Today as TodayIcon, Add as AddIcon,
@@ -14,7 +14,7 @@ import {
     Delete as DeleteIcon, Edit as EditIcon, Circle as CircleIcon,
     Search as SearchIcon, Gavel as GavelIcon, EventRepeat as ReportIcon,
     CheckCircle as CheckIcon, Cancel as CancelIcon, History as HistoryIcon,
-    Close as CloseIcon, FilterList as FilterIcon, ContentCopy as CopyIcon
+    Close as CloseIcon
 } from '@mui/icons-material';
 import {
     format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths,

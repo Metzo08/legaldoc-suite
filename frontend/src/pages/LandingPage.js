@@ -24,7 +24,6 @@ import {
     LinkedIn,
     PhoneAndroid as MobileIcon,
     MailOutline as MailIcon,
-    Print as PrintIcon,
     Payments as PaymentsIcon
 } from '@mui/icons-material';
 import { cabinetAPI } from '../services/api';

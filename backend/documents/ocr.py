@@ -278,55 +278,96 @@ class OCRProcessor:
 def process_document_ocr(document):
     """
     Traite l'OCR pour un document donné.
+    Gère désormais les documents multi-pages en itérant sur DocumentPage.
     """
     processor = OCRProcessor()
+    consolidated_text = []
     
     try:
-        file_path = document.file.path
-        text, searchable_pdf_path, error = processor.extract_text_from_file(file_path)
+        # Récupérer toutes les pages du document
+        pages = document.pages.all().order_by('page_number')
         
-        document.ocr_text = text
-        document.ocr_processed = True
-        document.ocr_error = error
-        document.save()
-        
-        if searchable_pdf_path and os.path.exists(searchable_pdf_path):
-            try:
-                from .models import DocumentVersion
-                from django.core.files import File
-                
-                last_version = DocumentVersion.objects.filter(document=document).order_by('-version_number').first()
-                next_version = (last_version.version_number + 1) if last_version else 1
-                
-                new_filename = document.file_name
-                if not new_filename.lower().endswith('.pdf'):
-                    name_parts = os.path.splitext(new_filename)
-                    new_filename = f"{name_parts[0]}.pdf"
-                
-                with open(searchable_pdf_path, 'rb') as f:
-                    django_file = File(f, name=f"Searchable_{new_filename}")
-                    DocumentVersion.objects.create(
-                        document=document,
-                        version_number=next_version,
-                        file=django_file,
-                        file_name=f"Searchable_{new_filename}",
-                        file_size=os.path.getsize(searchable_pdf_path),
-                        comment="Version avec OCR (PDF Recherchable)",
-                        uploaded_by=document.uploaded_by
-                    )
-                
-                logger.info(f"Version recherchable créée pour document {document.id}")
+        # S'il n'y a pas de pages mais qu'un fichier principal existe (compatibilité/ancien flux)
+        if not pages.exists() and document.file:
+            from .models import DocumentPage
+            # Créer la page 1 à partir du fichier principal
+            DocumentPage.objects.create(
+                document=document,
+                file=document.file,
+                page_number=1
+            )
+            pages = document.pages.all().order_by('page_number')
+
+        # Traiter chaque page qui n'a pas encore de texte OCR
+        for page in pages:
+            if not page.ocr_text:
                 try:
-                    os.remove(searchable_pdf_path)
-                except:
-                    pass
-            except Exception as e:
-                logger.error(f"Erreur version recherchable: {str(e)}")
+                    file_path = page.file.path
+                    text, searchable_pdf_path, error = processor.extract_text_from_file(file_path)
+                    
+                    page.ocr_text = text
+                    page.save(update_fields=['ocr_text'])
+                    
+                    # Supprimer le PDF temporaire généré par page car on en fera un global ou on garde les versions par page?
+                    # Pour l'instant on garde le texte.
+                    if searchable_pdf_path and os.path.exists(searchable_pdf_path):
+                        try:
+                            os.remove(searchable_pdf_path)
+                        except:
+                            pass
+                except Exception as e:
+                    logger.error(f"Erreur OCR sur page {page.page_number} du document {document.id}: {str(e)}")
+            
+            if page.ocr_text:
+                consolidated_text.append(f"[Page {page.page_number}]\n{page.ocr_text}")
+
+        # Mettre à jour le texte extrait global du document
+        document.ocr_text = "\n\n".join(consolidated_text)
+        document.ocr_processed = True
+        document.ocr_error = "" # Reset error if we have some text
+        document.save(update_fields=['ocr_text', 'ocr_processed', 'ocr_error'])
         
-        logger.info(f"OCR traité pour document {document.id}: {len(text)} caractères")
+        # Générer une version PDF searchable globale à partir du texte consolidé
+        if document.ocr_text:
+            try:
+                searchable_pdf_path, error = processor.convert_txt_to_pdf(document.ocr_text, document.file.path if document.file else "merged.pdf")
+                
+                if searchable_pdf_path and os.path.exists(searchable_pdf_path):
+                    from .models import DocumentVersion
+                    from django.core.files import File
+                    
+                    last_version = DocumentVersion.objects.filter(document=document).order_by('-version_number').first()
+                    next_version = (last_version.version_number + 1) if last_version else 1
+                    
+                    new_filename = document.file_name or f"document_{document.id}.pdf"
+                    if not new_filename.lower().endswith('.pdf'):
+                        name_parts = os.path.splitext(new_filename)
+                        new_filename = f"{name_parts[0]}.pdf"
+                    
+                    with open(searchable_pdf_path, 'rb') as f:
+                        django_file = File(f, name=f"Searchable_Full_{new_filename}")
+                        DocumentVersion.objects.create(
+                            document=document,
+                            version_number=next_version,
+                            file=django_file,
+                            file_name=f"Searchable_Full_{new_filename}",
+                            file_size=os.path.getsize(searchable_pdf_path),
+                            comment="Version complète avec OCR (PDF Recherchable)",
+                            uploaded_by=document.uploaded_by
+                        )
+                    
+                    logger.info(f"Version recherchable complète créée pour document {document.id}")
+                    try:
+                        os.remove(searchable_pdf_path)
+                    except:
+                        pass
+            except Exception as e:
+                logger.error(f"Erreur lors de la génération du PDF global searchable: {str(e)}")
+        
+        logger.info(f"OCR traité pour document {document.id}: {len(document.ocr_text)} caractères au total sur {len(pages)} pages")
         
     except Exception as e:
-        logger.error(f"Erreur traitement OCR document {document.id}: {str(e)}")
+        logger.error(f"Erreur globale traitement OCR document {document.id}: {str(e)}")
         document.ocr_processed = True
         document.ocr_error = str(e)
-        document.save()
+        document.save(update_fields=['ocr_processed', 'ocr_error'])

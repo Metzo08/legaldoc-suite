@@ -21,8 +21,8 @@ import {
     List,
     ListItem,
     ListItemText,
-    ListItemSecondaryAction,
-    InputAdornment
+    Switch,
+    FormControlLabel
 } from '@mui/material';
 import {
     DataGrid,
@@ -82,6 +82,7 @@ function Documents() {
         case: '',
         document_type: 'AUTRE',
         is_confidential: true,
+        is_multi_page: true, // Par défaut multi-pages pour les images
         tags: ''
     });
 
@@ -203,6 +204,7 @@ function Documents() {
             case: '',
             document_type: 'AUTRE',
             is_confidential: true,
+            is_multi_page: true,
             tags: ''
         });
         setOpenDialog(true);
@@ -248,21 +250,43 @@ function Documents() {
 
                 await documentsAPI.update(editingDocId, data);
                 showNotification("Document mis à jour avec succès !");
+            } else if (formData.is_multi_page && uploadFiles.length > 0) {
+                // Mode Multi-Page (Regrouper en un seul document)
+                setLoading(true);
+                const data = new FormData();
+
+                // On utilise le premier fichier comme fichier principal (obligatoire dans le modèle pour l'instant)
+                // et tous les fichiers indexés dans 'files'
+                data.append('file', uploadFiles[0]);
+
+                uploadFiles.forEach(file => {
+                    data.append('files', file);
+                });
+
+                data.append('title', formData.title || uploadFiles[0].name.split('.')[0]);
+                data.append('description', formData.description || '');
+                data.append('case', formData.case);
+                data.append('document_type', formData.document_type);
+                data.append('is_confidential', formData.is_confidential);
+                data.append('is_multi_page', 'true');
+
+                await documentsAPI.upload(data);
+                showNotification(`Document multi-pages créé avec ${uploadFiles.length} pages !`);
             } else {
-                // Mode Multi-Upload
+                // Mode Multi-Upload (Documents séparés)
                 setLoading(true);
                 let successCount = 0;
 
                 for (const file of uploadFiles) {
                     const data = new FormData();
                     data.append('file', file);
-                    // Si plusieurs fichiers, on utilise le nom du fichier comme titre, sinon le titre du formulaire
                     const title = uploadFiles.length > 1 ? file.name.split('.')[0] : formData.title;
                     data.append('title', title);
                     data.append('description', formData.description);
                     data.append('case', formData.case);
                     data.append('document_type', formData.document_type);
                     data.append('is_confidential', formData.is_confidential);
+                    data.append('is_multi_page', 'false');
 
                     try {
                         await documentsAPI.upload(data);
@@ -337,6 +361,29 @@ function Documents() {
     const handleViewOcr = (doc) => {
         setSelectedDoc(doc);
         setOcrDialog(true);
+    };
+
+    const handleAddPage = async (e) => {
+        const file = e.target.files[0];
+        if (!file || !selectedDoc) return;
+
+        try {
+            const data = new FormData();
+            data.append('file', file);
+            setLoading(true);
+            await documentsAPI.addPage(selectedDoc.id, data);
+            showNotification("Page ajoutée avec succès ! Traitement OCR lancé.");
+
+            // Recharger le document pour voir la nouvelle page
+            const updatedDoc = await documentsAPI.get(selectedDoc.id);
+            setSelectedDoc(updatedDoc.data);
+            loadData();
+        } catch (error) {
+            console.error("Erreur ajout page:", error);
+            showNotification("Erreur lors de l'ajout de la page.", "error");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleReprocessOcr = async () => {
@@ -610,10 +657,6 @@ function Documents() {
                 const versions = params.row.versions || [];
                 const sortedVersions = [...versions].sort((a, b) => b.version_number - a.version_number);
 
-                const searchableVersion = sortedVersions.find(v =>
-                    v.file_name && v.file_name.toLowerCase().includes('searchable_')
-                );
-
                 const actions = [
                     <GridActionsCellItem icon={<PreviewIcon />} label="Aperçu" onClick={() => handlePreview(params.row)} color="info" />,
                     <GridActionsCellItem icon={<EditIcon />} label="Modifier" onClick={() => handleEditClick(params.row)} color="warning" />,
@@ -802,6 +845,17 @@ function Documents() {
                             <MenuItem value="CITATION">Citation</MenuItem>
                             <MenuItem value="AUTRE">Autre</MenuItem>
                         </TextField>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={formData.is_multi_page}
+                                    onChange={(e) => setFormData({ ...formData, is_multi_page: e.target.checked })}
+                                    color="primary"
+                                />
+                            }
+                            label="Regrouper en un seul document multi-pages (Scans/Photos)"
+                            sx={{ mb: 1 }}
+                        />
                         <TextField label="Description" multiline rows={3} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} fullWidth />
                     </Box>
                 </DialogContent>
@@ -844,12 +898,95 @@ function Documents() {
             </Dialog>
 
             <Dialog open={ocrDialog} onClose={() => setOcrDialog(false)} maxWidth="md" fullWidth>
-                <DialogTitle>Texte OCR - {selectedDoc?.title || 'Document'}</DialogTitle>
-                <DialogContent>
-                    <Box sx={{ mt: 2 }}>
-                        <Box sx={{ mb: 2 }}><Chip label={selectedDoc?.ocr_processed ? "OCR traité" : "OCR non traité"} color={selectedDoc?.ocr_processed ? "success" : "warning"} sx={{ mr: 1 }} /><Chip label={selectedDoc?.document_type || 'N/A'} variant="outlined" /></Box>
-                        {selectedDoc?.ocr_error && <Box sx={{ p: 2, mb: 2, bgcolor: '#ffebee', borderRadius: 1 }}><Typography color="error"><strong>Erreur OCR:</strong> {selectedDoc.ocr_error}</Typography></Box>}
-                        <Typography variant="subtitle2" gutterBottom>Texte extrait :</Typography>
+                <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h6">Texte OCR - {selectedDoc?.title || 'Document'}</Typography>
+                    <IconButton onClick={() => setOcrDialog(false)}><CloseIcon /></IconButton>
+                </DialogTitle>
+                <DialogContent dividers>
+                    <Box sx={{ mt: 1 }}>
+                        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                            <Box>
+                                <Chip
+                                    label={selectedDoc?.ocr_processed ? "OCR traité" : "OCR en attente"}
+                                    color={selectedDoc?.ocr_processed ? "success" : "warning"}
+                                    sx={{ mr: 1 }}
+                                />
+                                <Chip label={selectedDoc?.document_type || 'N/A'} variant="outlined" sx={{ mr: 1 }} />
+                                {selectedDoc?.is_multi_page && (
+                                    <Chip label={`${selectedDoc?.pages?.length || 0} pages`} color="primary" variant="filled" size="small" />
+                                )}
+                            </Box>
+
+                            <Box>
+                                <input
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    id="add-page-ocr"
+                                    type="file"
+                                    onChange={handleAddPage}
+                                />
+                                <label htmlFor="add-page-ocr">
+                                    <Button
+                                        component="span"
+                                        startIcon={<AddIcon />}
+                                        size="small"
+                                        variant="contained"
+                                        disabled={loading}
+                                        sx={{ borderRadius: 2 }}
+                                    >
+                                        Ajouter une image/page
+                                    </Button>
+                                </label>
+                            </Box>
+                        </Box>
+
+                        {selectedDoc?.ocr_error && (
+                            <Box sx={{ p: 2, mb: 2, bgcolor: '#ffebee', borderRadius: 1 }}>
+                                <Typography color="error"><strong>Erreur OCR:</strong> {selectedDoc.ocr_error}</Typography>
+                            </Box>
+                        )}
+
+                        {/* Vignettes des pages */}
+                        {selectedDoc?.pages && selectedDoc.pages.length > 0 && (
+                            <Box sx={{ mb: 3 }}>
+                                <Typography variant="subtitle2" gutterBottom color="text.secondary">Aperçu des pages :</Typography>
+                                <Box sx={{
+                                    display: 'flex',
+                                    gap: 2,
+                                    overflowX: 'auto',
+                                    py: 1,
+                                    px: 0.5,
+                                    '&::-webkit-scrollbar': { height: 6 },
+                                    '&::-webkit-scrollbar-thumb': { bgcolor: 'divider', borderRadius: 3 }
+                                }}>
+                                    {selectedDoc.pages.map((p) => (
+                                        <Box key={p.id} sx={{ flexShrink: 0, textAlign: 'center' }}>
+                                            <Paper
+                                                elevation={2}
+                                                sx={{
+                                                    width: 80,
+                                                    height: 110,
+                                                    overflow: 'hidden',
+                                                    cursor: 'pointer',
+                                                    border: (theme) => `2px solid ${p.ocr_text ? theme.palette.success.main : theme.palette.divider}`,
+                                                    borderRadius: 1,
+                                                    transition: '0.2s',
+                                                    '&:hover': { transform: 'scale(1.05)', boxShadow: 4 }
+                                                }}
+                                                onClick={() => window.open(p.file_url, '_blank')}
+                                            >
+                                                <img src={p.file_url} alt={`P${p.page_number}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            </Paper>
+                                            <Typography variant="caption" sx={{ fontWeight: 600, mt: 0.5, display: 'block' }}>
+                                                Page {p.page_number}
+                                            </Typography>
+                                        </Box>
+                                    ))}
+                                </Box>
+                            </Box>
+                        )}
+
+                        <Typography variant="subtitle2" gutterBottom>Texte intégral consolidé :</Typography>
                         <Box sx={{
                             p: 2,
                             bgcolor: (theme) => theme.palette.mode === 'dark' ? alpha('#fff', 0.05) : '#f8f9fa',
@@ -857,7 +994,8 @@ function Documents() {
                             borderColor: 'divider',
                             borderRadius: 2,
                             maxHeight: 400,
-                            overflow: 'auto'
+                            overflow: 'auto',
+                            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
                         }}>
                             <Typography variant="body2" component="div" sx={{
                                 whiteSpace: 'pre-wrap',
@@ -866,7 +1004,7 @@ function Documents() {
                                 lineHeight: 1.6,
                                 color: 'text.primary'
                             }}>
-                                {selectedDoc?.ocr_text || "Aucun texte extrait."}
+                                {selectedDoc?.ocr_text || (loading ? "Traitement OCR en cours..." : "Aucun texte extrait.")}
                             </Typography>
                         </Box>
                     </Box>

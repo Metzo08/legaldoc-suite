@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths,
@@ -61,7 +61,7 @@ import {
     ChevronRight as ChevronRightIcon,
     Close as CloseIcon
 } from '@mui/icons-material';
-import { casesAPI, documentsAPI, deadlinesAPI, decisionsAPI, agendaAPI } from '../services/api';
+import { casesAPI, documentsAPI, decisionsAPI, agendaAPI } from '../services/api';
 import authService from '../services/authService';
 import DiligenceManager from '../components/DiligenceManager';
 
@@ -538,12 +538,13 @@ const CaseDetail = () => {
                                                 const days = [];
                                                 let d = calStart;
                                                 while (d <= calEnd) {
-                                                    const dayEvents = hearings.filter(h => h.date_audience === format(d, 'yyyy-MM-dd'));
-                                                    const isCurrentMonth = isSameMonth(d, monthStart);
-                                                    const active = isToday(d);
+                                                    const currentDay = d; // Block-scope variable for the closure
+                                                    const dayEvents = hearings.filter(h => h.date_audience === format(currentDay, 'yyyy-MM-dd'));
+                                                    const isCurrentMonth = isSameMonth(currentDay, monthStart);
+                                                    const active = isToday(currentDay);
                                                     days.push(
                                                         <Box
-                                                            key={d.toISOString()}
+                                                            key={currentDay.toISOString()}
                                                             sx={{
                                                                 aspectRatio: '1/1',
                                                                 border: '1px solid',
@@ -562,7 +563,7 @@ const CaseDetail = () => {
                                                             onClick={() => dayEvents.length > 0 && setAgendaViewMode('list')}
                                                         >
                                                             <Typography sx={{ fontSize: '0.7rem', fontWeight: active ? 800 : 500 }}>
-                                                                {format(d, 'd')}
+                                                                {format(currentDay, 'd')}
                                                             </Typography>
                                                             <Box sx={{ display: 'flex', gap: 0.3, flexWrap: 'wrap', justifyContent: 'center', mt: 0.3 }}>
                                                                 {dayEvents.slice(0, 3).map(ev => (

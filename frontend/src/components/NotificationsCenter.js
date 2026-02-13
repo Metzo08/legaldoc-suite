@@ -19,11 +19,7 @@ import {
     Description as DocumentIcon,
     Folder as FolderIcon,
     Person as PersonIcon,
-    CheckCircle as CheckIcon,
-    History as HistoryIcon,
-    CloudDownload as DownloadIcon,
-    Share as ShareIcon,
-    VpnKey as PermissionIcon
+    History as HistoryIcon
 } from '@mui/icons-material';
 import { notificationsAPI } from '../services/api';
 import { ThemeContext } from '../App';

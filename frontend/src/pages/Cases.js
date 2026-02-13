@@ -27,7 +27,6 @@ import {
     Delete as DeleteIcon,
     Folder as FolderIcon,
     CloudUpload as UploadIcon,
-    Visibility as ViewIcon,
     SmartToy as BotIcon,
     KeyboardArrowRight
 } from '@mui/icons-material';

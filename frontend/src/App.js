@@ -20,7 +20,6 @@ const Documents = lazy(() => import('./pages/Documents'));
 const Search = lazy(() => import('./pages/Search'));
 const Users = lazy(() => import('./pages/Users'));
 const AuditLog = lazy(() => import('./pages/AuditLog'));
-const Audiences = lazy(() => import('./pages/Audiences'));
 const Tags = lazy(() => import('./pages/Tags'));
 const Tasks = lazy(() => import('./pages/Tasks'));
 const Deadlines = lazy(() => import('./pages/Deadlines'));
@@ -41,7 +40,6 @@ const PrivateRoute = ({ children }) => {
 };
 
 function App() {
-    const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
     const [cabinetSettings, setCabinetSettings] = useState(null);
 
     // Récupérer la préférence de thème depuis localStorage
@@ -89,7 +87,7 @@ function App() {
 
     useEffect(() => {
         // Vérifier l'authentification au chargement
-        setIsAuthenticated(authService.isAuthenticated());
+        authService.isAuthenticated();
     }, []);
 
     return (
@@ -112,7 +110,6 @@ function App() {
                                     path="/login"
                                     element={
                                         <Login
-                                            setIsAuthenticated={setIsAuthenticated}
                                             cabinetInfo={cabinetSettings}
                                         />
                                     }
@@ -123,7 +120,7 @@ function App() {
                                     path="/*"
                                     element={
                                         <PrivateRoute>
-                                            <Layout setIsAuthenticated={setIsAuthenticated}>
+                                            <Layout>
                                                 <ErrorBoundary>
                                                     <Suspense fallback={<Loading />}>
                                                         <Routes>

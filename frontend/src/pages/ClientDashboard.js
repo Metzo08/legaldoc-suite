@@ -8,14 +8,12 @@ import {
     CircularProgress,
     Paper,
     Button,
-    Chip,
-    Divider
+    Chip
 } from '@mui/material';
 import {
     Folder as FolderIcon,
     Description as DescriptionIcon,
-    CloudUpload as CloudUploadIcon,
-    Assignment as AssignmentIcon
+    CloudUpload as CloudUploadIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { casesAPI, documentsAPI } from '../services/api';

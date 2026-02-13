@@ -369,7 +369,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour gérer les documents.
     """
-    queryset = Document.objects.select_related('case', 'case__client', 'uploaded_by').prefetch_related('tags', 'permissions', 'versions')
+    queryset = Document.objects.select_related('case', 'case__client', 'uploaded_by').prefetch_related('tags', 'permissions', 'versions', 'pages')
     permission_classes = [IsAuthenticated, CanDeleteDocuments, HasDocumentPermission]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'description', 'file_name', 'ocr_text']
@@ -426,6 +426,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """
         Enregistre l'utilisateur uploader, lance l'OCR et log l'action.
+        Supporte désormais l'upload multi-pages via un champ 'files' multiple.
         """
         # Validation client: uploader uniquement dans ses dossiers
         if hasattr(self.request.user, 'role') and self.request.user.role == 'CLIENT':
@@ -434,7 +435,36 @@ class DocumentViewSet(viewsets.ModelViewSet):
                 from rest_framework.exceptions import PermissionDenied
                 raise PermissionDenied("Vous ne pouvez créer des documents que dans vos propres dossiers.")
 
-        document = serializer.save(uploaded_by=self.request.user)
+        # Récupérer les fichiers multiples et l'indicateur multi-pages
+        is_multi_page = self.request.data.get('is_multi_page', 'false').lower() == 'true'
+        files = self.request.FILES.getlist('files')
+
+        document = serializer.save(uploaded_by=self.request.user, is_multi_page=is_multi_page)
+        
+        # Création des pages
+        from .models import DocumentPage
+        if is_multi_page and files:
+            for i, f in enumerate(files):
+                DocumentPage.objects.create(
+                    document=document,
+                    file=f,
+                    page_number=i+1
+                )
+        elif not is_multi_page and document.file:
+            # Créer une page par défaut pour les documents à fichier unique
+            # pour homogénéiser le traitement OCR par la suite
+            DocumentPage.objects.create(
+                document=document,
+                file=document.file,
+                page_number=1
+            )
+        elif is_multi_page and not files and document.file:
+            # Cas où un seul fichier est envoyé mais marqué comme multi-pages
+            DocumentPage.objects.create(
+                document=document,
+                file=document.file,
+                page_number=1
+            )
         
         # Fonction interne pour le traitement OCR en tâche de fond
         def run_ocr_background(doc_id):
@@ -575,6 +605,66 @@ class DocumentViewSet(viewsets.ModelViewSet):
                 'status': 'error',
                 'message': f'Erreur lors du retraitement: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=['post'], url_path='add-page')
+    def add_page(self, request, pk=None):
+        """
+        Ajoute une page (image/scan) à un document existant.
+        """
+        document = self.get_object()
+        file = request.FILES.get('file')
+        
+        if not file:
+            return Response({"detail": "Aucun fichier fourni."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        from .models import DocumentPage
+        # Trouver le numéro de la prochaine page
+        last_page = document.pages.order_by('-page_number').first()
+        next_page_num = (last_page.page_number + 1) if last_page else 1
+        
+        page = DocumentPage.objects.create(
+            document=document,
+            file=file,
+            page_number=next_page_num
+        )
+        
+        # S'assurer que le document est marqué comme multi-pages
+        if not document.is_multi_page:
+            document.is_multi_page = True
+            document.save(update_fields=['is_multi_page'])
+            
+        # Log l'action
+        log_action(
+            user=self.request.user,
+            action='UPDATE',
+            document=document,
+            case=document.case,
+            details=f'Nouvelle page ajoutée au document: {document.title}',
+            request=self.request
+        )
+
+        # Lancer l'OCR en arrière-plan
+        def run_ocr_background(doc_id):
+            try:
+                from .models import Document
+                from .ocr import process_document_ocr
+                from django.contrib.postgres.search import SearchVector
+                doc = Document.objects.get(pk=doc_id)
+                process_document_ocr(doc)
+                Document.objects.filter(pk=doc_id).update(
+                    search_vector=SearchVector('title', 'description', 'ocr_text', 'file_name')
+                )
+            except Exception as e:
+                logger.error(f"Erreur OCR add_page: {str(e)}")
+
+        try:
+            thread = threading.Thread(target=run_ocr_background, args=(document.id,))
+            thread.daemon = True
+            thread.start()
+        except Exception as e:
+            logger.error(f"Impossible de lancer le thread OCR pour add_page: {str(e)}")
+            
+        return Response(DocumentPageSerializer(page, context={'request': request}).data, status=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance):
         """

@@ -4,18 +4,14 @@ import {
     TableContainer, TableHead, TableRow, Chip, IconButton,
     Dialog, DialogTitle, DialogContent, DialogActions, TextField,
     MenuItem, Grid, FormControl, InputLabel, Select, Tooltip,
-    InputAdornment, useTheme, Card, CardContent
+    InputAdornment, useTheme
 } from '@mui/material';
 import {
     Add as AddIcon,
     Edit as EditIcon,
     Delete as DeleteIcon,
     Assignment as AssignmentIcon,
-    Search as SearchIcon,
-    FilterList as FilterListIcon,
-    CheckCircle as CheckCircleIcon,
-    RadioButtonUnchecked as PendingIcon,
-    PlayCircleOutline as InProgressIcon
+    Search as SearchIcon
 } from '@mui/icons-material';
 import { tasksAPI, usersAPI, casesAPI } from '../services/api';
 import { useNotification } from '../context/NotificationContext';
@@ -189,14 +185,12 @@ const Tasks = () => {
     const [tasks, setTasks] = useState([]);
     const [users, setUsers] = useState([]);
     const [cases, setCases] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [currentTask, setCurrentTask] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
 
     const fetchData = useCallback(async () => {
-        setLoading(true);
         try {
             const [tasksRes, usersRes, casesRes] = await Promise.all([
                 tasksAPI.getAll(),
@@ -209,8 +203,6 @@ const Tasks = () => {
         } catch (error) {
             console.error("Erreur chargement données:", error);
             showNotification('Erreur lors du chargement des tâches', 'error');
-        } finally {
-            setLoading(false);
         }
     }, [showNotification]);
 
