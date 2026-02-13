@@ -2,7 +2,7 @@
 Sérialiseurs pour l'API de gestion documentaire.
 """
 from rest_framework import serializers
-from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence, Task, Decision, AgendaEvent
+from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence, Task, Decision, AgendaEvent, AgendaHistory, AgendaNotification
 from users.serializers import UserSerializer
 
 
@@ -465,26 +465,98 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class AgendaEventSerializer(serializers.ModelSerializer):
     """
-    Sérialiseur pour le modèle AgendaEvent.
+    Sérialiseur pour le modèle AgendaEvent (agenda juridique).
     """
     case_reference = serializers.CharField(source='case.reference', read_only=True)
     case_title = serializers.CharField(source='case.title', read_only=True)
     created_by_name = serializers.SerializerMethodField()
+    type_chambre_display = serializers.CharField(source='get_type_chambre_display', read_only=True)
+    statut_display = serializers.CharField(source='get_statut_display', read_only=True)
+    event_type_display = serializers.CharField(source='get_event_type_display', read_only=True)
+    nb_reports = serializers.SerializerMethodField()
+    reporte_de_info = serializers.SerializerMethodField()
 
     class Meta:
         model = AgendaEvent
         fields = (
-            'id', 'title', 'event_type', 'start_datetime', 'end_datetime',
-            'all_day', 'case', 'case_reference', 'case_title', 'description',
-            'location', 'color', 'reminder_minutes', 'is_recurring',
-            'recurrence_rule', 'year', 'is_archived',
+            'id', 'title', 'event_type', 'event_type_display',
+            'type_chambre', 'type_chambre_display', 'type_chambre_autre',
+            'dossier_numero', 'dossier_nom',
+            'date_audience', 'heure_audience', 'start_datetime', 'end_datetime',
+            'statut', 'statut_display',
+            'reporte_de', 'reporte_de_info', 'motif_report', 'nb_reports',
+            'case', 'case_reference', 'case_title',
+            'notes', 'location', 'color',
+            'year', 'is_archived',
             'created_by', 'created_by_name', 'created_at', 'updated_at'
         )
-        read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'start_datetime', 'created_by', 'created_at', 'updated_at', 'year', 'is_archived')
         extra_kwargs = {
             'year': {'required': False},
-            'is_archived': {'required': False},
+            'start_datetime': {'required': False},
         }
 
     def get_created_by_name(self, obj):
         return obj.created_by.get_full_name() if obj.created_by else None
+
+    def get_nb_reports(self, obj):
+        return obj.reports_suivants.count()
+
+    def get_reporte_de_info(self, obj):
+        if obj.reporte_de:
+            return {
+                'id': obj.reporte_de.id,
+                'date_audience': str(obj.reporte_de.date_audience),
+                'heure_audience': str(obj.reporte_de.heure_audience),
+                'dossier_numero': obj.reporte_de.dossier_numero,
+            }
+        return None
+
+
+class ReportAgendaSerializer(serializers.Serializer):
+    """
+    Sérialiseur pour l'action de report d'une audience.
+    """
+    nouvelle_date = serializers.DateField(required=True)
+    nouvelle_heure = serializers.TimeField(required=True)
+    motif = serializers.CharField(required=False, allow_blank=True, default='')
+    type_chambre = serializers.CharField(required=False, allow_blank=True, default='')
+    notes = serializers.CharField(required=False, allow_blank=True, default='')
+
+
+class AgendaHistorySerializer(serializers.ModelSerializer):
+    """
+    Sérialiseur pour l'historique des modifications d'agenda.
+    """
+    type_action_display = serializers.CharField(source='get_type_action_display', read_only=True)
+    utilisateur_name = serializers.SerializerMethodField()
+    dossier_numero = serializers.CharField(source='agenda_entry.dossier_numero', read_only=True)
+
+    class Meta:
+        model = AgendaHistory
+        fields = (
+            'id', 'agenda_entry', 'type_action', 'type_action_display',
+            'ancienne_valeur', 'nouvelle_valeur', 'commentaire',
+            'utilisateur', 'utilisateur_name', 'date_action', 'dossier_numero'
+        )
+        read_only_fields = ('id', 'date_action')
+
+    def get_utilisateur_name(self, obj):
+        return obj.utilisateur.get_full_name() if obj.utilisateur else None
+
+
+class AgendaNotificationSerializer(serializers.ModelSerializer):
+    """
+    Sérialiseur pour les notifications d'agenda.
+    """
+    type_notification_display = serializers.CharField(source='get_type_notification_display', read_only=True)
+
+    class Meta:
+        model = AgendaNotification
+        fields = (
+            'id', 'agenda_entry', 'utilisateur', 'type_notification',
+            'type_notification_display', 'date_envoi_prevue', 'statut',
+            'date_envoi_effectif'
+        )
+        read_only_fields = ('id',)
+
