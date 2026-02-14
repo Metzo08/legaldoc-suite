@@ -33,10 +33,8 @@ function Settings() {
         email: '',
         siret: '',
         description: '',
-        branding: {
-            primary_color: '#1a237e',
-            secondary_color: '#c29b61'
-        }
+        primary_color: '#1a237e',
+        secondary_color: '#c29b61'
     });
 
     useEffect(() => {
@@ -58,18 +56,7 @@ function Settings() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        if (name.includes('.')) {
-            const [parent, child] = name.split('.');
-            setSettings(prev => ({
-                ...prev,
-                [parent]: {
-                    ...prev[parent],
-                    [child]: value
-                }
-            }));
-        } else {
-            setSettings(prev => ({ ...prev, [name]: value }));
-        }
+        setSettings(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
@@ -78,13 +65,14 @@ function Settings() {
             setSaving(true);
             // On utilise FormData car l'API attend du multipart/form-data pour le logo potentiel
             const formData = new FormData();
-            formData.append('name', settings.name);
-            formData.append('address', settings.address);
-            formData.append('phone', settings.phone);
-            formData.append('email', settings.email);
-            formData.append('siret', settings.siret);
-            formData.append('description', settings.description);
-            formData.append('branding', JSON.stringify(settings.branding));
+            formData.append('name', settings.name || '');
+            formData.append('address', settings.address || '');
+            formData.append('phone', settings.phone || '');
+            formData.append('email', settings.email || '');
+            formData.append('siret', settings.siret || '');
+            formData.append('description', settings.description || '');
+            formData.append('primary_color', settings.primary_color || '#1a237e');
+            formData.append('secondary_color', settings.secondary_color || '#c29b61');
 
             await cabinetAPI.updateSettings(formData);
             showNotification('Paramètres enregistrés avec succès !');
@@ -195,8 +183,8 @@ function Settings() {
                                         fullWidth
                                         type="color"
                                         label="Couleur principale"
-                                        name="branding.primary_color"
-                                        value={settings.branding?.primary_color || '#1a237e'}
+                                        name="primary_color"
+                                        value={settings.primary_color || '#1a237e'}
                                         onChange={handleChange}
                                         InputLabelProps={{ shrink: true }}
                                     />
@@ -206,8 +194,8 @@ function Settings() {
                                         fullWidth
                                         type="color"
                                         label="Couleur secondaire"
-                                        name="branding.secondary_color"
-                                        value={settings.branding?.secondary_color || '#c29b61'}
+                                        name="secondary_color"
+                                        value={settings.secondary_color || '#c29b61'}
                                         onChange={handleChange}
                                         InputLabelProps={{ shrink: true }}
                                     />

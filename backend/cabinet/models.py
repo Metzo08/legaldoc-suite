@@ -27,6 +27,7 @@ class Cabinet(models.Model):
     cel = models.CharField("Mobile (Cellulaire)", max_length=50, blank=True)
     email = models.EmailField("Email de contact", blank=True)
     website = models.URLField("Site web", blank=True)
+    siret = models.CharField("N° SIRET", max_length=14, blank=True)
     opening_hours = models.TextField("Horaires d'ouverture", blank=True, help_text="Ex: Lundi-Vendredi: 9h-18h")
     consultation_fees = models.TextField("Honoraires & Consultations", blank=True, help_text="Détails des tarifs")
     

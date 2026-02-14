@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Cabinet, TeamMember
 from .serializers import CabinetSerializer, TeamMemberSerializer
+from .permissions import IsCabinetAdmin
 
 class PublicCabinetInfoView(APIView):
     """
@@ -45,7 +46,7 @@ class CabinetSettingsView(generics.RetrieveUpdateAPIView):
     """
     queryset = Cabinet.objects.all()
     serializer_class = CabinetSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsCabinetAdmin]
     parser_classes = (MultiPartParser, FormParser)
 
     def get_object(self):
@@ -57,5 +58,5 @@ class TeamMemberViewSet(viewsets.ModelViewSet):
     """
     queryset = TeamMember.objects.all()
     serializer_class = TeamMemberSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsCabinetAdmin]
     parser_classes = (MultiPartParser, FormParser)
