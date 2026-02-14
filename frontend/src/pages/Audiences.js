@@ -175,7 +175,8 @@ function Audiences() {
                         date_decision: formData.decision_date || null,
                         numero_decision: formData.decision_number,
                         resultat: formData.decision_resultat,
-                        observations: formData.decision_observations
+                        observations: formData.decision_observations,
+                        case: formData.case
                     };
                 }
                 await deadlinesAPI.update(editingAudience.id, payload);
@@ -212,8 +213,18 @@ function Audiences() {
 
     const handleToggleComplete = async (audience) => {
         try {
-            await deadlinesAPI.update(audience.id, { is_completed: !audience.is_completed });
-            showNotification(audience.is_completed ? "Audience marquée comme non passée." : "Audience marquée comme terminée.");
+            const newStatus = !audience.is_completed;
+            await deadlinesAPI.update(audience.id, { is_completed: newStatus });
+            showNotification(newStatus ? "Audience marquée comme passée." : "Audience marquée comme non passée.");
+
+            if (newStatus && !audience.decision) {
+                // Si on vient de marquer comme passée, on propose de saisir la décision
+                handleOpenDialog({ ...audience, is_completed: newStatus });
+                setTimeout(() => {
+                    setFormData(prev => ({ ...prev, record_decision: true }));
+                }, 100);
+            }
+
             loadData();
         } catch (error) {
             console.error('Erreur statut audience:', error);
@@ -390,7 +401,15 @@ function Audiences() {
                                                     {categoryLabel} • {new Date(audience.due_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                                                 </Typography>
                                                 <Box>
-                                                    <Tooltip title="Terminée"><IconButton size="small" onClick={() => handleToggleComplete(audience)} color={audience.is_completed ? "success" : "default"}><CheckIcon fontSize="small" /></IconButton></Tooltip>
+                                                    <Tooltip title={audience.is_completed ? "Audience passée" : "Marquer comme passée"}>
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => handleToggleComplete(audience)}
+                                                            color={audience.is_completed ? "success" : "default"}
+                                                        >
+                                                            <CheckIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
                                                     <IconButton size="small" onClick={() => handleOpenDialog(audience)} color="primary"><EditIcon fontSize="small" /></IconButton>
                                                     <IconButton size="small" onClick={() => handleDeleteClick(audience)} color="error"><DeleteIcon fontSize="small" /></IconButton>
                                                 </Box>
@@ -404,10 +423,33 @@ function Audiences() {
                                             >
                                                 <strong>Dossier:</strong> {audience.case_reference}
                                             </Typography>
-                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                                <Chip label={audience.jurisdiction || 'Tribunal'} size="small" variant="outlined" />
-                                                <Chip label={audience.courtroom || 'S.1'} size="small" variant="outlined" />
-                                                {audience.is_completed && <Chip label="Passée" color="success" size="small" />}
+
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mt: 1 }}>
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                                    <Chip label={audience.jurisdiction || 'Tribunal'} size="small" variant="outlined" />
+                                                    <Chip label={audience.courtroom || 'S.1'} size="small" variant="outlined" />
+                                                    {audience.is_completed && <Chip label="Passée" color="success" size="small" />}
+                                                </Box>
+
+                                                {audience.is_completed && !audience.decision && (
+                                                    <Button
+                                                        size="small"
+                                                        variant="outlined"
+                                                        color="secondary"
+                                                        startIcon={<GavelIcon sx={{ fontSize: '0.9rem !important' }} />}
+                                                        onClick={() => {
+                                                            handleOpenDialog(audience);
+                                                            setFormData(prev => ({ ...prev, record_decision: true }));
+                                                        }}
+                                                        sx={{
+                                                            borderRadius: 2,
+                                                            fontSize: '0.7rem',
+                                                            py: 0.2
+                                                        }}
+                                                    >
+                                                        Saisir la décision
+                                                    </Button>
+                                                )}
                                             </Box>
                                         </CardContent>
                                     </Card>
@@ -471,10 +513,11 @@ function Audiences() {
                                             <Grid item xs={12}>
                                                 <TextField
                                                     fullWidth
-                                                    label="Numéro de la décision"
+                                                    label="Numéro de la décision (Tribunal)"
                                                     value={formData.decision_number}
                                                     onChange={(e) => setFormData({ ...formData, decision_number: e.target.value })}
-                                                    placeholder="Rempli par la personne qui reporte les décisions"
+                                                    placeholder="Saisir le n° d'ordre ou de jugement provenant du tribunal"
+                                                    helperText="Distinct de la référence interne du dossier"
                                                 />
                                             </Grid>
                                             <Grid item xs={12}>
@@ -482,7 +525,7 @@ function Audiences() {
                                                     fullWidth
                                                     multiline
                                                     rows={3}
-                                                    label="Résultat / Dispositif"
+                                                    label="Résultat / dispositif"
                                                     value={formData.decision_resultat}
                                                     onChange={(e) => setFormData({ ...formData, decision_resultat: e.target.value })}
                                                 />
@@ -492,7 +535,7 @@ function Audiences() {
                                                     fullWidth
                                                     multiline
                                                     rows={2}
-                                                    label="Observations (Décision)"
+                                                    label="Observations (décision)"
                                                     value={formData.decision_observations}
                                                     onChange={(e) => setFormData({ ...formData, decision_observations: e.target.value })}
                                                 />

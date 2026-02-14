@@ -327,7 +327,7 @@ function Deadlines() {
                                         onClick={() => navigate(`/cases?search=${encodeURIComponent(deadline.case_reference)}`)}
                                         sx={{ mb: 2, cursor: 'pointer', '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}
                                     >
-                                        Dossier: {deadline.case_reference}
+                                        Dossier : {deadline.case_reference}
                                     </Typography>
                                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>

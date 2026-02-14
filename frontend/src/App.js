@@ -8,7 +8,7 @@ import Loading from './components/Loading';
 import ErrorBoundary from './components/ErrorBoundary';
 import { NotificationProvider } from './context/NotificationContext';
 
-// Lazy Loading Pages
+// Lazy Loading Pages (Restored)
 const Login = lazy(() => import('./pages/Login'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
@@ -17,6 +17,7 @@ const Clients = lazy(() => import('./pages/Clients'));
 const Cases = lazy(() => import('./pages/Cases'));
 const CaseDetail = lazy(() => import('./pages/CaseDetail'));
 const Documents = lazy(() => import('./pages/Documents'));
+const Audiences = lazy(() => import('./pages/Audiences'));
 const Search = lazy(() => import('./pages/Search'));
 const Users = lazy(() => import('./pages/Users'));
 const AuditLog = lazy(() => import('./pages/AuditLog'));
@@ -133,7 +134,7 @@ function App() {
                                                             <Route path="/cases" element={<Cases />} />
                                                             <Route path="/cases/:id" element={<CaseDetail />} />
                                                             <Route path="/documents" element={<Documents />} />
-                                                            <Route path="/audiences" element={<Navigate to="/agenda" replace />} />
+                                                            <Route path="/audiences" element={<Audiences />} />
                                                             <Route path="/deadlines" element={<Deadlines />} />
                                                             <Route path="/tags" element={<Tags />} />
                                                             <Route path="/tasks" element={<Tasks />} />

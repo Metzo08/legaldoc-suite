@@ -28,9 +28,10 @@ import {
     ZoomIn as ZoomInIcon,
     ZoomOut as ZoomOutIcon,
     RestartAlt as ResetIcon,
-    Contrast as ContrastIcon
+    Contrast as ContrastIcon,
+    Gavel as GavelIcon
 } from '@mui/icons-material';
-import { clientsAPI, casesAPI, documentsAPI, tagsAPI, agendaAPI } from '../services/api';
+import { clientsAPI, casesAPI, documentsAPI, tagsAPI, agendaAPI, decisionsAPI } from '../services/api';
 import StatCard from '../components/StatCard';
 import DiligenceManager from '../components/DiligenceManager';
 
@@ -51,6 +52,7 @@ function Dashboard() {
         civil: 0,
         penal: 0
     });
+    const [recentDecisions, setRecentDecisions] = useState([]);
 
     // État pour la prévisualisation
     const [previewDialog, setPreviewDialog] = useState(false);
@@ -100,12 +102,13 @@ function Dashboard() {
 
     const loadDashboardData = async () => {
         try {
-            const [clientsRes, casesRes, documentsRes, deadlinesRes, tagsRes] = await Promise.all([
+            const [clientsRes, casesRes, documentsRes, deadlinesRes, tagsRes, decisionsRes] = await Promise.all([
                 clientsAPI.getAll(),
                 casesAPI.getAll(),
                 documentsAPI.getAll({ ordering: '-created_at', page_size: 5 }),
                 agendaAPI.getAll({ statut: 'PREVU', page_size: 5 }),
-                tagsAPI.getAll()
+                tagsAPI.getAll(),
+                decisionsAPI.getAll({ ordering: '-date_decision', page_size: 5 })
             ]);
 
             const allCasesData = Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []);
@@ -136,6 +139,8 @@ function Dashboard() {
                 .sort((a, b) => ((b.document_count || 0) + (b.case_count || 0)) - ((a.document_count || 0) + (a.case_count || 0)))
                 .slice(0, 5);
             setTopTags(sortedTags);
+
+            setRecentDecisions(Array.isArray(decisionsRes.data.results) ? decisionsRes.data.results : (Array.isArray(decisionsRes.data) ? decisionsRes.data : []));
 
         } catch (error) {
             console.error('Erreur chargement dashboard:', error);
@@ -206,7 +211,7 @@ function Dashboard() {
 
                         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                             <Chip
-                                label={`Civil & Autres: ${casesByCategory.civil}`}
+                                label={`Civil & autres : ${casesByCategory.civil}`}
                                 size="small"
                                 onClick={(e) => { e.stopPropagation(); navigate('/cases?filter=CIVIL'); }}
                                 sx={{
@@ -215,7 +220,7 @@ function Dashboard() {
                                 }}
                             />
                             <Chip
-                                label={`Pénal & Corr.: ${casesByCategory.penal}`}
+                                label={`Pénal & corr. : ${casesByCategory.penal}`}
                                 size="small"
                                 onClick={(e) => { e.stopPropagation(); navigate('/cases?filter=CORRECTIONNEL'); }}
                                 sx={{
@@ -494,6 +499,88 @@ function Dashboard() {
                             <Box sx={{ textAlign: 'center', py: 6 }}>
                                 <Typography variant="body2" color="text.secondary">
                                     Aucun document n'a encore été ajouté.
+                                </Typography>
+                            </Box>
+                        )}
+                    </Paper>
+                </Grid>
+
+                {/* Dernières décisions */}
+                <Grid item xs={12}>
+                    <Paper sx={{
+                        p: 3,
+                        borderRadius: 4,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        boxShadow: 'none'
+                    }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha('#9c27b0', 0.1), color: 'secondary.main', mr: 2 }}>
+                                <GavelIcon />
+                            </Box>
+                            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                                Dernières décisions
+                            </Typography>
+                        </Box>
+
+                        {recentDecisions.length > 0 ? (
+                            <Box sx={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                    <thead>
+                                        <tr style={{ borderBottom: '1px solid #eee' }}>
+                                            <th style={{ padding: '12px 8px', color: '#666', fontSize: '0.8rem', fontWeight: 600 }}>DATE</th>
+                                            <th style={{ padding: '12px 8px', color: '#666', fontSize: '0.8rem', fontWeight: 600 }}>JURIDICTION</th>
+                                            <th style={{ padding: '12px 8px', color: '#666', fontSize: '0.8rem', fontWeight: 600 }}>RÉSULTAT / DISPOSITIF</th>
+                                            <th style={{ padding: '12px 8px', color: '#666', fontSize: '0.8rem', fontWeight: 600, textAlign: 'right' }}>ACTION</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {recentDecisions.map((decision) => (
+                                            <tr key={decision.id} style={{ borderBottom: '1px solid #f9f9f9', '&:hover': { bgcolor: 'action.hover' } }}>
+                                                <td style={{ padding: '12px 8px', whiteSpace: 'nowrap' }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                                        {new Date(decision.date_decision).toLocaleDateString('fr-FR')}
+                                                    </Typography>
+                                                </td>
+                                                <td style={{ padding: '12px 8px' }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                                        {decision.juridiction || 'Non spécifiée'}
+                                                    </Typography>
+                                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                                        N° {decision.numero_decision || 'Indéterminé'}
+                                                    </Typography>
+                                                </td>
+                                                <td style={{ padding: '12px 8px' }}>
+                                                    <Typography variant="body2" sx={{
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        display: '-webkit-box',
+                                                        WebkitLineClamp: 2,
+                                                        WebkitBoxOrient: 'vertical',
+                                                        maxWidth: 500
+                                                    }}>
+                                                        {decision.resultat}
+                                                    </Typography>
+                                                </td>
+                                                <td style={{ padding: '12px 8px', textAlign: 'right' }}>
+                                                    <Button
+                                                        size="small"
+                                                        variant="text"
+                                                        onClick={() => navigate(`/cases?search=${encodeURIComponent(decision.case_reference)}`)}
+                                                        sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}
+                                                    >
+                                                        Dossier
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </Box>
+                        ) : (
+                            <Box sx={{ textAlign: 'center', py: 6 }}>
+                                <Typography variant="body2" color="text.secondary">
+                                    Aucune décision n'a été trouvée pour le moment.
                                 </Typography>
                             </Box>
                         )}

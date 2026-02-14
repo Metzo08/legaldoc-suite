@@ -186,7 +186,7 @@ function Search() {
                 </form>
 
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block', fontStyle: 'italic' }}>
-                    Note: La recherche inclut les textes extraits par OCR des scans et images.
+                    Note : la recherche inclut les textes extraits par OCR des scans et images.
                 </Typography>
             </Paper>
 

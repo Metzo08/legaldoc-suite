@@ -97,7 +97,7 @@ function Profile() {
     return (
         <Box sx={{ maxWidth: 800, mx: 'auto', py: 4 }}>
             <Typography variant="h4" fontWeight="800" sx={{ mb: 4 }}>
-                Mon Profil
+                Mon profil
             </Typography>
 
             <Grid container spacing={4}>
@@ -124,13 +124,13 @@ function Profile() {
                         </Typography>
                         <Divider sx={{ my: 2 }} />
                         <Typography variant="caption" display="block" color="text.secondary" textAlign="left">
-                            EMAIL
+                            Email
                         </Typography>
                         <Typography variant="body2" sx={{ mb: 2 }} textAlign="left">
                             {currentUser?.email}
                         </Typography>
                         <Typography variant="caption" display="block" color="text.secondary" textAlign="left">
-                            RÔLE
+                            Rôle
                         </Typography>
                         <Typography variant="body2" textAlign="left">
                             {currentUser?.role}

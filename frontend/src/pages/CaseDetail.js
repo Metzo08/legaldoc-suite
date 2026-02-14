@@ -307,7 +307,7 @@ const CaseDetail = () => {
                         <Grid item xs={12}>
                             <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
                                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center' }}>
-                                    <GavelIcon sx={{ mr: 1, color: 'primary.main' }} /> Informations Générales
+                                    <GavelIcon sx={{ mr: 1, color: 'primary.main' }} /> Informations générales
                                 </Typography>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
@@ -333,7 +333,7 @@ const CaseDetail = () => {
                                         </Box>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
-                                        <Typography variant="caption" color="text.secondary">Référence Cabinet</Typography>
+                                        <Typography variant="caption" color="text.secondary">Référence cabinet</Typography>
                                         <Typography variant="body1" sx={{ fontWeight: 600 }}>{caseData.reference}</Typography>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
@@ -347,11 +347,11 @@ const CaseDetail = () => {
                                 <Divider sx={{ my: 3 }} />
 
                                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center' }}>
-                                    <PersonIcon sx={{ mr: 1, color: 'primary.main' }} /> Parties Impliquées
+                                    <PersonIcon sx={{ mr: 1, color: 'primary.main' }} /> Parties impliquées
                                 </Typography>
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
-                                        <Typography variant="caption" color="text.secondary">Client (Surnom/Nom)</Typography>
+                                        <Typography variant="caption" color="text.secondary">Client (surnom/nom)</Typography>
                                         <Typography variant="body1" sx={{ fontWeight: 700, color: 'primary.main', cursor: 'pointer' }} onClick={() => navigate(`/clients?search=${encodeURIComponent(caseData.client_name)}`)}>
                                             {caseData.client_name}
                                         </Typography>
@@ -366,7 +366,7 @@ const CaseDetail = () => {
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                         <Typography variant="caption" color="text.secondary">Avocat(s) adverse(s)</Typography>
-                                        <Typography variant="body2">{caseData.adverse_lawyer || 'Aucun information'}</Typography>
+                                        <Typography variant="body2">{caseData.adverse_lawyer || 'Aucune information'}</Typography>
                                     </Grid>
                                 </Grid>
                             </Paper>
@@ -379,7 +379,7 @@ const CaseDetail = () => {
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                         <GavelIcon sx={{ fontSize: 28, color: 'primary.main' }} />
                                         <Box>
-                                            <Typography variant="h6" sx={{ fontWeight: 800 }}>Agenda du Dossier</Typography>
+                                            <Typography variant="h6" sx={{ fontWeight: 800 }}>Agenda du dossier</Typography>
                                             <Typography variant="caption" color="text.secondary">Gestion des audiences et procédures</Typography>
                                         </Box>
                                     </Box>
@@ -606,12 +606,13 @@ const CaseDetail = () => {
                                             Décisions
                                         </Typography>
                                         <Chip
-                                            label={`N° ${caseData.reference}`}
+                                            label={`Réf Case: ${caseData.reference}`}
                                             size="small"
                                             sx={{
                                                 fontWeight: 700,
                                                 bgcolor: alpha('#6366f1', 0.1),
-                                                color: 'primary.main'
+                                                color: 'primary.main',
+                                                textTransform: 'none'
                                             }}
                                         />
                                     </Box>

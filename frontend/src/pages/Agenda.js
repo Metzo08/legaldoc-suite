@@ -625,7 +625,7 @@ function Agenda() {
                                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                                                     <Tooltip title="Modifier"><IconButton size="small" onClick={() => { setDayDialogOpen(false); openEditDialog(ev); }}><EditIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
                                                     <Tooltip title="Reporter"><IconButton size="small" onClick={() => openReportDialog(ev)} sx={{ color: '#ff9800' }}><ReportIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
-                                                    <Tooltip title="Terminé"><IconButton size="small" onClick={() => handleTerminer(ev)} sx={{ color: '#4caf50' }}><CheckIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
+                                                    <Tooltip title="Terminée"><IconButton size="small" onClick={() => handleTerminer(ev)} sx={{ color: '#4caf50' }}><CheckIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
                                                     <Tooltip title="Annuler"><IconButton size="small" onClick={() => handleAnnuler(ev)} sx={{ color: '#f44336' }}><CancelIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
                                                     <Tooltip title="Supprimer"><IconButton size="small" onClick={() => handleDelete(ev)} color="error"><DeleteIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
                                                 </Box>

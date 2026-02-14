@@ -541,7 +541,7 @@ function LandingPage() {
                                             {openingHours}
                                         </Typography>
                                         <Typography variant="caption" sx={{ color: '#d32f2f', fontWeight: 700, mt: 1, display: 'block' }}>
-                                            Mercredi : Sur rendez-vous uniquement. N'insistez pas SVP !
+                                            Mercredi : sur rendez-vous uniquement. N'insistez pas s'il vous plaît !
                                         </Typography>
                                     </Box>
                                 </Paper>
@@ -569,7 +569,7 @@ function LandingPage() {
                                         <PaymentsIcon />
                                     </Avatar>
                                     <Box>
-                                        <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#00255c', mb: 0.5 }}>Honoraires & Consultations</Typography>
+                                        <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#00255c', mb: 0.5 }}>Honoraires et consultations</Typography>
                                         <Typography variant="body2" sx={{ color: '#4c6180', whiteSpace: 'pre-line', fontWeight: 500 }}>
                                             {consultationFees}
                                         </Typography>
@@ -632,8 +632,8 @@ function LandingPage() {
                                             }}
                                         >
                                             <Avatar size="small" sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}><MobileIcon /></Avatar>
-                                            <Box>
-                                                <Typography variant="caption" fontWeight="800" sx={{ color: '#4c6180', display: 'block' }}>Mobile</Typography>
+                                            <Box sx={{ mt: 6 }}>
+                                                <Typography variant="h6" sx={{ mb: 3, borderBottom: '2px solid rgba(255,255,255,0.3)', display: 'inline-block', pb: 1, color: '#ffffff !important' }}>Notre équipe</Typography>
                                                 <Typography variant="body2" sx={{ color: '#00255c', fontWeight: 700 }}>{cel}</Typography>
                                             </Box>
                                         </Paper>
@@ -675,7 +675,7 @@ function LandingPage() {
                         <Grid item xs={12} md={6}>
                             <Paper elevation={4} sx={{ height: '100%', minHeight: 450, borderRadius: 6, overflow: 'hidden', border: '8px solid white' }}>
                                 <iframe
-                                    title="Localisation Cabinet Mbengue"
+                                    title="Localisation cabinet Mbengue"
                                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3859.213238612!2d-17.4501382!3d14.6766894!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xec1737c7160d643%3A0xbabdee0b3635e123!2sCabinet%20maitre%20Ibrahima%20MBENGUE!5e0!3m2!1sfr!2sfr!4v1737157600000!5m2!1sfr!2sfr"
                                     width="100%"
                                     height="100%"

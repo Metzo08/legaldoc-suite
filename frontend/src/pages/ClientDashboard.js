@@ -150,7 +150,7 @@ function ClientDashboard() {
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                             <FolderIcon sx={{ mr: 1, color: 'primary.main' }} />
                             <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                Vos Dossiers en cours
+                                Vos dossiers en cours
                             </Typography>
                         </Box>
 
@@ -187,7 +187,7 @@ function ClientDashboard() {
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                             <DescriptionIcon sx={{ mr: 1, color: 'primary.main' }} />
                             <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                Derniers Documents
+                                Derniers documents
                             </Typography>
                         </Box>
 

@@ -258,7 +258,7 @@ function Users() {
             }}>
                 <Box>
                     <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>
-                        Utilisateurs & rôles
+                        Utilisateurs et rôles
                     </Typography>
                     <Typography variant="body1" color="text.secondary">
                         Gérez les membres de votre cabinet, leurs accès et leurs permissions.

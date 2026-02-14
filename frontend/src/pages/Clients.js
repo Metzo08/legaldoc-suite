@@ -349,7 +349,7 @@ function Clients() {
                     setRedirectDialog({ ...redirectDialog, open: false });
                     navigate(`/cases?clientId=${redirectDialog.clientId}&new=true`);
                 }}
-                title="Dossier Client"
+                title="Dossier client"
                 message="Le client a été enregistré. Souhaitez-vous ouvrir son premier dossier maintenant ?"
                 confirmText="Ouvrir un dossier"
                 cancelText="Plus tard"

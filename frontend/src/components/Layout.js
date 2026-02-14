@@ -32,7 +32,11 @@ import {
     Brightness7 as LightModeIcon,
     Label as LabelIcon,
     AssignmentTurnedIn as TaskIcon,
-    CalendarMonth as CalendarMonthIcon
+    CalendarMonth as CalendarMonthIcon,
+    Gavel as GavelIcon,
+    Settings as SettingsIcon,
+    Group as GroupIcon,
+    History as HistoryIcon
 } from '@mui/icons-material';
 import authService from '../services/authService';
 import { ThemeContext } from '../App';
@@ -47,14 +51,16 @@ const drawerWidth = 260;
 const menuItems = [
     { text: 'Tableau de bord', icon: <DashboardIcon />, path: '/dashboard' },
     { text: 'Agenda', icon: <CalendarMonthIcon />, path: '/agenda' },
+    { text: 'Audiences', icon: <GavelIcon />, path: '/audiences' },
     { text: 'Tâches', icon: <TaskIcon />, path: '/tasks' },
     { text: 'Clients', icon: <PeopleIcon />, path: '/clients' },
     { text: 'Dossiers', icon: <FolderIcon />, path: '/cases' },
     { text: 'Documents', icon: <DescriptionIcon />, path: '/documents' },
-    { text: 'Tags', icon: <LabelIcon />, path: '/tags', excludeClient: true },
-    { text: 'Recherche', icon: <SearchIcon />, path: '/search', excludeClient: true },
-    { text: 'Utilisateurs', icon: <PersonIcon />, path: '/users', adminOnly: true },
-    { text: 'Journal d\'audit', icon: <AssignmentIcon />, path: '/audit', excludeClient: true },
+    { text: 'Étiquettes', icon: <LabelIcon />, path: '/tags', excludeClient: true },
+    { text: 'Recherche avancée', icon: <SearchIcon />, path: '/search', excludeClient: true },
+    { text: 'Paramètres', icon: <SettingsIcon />, path: '/settings', adminOnly: true },
+    { text: 'Équipe', icon: <GroupIcon />, path: '/users', adminOnly: true },
+    { text: 'Action', icon: <HistoryIcon />, path: '/audit', adminOnly: true },
 ];
 
 function Layout({ children }) {
@@ -209,18 +215,14 @@ function Layout({ children }) {
                         <MenuItem disabled>
                             <Typography variant="body2">{currentUser?.username || 'Utilisateur'}</Typography>
                         </MenuItem>
-                        <MenuItem onClick={() => { handleMenuClick('/profile'); handleProfileMenuClose(); }}>
-                            <ListItemIcon>
-                                <PersonIcon fontSize="small" />
-                            </ListItemIcon>
-                            Mon Profil
+                        <MenuItem onClick={() => { handleProfileMenuClose(); navigate('/profile'); }}>
+                            <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
+                            <Typography variant="inherit">Mon profil</Typography>
                         </MenuItem>
                         <Divider />
-                        <MenuItem onClick={handleLogout}>
-                            <ListItemIcon>
-                                <LogoutIcon fontSize="small" />
-                            </ListItemIcon>
-                            Déconnexion
+                        <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
+                            <ListItemIcon><LogoutIcon fontSize="small" color="error" /></ListItemIcon>
+                            <Typography variant="inherit">Déconnexion</Typography>
                         </MenuItem>
                     </Menu>
                 </Toolbar>

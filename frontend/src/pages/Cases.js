@@ -420,7 +420,7 @@ function Cases() {
                 <Grid item xs={12} sm={6} md={3}>
                     <Box onClick={() => setFilterMode('CIVIL')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterMode === 'CIVIL' ? 1 : 0.6 }}>
                         <StatCard
-                            title="Civil & Autres"
+                            title="Civil & autres"
                             value={civilCases}
                             icon={<FolderIcon sx={{ color: '#facc15' }} />}
                             color="warning"
@@ -431,7 +431,7 @@ function Cases() {
                 <Grid item xs={12} sm={6} md={3}>
                     <Box onClick={() => setFilterMode('CORRECTIONNEL')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterMode === 'CORRECTIONNEL' ? 1 : 0.6 }}>
                         <StatCard
-                            title="Pénal & Correctionnel"
+                            title="Pénal & correctionnel"
                             value={penalCases}
                             icon={<FolderIcon sx={{ color: '#1d4ed8' }} />}
                             color="info"
@@ -517,14 +517,14 @@ function Cases() {
 
                         <Grid item xs={12} sm={6}>
                             <TextField
-                                label="Dossier Principal"
+                                label="Dossier principal"
                                 select
                                 fullWidth
                                 value={formData.parent_case || ''}
                                 onChange={(e) => setFormData({ ...formData, parent_case: e.target.value || null })}
                                 helperText="Sélectionnez pour créer un sous-dossier"
                             >
-                                <MenuItem value=""><em>Aucun (Dossier Principal)</em></MenuItem>
+                                <MenuItem value=""><em>Aucun (dossier principal)</em></MenuItem>
                                 {cases.filter(c => !c.parent_case).map((c) => (
                                     <MenuItem key={c.id} value={c.id}>{c.reference} - {c.title}</MenuItem>
                                 ))}

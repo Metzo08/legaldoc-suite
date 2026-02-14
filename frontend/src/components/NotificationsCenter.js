@@ -241,7 +241,7 @@ function NotificationsCenter() {
                             }}
                         >
                             <Typography variant="body2" color="primary" fontWeight="600">
-                                Voir tout le journal d'audit
+                                Voir tout le journal d'activité
                             </Typography>
                         </MenuItem>
                     </Box>

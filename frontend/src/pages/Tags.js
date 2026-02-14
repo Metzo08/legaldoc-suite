@@ -245,7 +245,7 @@ function Tags() {
             {/* Dialog Création/Édition */}
             <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
                 <DialogTitle>
-                    {editingTag ? 'Modifier le tag' : 'Nouveau Tag'}
+                    {editingTag ? 'Modifier le tag' : 'Nouveau tag'}
                 </DialogTitle>
                 <DialogContent>
                     <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>

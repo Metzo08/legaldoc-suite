@@ -298,7 +298,7 @@ const Tasks = () => {
         <Box sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h4" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                    Gestion des Tâches
+                    Gestion des tâches
                 </Typography>
                 <Button
                     variant="contained"
@@ -306,7 +306,7 @@ const Tasks = () => {
                     onClick={handleCreate}
                     sx={{ borderRadius: 2, px: 3 }}
                 >
-                    Nouvelle Tâche
+                    Nouvelle tâche
                 </Button>
             </Box>
 
@@ -375,7 +375,7 @@ const Tasks = () => {
                                         </Typography>
                                         {task.case_reference && (
                                             <Typography variant="caption" color="text.secondary">
-                                                Dossier: {task.case_reference}
+                                                Dossier : {task.case_reference}
                                             </Typography>
                                         )}
                                     </TableCell>

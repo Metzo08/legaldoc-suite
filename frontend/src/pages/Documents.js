@@ -730,7 +730,7 @@ function Documents() {
                 <Grid item xs={12} sm={4}>
                     <Box onClick={() => setFilterType('STORAGE')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterType === 'STORAGE' ? 1 : 0.6 }}>
                         <StatCard
-                            title="Gros fichiers (> 100 Ko)"
+                            title="Gros fichiers (> 100 ko)"
                             value={formatFileSize(documents.filter(d => d.file_size > 100 * 1024).reduce((acc, curr) => acc + curr.file_size, 0))}
                             icon={<StorageIcon color="success" />}
                             color="success"
