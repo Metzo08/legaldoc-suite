@@ -37,12 +37,13 @@ export const ThemeContext = createContext({
 });
 
 // Composant pour protéger les routes
-const PrivateRoute = ({ children }) => {
-    return authService.isAuthenticated() ? children : <Navigate to="/login" />;
+const PrivateRoute = ({ children, isAuthenticated }) => {
+    return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
 function App() {
     const [cabinetSettings, setCabinetSettings] = useState(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
 
     // Récupérer la préférence de thème depuis localStorage
     const [darkMode, setDarkMode] = useState(() => {
@@ -89,7 +90,7 @@ function App() {
 
     useEffect(() => {
         // Vérifier l'authentification au chargement
-        authService.isAuthenticated();
+        setIsAuthenticated(authService.isAuthenticated());
     }, []);
 
     return (
@@ -112,6 +113,7 @@ function App() {
                                     path="/login"
                                     element={
                                         <Login
+                                            setIsAuthenticated={setIsAuthenticated}
                                             cabinetInfo={cabinetSettings}
                                         />
                                     }
@@ -121,7 +123,7 @@ function App() {
                                 <Route
                                     path="/*"
                                     element={
-                                        <PrivateRoute>
+                                        <PrivateRoute isAuthenticated={isAuthenticated}>
                                             <Layout>
                                                 <ErrorBoundary>
                                                     <Suspense fallback={<Loading />}>
