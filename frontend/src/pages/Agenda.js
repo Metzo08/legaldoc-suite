@@ -51,7 +51,7 @@ const HOURS = Array.from({ length: 11 }, (_, i) => i + 8); // 8h-18h
 const emptyForm = {
     title: '', event_type: 'AUDIENCE', type_chambre: 'CA_CORRECTIONNEL', type_chambre_autre: '',
     dossier_numero: '', dossier_nom: '', date_audience: '', heure_audience: '09:00',
-    case: '', notes: '', location: '', color: '#2196f3'
+    case: '', notes: '', location: '', color: '#2196f3', statut: 'PREVU'
 };
 
 function Agenda() {
@@ -186,7 +186,7 @@ function Agenda() {
             dossier_numero: ev.dossier_numero || '', dossier_nom: ev.dossier_nom || '',
             date_audience: ev.date_audience || '', heure_audience: ev.heure_audience?.substring(0, 5) || '09:00',
             case: ev.case || '', notes: ev.notes || '', location: ev.location || '',
-            color: ev.color || '#2196f3'
+            color: ev.color || '#2196f3', statut: ev.statut || 'PREVU'
         });
         setDialogOpen(true);
     };
@@ -621,16 +621,16 @@ function Agenda() {
                                                     </Typography>
                                                 )}
                                             </Box>
-                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                                <Tooltip title="Modifier"><IconButton size="small" onClick={() => { setDayDialogOpen(false); openEditDialog(ev); }}><EditIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.1, bgcolor: alpha(theme.palette.divider, 0.05), borderRadius: 1.5, p: 0.2 }}>
+                                                <Tooltip title="Modifier"><IconButton size="small" onClick={() => { setDayDialogOpen(false); openEditDialog(ev); }}><EditIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
                                                 {ev.statut === 'PREVU' && (
                                                     <>
-                                                        <Tooltip title="Reporter"><IconButton size="small" onClick={() => openReportDialog(ev)} sx={{ color: '#ff9800' }}><ReportIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
-                                                        <Tooltip title="Terminée"><IconButton size="small" onClick={() => handleTerminer(ev)} sx={{ color: '#4caf50' }}><CheckIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
-                                                        <Tooltip title="Annuler"><IconButton size="small" onClick={() => handleAnnuler(ev)} sx={{ color: '#f44336' }}><CancelIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
+                                                        <Tooltip title="Reporter"><IconButton size="small" onClick={() => openReportDialog(ev)} sx={{ color: '#ff9800' }}><ReportIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
+                                                        <Tooltip title="Terminer"><IconButton size="small" onClick={() => handleTerminer(ev)} sx={{ color: '#4caf50' }}><CheckIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
+                                                        <Tooltip title="Annuler"><IconButton size="small" onClick={() => handleAnnuler(ev)} sx={{ color: '#f44336' }}><CancelIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
                                                     </>
                                                 )}
-                                                <Tooltip title="Supprimer"><IconButton size="small" onClick={() => handleDelete(ev)} color="error"><DeleteIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
+                                                <Tooltip title="Supprimer"><IconButton size="small" onClick={() => handleDelete(ev)} color="error"><DeleteIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
                                             </Box>
                                         </Box>
                                         {ev.dossier_numero && (
@@ -671,6 +671,16 @@ function Agenda() {
                                 <MenuItem key={key} value={key}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <CircleIcon sx={{ fontSize: 10, color: cfg.color }} />{cfg.icon} {cfg.label}
+                                    </Box>
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                        <TextField label="Statut" select fullWidth required value={formData.statut}
+                            onChange={e => setFormData(p => ({ ...p, statut: e.target.value }))}>
+                            {Object.entries(STATUT_CONFIG).map(([key, cfg]) => (
+                                <MenuItem key={key} value={key}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        {cfg.icon} {cfg.label}
                                     </Box>
                                 </MenuItem>
                             ))}
