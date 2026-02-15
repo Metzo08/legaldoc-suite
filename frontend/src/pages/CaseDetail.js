@@ -862,14 +862,11 @@ const CaseDetail = () => {
                 maxWidth="sm"
                 fullWidth
             >
-                <DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <BalanceIcon />
-                    {editingDecision ? 'Modifier la décision' : 'Nouvelle décision'}
-                    <Chip
-                        label={caseData?.reference}
-                        size="small"
-                        sx={{ ml: 'auto', bgcolor: 'rgba(255,255,255,0.2)', color: '#fff', fontWeight: 700 }}
-                    />
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                        {editingDecision ? 'Modifier la décision' : 'Nouvelle décision'}
+                    </Typography>
                 </DialogTitle>
                 <DialogContent>
                     <Grid container spacing={2.5} sx={{ mt: 0 }}>
