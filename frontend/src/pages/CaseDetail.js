@@ -603,18 +603,8 @@ const CaseDetail = () => {
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <BalanceIcon sx={{ color: 'primary.main' }} />
                                         <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                                            Décisions
+                                            Décisions de Justice
                                         </Typography>
-                                        <Chip
-                                            label={`Réf Case: ${caseData.reference}`}
-                                            size="small"
-                                            sx={{
-                                                fontWeight: 700,
-                                                bgcolor: alpha('#6366f1', 0.1),
-                                                color: 'primary.main',
-                                                textTransform: 'none'
-                                            }}
-                                        />
                                     </Box>
                                     <Button
                                         variant="contained"
@@ -933,11 +923,12 @@ const CaseDetail = () => {
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <TextField
-                                label="Numéro de la décision"
+                                label="N° de Décision (Tribunal)"
                                 fullWidth
                                 value={decisionForm.numero_decision}
                                 onChange={(e) => setDecisionForm({ ...decisionForm, numero_decision: e.target.value })}
-                                placeholder="Ex: 2024/0123"
+                                placeholder="Numéro officiel rendu par le tribunal"
+                                helperText="Ce numéro est distinct de la référence interne du dossier"
                             />
                         </Grid>
                         <Grid item xs={12}>
