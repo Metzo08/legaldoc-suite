@@ -462,18 +462,38 @@ function Agenda() {
             {/* ── STATS CARDS ── */}
             <Grid container spacing={2} sx={{ mb: 3 }}>
                 {[
-                    { label: 'Total', value: stats.total, color: '#6366f1', icon: '📊' },
-                    { label: 'Prévues', value: stats.prevu, color: '#2196f3', icon: '📅' },
-                    { label: 'Reportées', value: stats.reporte, color: '#ff9800', icon: '🔄' },
-                    { label: 'Terminées', value: stats.termine, color: '#4caf50', icon: '✅' },
-                    { label: 'Annulées', value: stats.annule, color: '#f44336', icon: '❌' },
+                    { label: 'Total', value: stats.total, color: '#6366f1', icon: '📊', filter: 'ALL' },
+                    { label: 'Prévues', value: stats.prevu, color: '#2196f3', icon: '📅', filter: 'PREVU' },
+                    { label: 'Reportées', value: stats.reporte, color: '#ff9800', icon: '🔄', filter: 'REPORTE' },
+                    { label: 'Terminées', value: stats.termine, color: '#4caf50', icon: '✅', filter: 'TERMINE' },
+                    { label: 'Annulées', value: stats.annule, color: '#f44336', icon: '❌', filter: 'ANNULE' },
                 ].map(s => (
                     <Grid item xs={6} sm={2.4} key={s.label}>
-                        <Paper elevation={0} sx={{
-                            p: 2, borderRadius: 3, textAlign: 'center',
-                            border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
-                            background: isDark ? alpha(s.color, 0.08) : alpha(s.color, 0.04),
-                        }}>
+                        <Paper
+                            elevation={statutFilter === s.filter ? 4 : 0}
+                            onClick={() => setStatutFilter(s.filter)}
+                            sx={{
+                                p: 2, borderRadius: 3, textAlign: 'center',
+                                border: `1px solid ${statutFilter === s.filter ? s.color : (isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0')}`,
+                                background: statutFilter === s.filter
+                                    ? (isDark ? alpha(s.color, 0.15) : alpha(s.color, 0.08))
+                                    : (isDark ? alpha(s.color, 0.08) : alpha(s.color, 0.04)),
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease-in-out',
+                                position: 'relative',
+                                '&:hover': {
+                                    transform: 'translateY(-4px)',
+                                    boxShadow: `0 8px 16px ${alpha(s.color, 0.15)}`,
+                                    background: isDark ? alpha(s.color, 0.12) : alpha(s.color, 0.06),
+                                }
+                            }}>
+                            {statutFilter === s.filter && (
+                                <Box sx={{
+                                    position: 'absolute', top: 8, right: 8,
+                                    width: 8, height: 8, borderRadius: '50%',
+                                    bgcolor: s.color
+                                }} />
+                            )}
                             <Typography sx={{ fontSize: '1.5rem' }}>{s.icon}</Typography>
                             <Typography sx={{ fontWeight: 900, fontSize: '1.5rem', color: s.color }}>{s.value}</Typography>
                             <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', fontWeight: 600 }}>{s.label}</Typography>
