@@ -864,14 +864,36 @@ class AgendaEvent(models.Model):
     """
 
     class TypeChambre(models.TextChoices):
+        # TI (Tribunaux d'Instance)
+        TI_DAKAR = 'TI_DAKAR', "TI Dakar"
+        TI_PIKINE = 'TI_PIKINE', "TI Pikine"
+        TI_GUEDIAWAYE = 'TI_GUEDIAWAYE', "TI Guédiawaye"
+        TI_RUFISQUE = 'TI_RUFISQUE', "TI Rufisque"
+        TI_KEUR_MASSAR = 'TI_KEUR_MASSAR', "TI Keur Massar"
+        
+        # TGI (Tribunaux de Grande Instance)
+        TGI_DAKAR_CIVIL = 'TGI_DAKAR_CIVIL', "TGI Dakar - Civil"
+        TGI_DAKAR_STATUT_PERSONNEL = 'TGI_DAKAR_STATUT_PERSONNEL', "TGI Dakar - Statut Personnel"
+        TGI_DAKAR_FDTR = 'TGI_DAKAR_FDTR', "TGI Dakar - FDTR"
+        TGI_DAKAR_CORRECTIONNELLE = 'TGI_DAKAR_CORRECTIONNELLE', "TGI Dakar - Correctionnelle"
+        TGI_DAKAR_INSTITUTIONNELLE = 'TGI_DAKAR_INSTITUTIONNELLE', "TGI Dakar - Institutionnelle"
+        
+        TGI_PIKINE = 'TGI_PIKINE', "TGI Pikine"
+        TGI_GUEDIAWAYE = 'TGI_GUEDIAWAYE', "TGI Guédiawaye"
+        TGI_RUFISQUE = 'TGI_RUFISQUE', "TGI Rufisque"
+        TGI_KEUR_MASSAR = 'TGI_KEUR_MASSAR', "TGI Keur Massar"
+        
+        # Tribunal du Travail
+        TRAVAIL_DAKAR = 'TRAVAIL_DAKAR', "Tribunal du Travail Dakar"
+        TRAVAIL_PIKINE = 'TRAVAIL_PIKINE', "Tribunal du Travail Pikine"
+        TRAVAIL_GUEDIAWAYE = 'TRAVAIL_GUEDIAWAYE', "Tribunal du Travail Guédiawaye"
+        TRAVAIL_RUFISQUE = 'TRAVAIL_RUFISQUE', "Tribunal du Travail Rufisque"
+        
+        # Cours d'Appel et Autres
         CA_CORRECTIONNEL = 'CA_CORRECTIONNEL', 'CA Correctionnel'
         CA_CRIMINELLE = 'CA_CRIMINELLE', 'CA Criminelle'
         CA_SOCIAL = 'CA_SOCIAL', 'CA Social'
-        TRIBUNAL_TRAVAIL = 'TRIBUNAL_TRAVAIL', 'Tribunal Travail'
-        FDTR = 'FDTR', 'FDTR'
         TRIBUNAL_COMMERCE = 'TRIBUNAL_COMMERCE', 'Tribunal de Commerce'
-        TRIBUNAL_INSTANCE = 'TRIBUNAL_INSTANCE', "Tribunal d'Instance"
-        TRIBUNAL_GRANDE_INSTANCE = 'TRIBUNAL_GRANDE_INSTANCE', 'Tribunal de Grande Instance'
         COUR_SUPREME = 'COUR_SUPREME', 'Cour Suprême'
         AUTRE = 'AUTRE', 'Autre'
 

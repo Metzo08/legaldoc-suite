@@ -66,15 +66,36 @@ import authService from '../services/authService';
 import DiligenceManager from '../components/DiligenceManager';
 
 const CHAMBRE_COLORS = {
+    // TI (Tribunaux d'Instance)
+    TI_DAKAR: { label: 'TI Dakar', color: '#795548', icon: '🏛️' },
+    TI_PIKINE: { label: 'TI Pikine', color: '#795548', icon: '🏛️' },
+    TI_GUEDIAWAYE: { label: 'TI Guédiawaye', color: '#795548', icon: '🏛️' },
+    TI_RUFISQUE: { label: 'TI Rufisque', color: '#795548', icon: '🏛️' },
+    TI_KEUR_MASSAR: { label: 'TI Keur Massar', color: '#795548', icon: '🏛️' },
+
+    // TGI (Tribunaux de Grande Instance)
+    TGI_DAKAR_CIVIL: { label: 'TGI Dakar - Civil', color: '#3f51b5', icon: '⚖️' },
+    TGI_DAKAR_STATUT_PERSONNEL: { label: 'TGI Dakar - Statut Personnel', color: '#3f51b5', icon: '👤' },
+    TGI_DAKAR_FDTR: { label: 'TGI Dakar - FDTR', color: '#3f51b5', icon: '📋' },
+    TGI_DAKAR_CORRECTIONNELLE: { label: 'TGI Dakar - Correctionnelle', color: '#3f51b5', icon: '👨‍⚖️' },
+    TGI_DAKAR_INSTITUTIONNELLE: { label: 'TGI Dakar - Institutionnelle', color: '#3f51b5', icon: '🏛️' },
+    TGI_PIKINE: { label: 'TGI Pikine', color: '#3f51b5', icon: '🏛️' },
+    TGI_GUEDIAWAYE: { label: 'TGI Guédiawaye', color: '#3f51b5', icon: '🏛️' },
+    TGI_RUFISQUE: { label: 'TGI Rufisque', color: '#3f51b5', icon: '🏛️' },
+    TGI_KEUR_MASSAR: { label: 'TGI Keur Massar', color: '#3f51b5', icon: '🏛️' },
+
+    // Travail
+    TRAVAIL_DAKAR: { label: 'Travail Dakar', color: '#ff9800', icon: '👷' },
+    TRAVAIL_PIKINE: { label: 'Travail Pikine', color: '#ff9800', icon: '👷' },
+    TRAVAIL_GUEDIAWAYE: { label: 'Travail Guédiawaye', color: '#ff9800', icon: '👷' },
+    TRAVAIL_RUFISQUE: { label: 'Travail Rufisque', color: '#ff9800', icon: '👷' },
+
+    // Cours d'Appel et Autres
     CA_CORRECTIONNEL: { label: 'CA Correctionnel', color: '#2196f3', icon: '⚖️' },
     CA_CRIMINELLE: { label: 'CA Criminelle', color: '#f44336', icon: '🔴' },
     CA_SOCIAL: { label: 'CA Social', color: '#4caf50', icon: '🤝' },
-    TRIBUNAL_TRAVAIL: { label: 'Tribunal Travail', color: '#ff9800', icon: '👷' },
-    FDTR: { label: 'FDTR', color: '#9c27b0', icon: '📋' },
     TRIBUNAL_COMMERCE: { label: 'Tribunal de Commerce', color: '#00bcd4', icon: '💼' },
-    TRIBUNAL_INSTANCE: { label: "Tribunal d'Instance", color: '#795548', icon: '🏛️' },
-    TRIBUNAL_GRANDE_INSTANCE: { label: 'TGI', color: '#3f51b5', icon: '🏛️' },
-    COUR_SUPREME: { label: 'Cour Suprême', color: '#b71c1c', icon: '👨‍⚖️' },
+    COUR_SUPREME: { label: 'Cour Suprême', color: '#b71c1c', icon: '🏛️' },
     AUTRE: { label: 'Autre', color: '#607d8b', icon: '📌' },
 };
 
