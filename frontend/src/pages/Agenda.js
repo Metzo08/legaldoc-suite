@@ -34,28 +34,49 @@ const CHAMBRE_COLORS = {
     TI_RUFISQUE: { label: 'TI Rufisque', color: '#795548', icon: '🏛️' },
     TI_KEUR_MASSAR: { label: 'TI Keur Massar', color: '#795548', icon: '🏛️' },
 
-    // TGI (Tribunaux de Grande Instance)
+    // TGI Dakar
     TGI_DAKAR_CIVIL: { label: 'TGI Dakar - Civil', color: '#3f51b5', icon: '⚖️' },
     TGI_DAKAR_STATUT_PERSONNEL: { label: 'TGI Dakar - Statut Personnel', color: '#3f51b5', icon: '👤' },
     TGI_DAKAR_FDTR: { label: 'TGI Dakar - FDTR', color: '#3f51b5', icon: '📋' },
     TGI_DAKAR_CORRECTIONNELLE: { label: 'TGI Dakar - Correctionnelle', color: '#3f51b5', icon: '👨‍⚖️' },
-    TGI_DAKAR_INSTITUTIONNELLE: { label: 'TGI Dakar - Institutionnelle', color: '#3f51b5', icon: '🏛️' },
-    TGI_PIKINE: { label: 'TGI Pikine', color: '#3f51b5', icon: '🏛️' },
-    TGI_GUEDIAWAYE: { label: 'TGI Guédiawaye', color: '#3f51b5', icon: '🏛️' },
-    TGI_RUFISQUE: { label: 'TGI Rufisque', color: '#3f51b5', icon: '🏛️' },
-    TGI_KEUR_MASSAR: { label: 'TGI Keur Massar', color: '#3f51b5', icon: '🏛️' },
+    TGI_DAKAR_INSTRUCTION: { label: 'TGI Dakar - Instruction', color: '#3f51b5', icon: '🔍' },
+
+    // TGI Pikine
+    TGI_PIKINE_CIVIL: { label: 'TGI Pikine - Civil', color: '#3f51b5', icon: '⚖️' },
+    TGI_PIKINE_FDTR: { label: 'TGI Pikine - FDTR', color: '#3f51b5', icon: '📋' },
+    TGI_PIKINE_CORRECTIONNELLE: { label: 'TGI Pikine - Correctionnelle', color: '#3f51b5', icon: '👨‍⚖️' },
+    TGI_PIKINE_INSTRUCTION: { label: 'TGI Pikine - Instruction', color: '#3f51b5', icon: '🔍' },
+
+    // TGI Guédiawaye
+    TGI_GUEDIAWAYE_CIVIL: { label: 'TGI Guédiawaye - Civil', color: '#3f51b5', icon: '⚖️' },
+    TGI_GUEDIAWAYE_FDTR: { label: 'TGI Guédiawaye - FDTR', color: '#3f51b5', icon: '📋' },
+    TGI_GUEDIAWAYE_CORRECTIONNELLE: { label: 'TGI Guédiawaye - Correctionnelle', color: '#3f51b5', icon: '👨‍⚖️' },
+    TGI_GUEDIAWAYE_INSTRUCTION: { label: 'TGI Guédiawaye - Instruction', color: '#3f51b5', icon: '🔍' },
+
+    // TGI Rufisque
+    TGI_RUFISQUE_CIVIL: { label: 'TGI Rufisque - Civil', color: '#3f51b5', icon: '⚖️' },
+    TGI_RUFISQUE_FDTR: { label: 'TGI Rufisque - FDTR', color: '#3f51b5', icon: '📋' },
+    TGI_RUFISQUE_CORRECTIONNELLE: { label: 'TGI Rufisque - Correctionnelle', color: '#3f51b5', icon: '👨‍⚖️' },
+    TGI_RUFISQUE_INSTRUCTION: { label: 'TGI Rufisque - Instruction', color: '#3f51b5', icon: '🔍' },
+
+    // TGI Keur Massar
+    TGI_KEUR_MASSAR_CIVIL: { label: 'TGI Keur Massar - Civil', color: '#3f51b5', icon: '⚖️' },
+    TGI_KEUR_MASSAR_FDTR: { label: 'TGI Keur Massar - FDTR', color: '#3f51b5', icon: '📋' },
+    TGI_KEUR_MASSAR_CORRECTIONNELLE: { label: 'TGI Keur Massar - Correctionnelle', color: '#3f51b5', icon: '👨‍⚖️' },
+    TGI_KEUR_MASSAR_INSTRUCTION: { label: 'TGI Keur Massar - Instruction', color: '#3f51b5', icon: '🔍' },
 
     // Travail
     TRAVAIL_DAKAR: { label: 'Travail Dakar', color: '#ff9800', icon: '👷' },
     TRAVAIL_PIKINE: { label: 'Travail Pikine', color: '#ff9800', icon: '👷' },
-    TRAVAIL_GUEDIAWAYE: { label: 'Travail Guédiawaye', color: '#ff9800', icon: '👷' },
     TRAVAIL_RUFISQUE: { label: 'Travail Rufisque', color: '#ff9800', icon: '👷' },
+
+    // Commerce
+    TRIBUNAL_COMMERCE_DAKAR: { label: 'Tribunal de Commerce de Dakar', color: '#00bcd4', icon: '💼' },
 
     // Cours d'Appel et Autres
     CA_CORRECTIONNEL: { label: 'CA Correctionnel', color: '#2196f3', icon: '⚖️' },
     CA_CRIMINELLE: { label: 'CA Criminelle', color: '#f44336', icon: '🔴' },
     CA_SOCIAL: { label: 'CA Social', color: '#4caf50', icon: '🤝' },
-    TRIBUNAL_COMMERCE: { label: 'Tribunal de Commerce', color: '#00bcd4', icon: '💼' },
     COUR_SUPREME: { label: 'Cour Suprême', color: '#b71c1c', icon: '🏛️' },
     AUTRE: { label: 'Autre', color: '#607d8b', icon: '📌' },
 };
@@ -570,9 +591,49 @@ function Agenda() {
                             ))}
 
                             <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>
-                                TGI (Tribunaux de Grande Instance)
+                                TGI Dakar
                             </ListSubheader>
-                            {['TGI_DAKAR_CIVIL', 'TGI_DAKAR_STATUT_PERSONNEL', 'TGI_DAKAR_FDTR', 'TGI_DAKAR_CORRECTIONNELLE', 'TGI_DAKAR_INSTITUTIONNELLE', 'TGI_PIKINE', 'TGI_GUEDIAWAYE', 'TGI_RUFISQUE', 'TGI_KEUR_MASSAR'].map(key => (
+                            {['TGI_DAKAR_CIVIL', 'TGI_DAKAR_STATUT_PERSONNEL', 'TGI_DAKAR_FDTR', 'TGI_DAKAR_CORRECTIONNELLE', 'TGI_DAKAR_INSTRUCTION'].map(key => (
+                                <MenuItem key={key} value={key} sx={{ pl: 4 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />
+                                        {CHAMBRE_COLORS[key].label}
+                                    </Box>
+                                </MenuItem>
+                            ))}
+
+                            <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>TGI Pikine</ListSubheader>
+                            {['TGI_PIKINE_CIVIL', 'TGI_PIKINE_FDTR', 'TGI_PIKINE_CORRECTIONNELLE', 'TGI_PIKINE_INSTRUCTION'].map(key => (
+                                <MenuItem key={key} value={key} sx={{ pl: 4 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />
+                                        {CHAMBRE_COLORS[key].label}
+                                    </Box>
+                                </MenuItem>
+                            ))}
+
+                            <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>TGI Guédiawaye</ListSubheader>
+                            {['TGI_GUEDIAWAYE_CIVIL', 'TGI_GUEDIAWAYE_FDTR', 'TGI_GUEDIAWAYE_CORRECTIONNELLE', 'TGI_GUEDIAWAYE_INSTRUCTION'].map(key => (
+                                <MenuItem key={key} value={key} sx={{ pl: 4 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />
+                                        {CHAMBRE_COLORS[key].label}
+                                    </Box>
+                                </MenuItem>
+                            ))}
+
+                            <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>TGI Rufisque</ListSubheader>
+                            {['TGI_RUFISQUE_CIVIL', 'TGI_RUFISQUE_FDTR', 'TGI_RUFISQUE_CORRECTIONNELLE', 'TGI_RUFISQUE_INSTRUCTION'].map(key => (
+                                <MenuItem key={key} value={key} sx={{ pl: 4 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />
+                                        {CHAMBRE_COLORS[key].label}
+                                    </Box>
+                                </MenuItem>
+                            ))}
+
+                            <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>TGI Keur Massar</ListSubheader>
+                            {['TGI_KEUR_MASSAR_CIVIL', 'TGI_KEUR_MASSAR_FDTR', 'TGI_KEUR_MASSAR_CORRECTIONNELLE', 'TGI_KEUR_MASSAR_INSTRUCTION'].map(key => (
                                 <MenuItem key={key} value={key} sx={{ pl: 4 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />
@@ -584,7 +645,19 @@ function Agenda() {
                             <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>
                                 Tribunal du Travail
                             </ListSubheader>
-                            {['TRAVAIL_DAKAR', 'TRAVAIL_PIKINE', 'TRAVAIL_GUEDIAWAYE', 'TRAVAIL_RUFISQUE'].map(key => (
+                            {['TRAVAIL_DAKAR', 'TRAVAIL_PIKINE', 'TRAVAIL_RUFISQUE'].map(key => (
+                                <MenuItem key={key} value={key} sx={{ pl: 4 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />
+                                        {CHAMBRE_COLORS[key].label}
+                                    </Box>
+                                </MenuItem>
+                            ))}
+
+                            <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>
+                                Commerce
+                            </ListSubheader>
+                            {['TRIBUNAL_COMMERCE_DAKAR'].map(key => (
                                 <MenuItem key={key} value={key} sx={{ pl: 4 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />
@@ -596,7 +669,7 @@ function Agenda() {
                             <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>
                                 Autres
                             </ListSubheader>
-                            {['CA_CORRECTIONNEL', 'CA_CRIMINELLE', 'CA_SOCIAL', 'TRIBUNAL_COMMERCE', 'COUR_SUPREME', 'AUTRE'].map(key => (
+                            {['CA_CORRECTIONNEL', 'CA_CRIMINELLE', 'CA_SOCIAL', 'COUR_SUPREME', 'AUTRE'].map(key => (
                                 <MenuItem key={key} value={key} sx={{ pl: 4 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />
@@ -763,9 +836,49 @@ function Agenda() {
                             ))}
 
                             <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>
-                                TGI (Tribunaux de Grande Instance)
+                                TGI Dakar
                             </ListSubheader>
-                            {['TGI_DAKAR_CIVIL', 'TGI_DAKAR_STATUT_PERSONNEL', 'TGI_DAKAR_FDTR', 'TGI_DAKAR_CORRECTIONNELLE', 'TGI_DAKAR_INSTITUTIONNELLE', 'TGI_PIKINE', 'TGI_GUEDIAWAYE', 'TGI_RUFISQUE', 'TGI_KEUR_MASSAR'].map(key => (
+                            {['TGI_DAKAR_CIVIL', 'TGI_DAKAR_STATUT_PERSONNEL', 'TGI_DAKAR_FDTR', 'TGI_DAKAR_CORRECTIONNELLE', 'TGI_DAKAR_INSTRUCTION'].map(key => (
+                                <MenuItem key={key} value={key} sx={{ pl: 4 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />
+                                        {CHAMBRE_COLORS[key].icon} {CHAMBRE_COLORS[key].label}
+                                    </Box>
+                                </MenuItem>
+                            ))}
+
+                            <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>TGI Pikine</ListSubheader>
+                            {['TGI_PIKINE_CIVIL', 'TGI_PIKINE_FDTR', 'TGI_PIKINE_CORRECTIONNELLE', 'TGI_PIKINE_INSTRUCTION'].map(key => (
+                                <MenuItem key={key} value={key} sx={{ pl: 4 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />
+                                        {CHAMBRE_COLORS[key].icon} {CHAMBRE_COLORS[key].label}
+                                    </Box>
+                                </MenuItem>
+                            ))}
+
+                            <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>TGI Guédiawaye</ListSubheader>
+                            {['TGI_GUEDIAWAYE_CIVIL', 'TGI_GUEDIAWAYE_FDTR', 'TGI_GUEDIAWAYE_CORRECTIONNELLE', 'TGI_GUEDIAWAYE_INSTRUCTION'].map(key => (
+                                <MenuItem key={key} value={key} sx={{ pl: 4 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />
+                                        {CHAMBRE_COLORS[key].icon} {CHAMBRE_COLORS[key].label}
+                                    </Box>
+                                </MenuItem>
+                            ))}
+
+                            <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>TGI Rufisque</ListSubheader>
+                            {['TGI_RUFISQUE_CIVIL', 'TGI_RUFISQUE_FDTR', 'TGI_RUFISQUE_CORRECTIONNELLE', 'TGI_RUFISQUE_INSTRUCTION'].map(key => (
+                                <MenuItem key={key} value={key} sx={{ pl: 4 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />
+                                        {CHAMBRE_COLORS[key].icon} {CHAMBRE_COLORS[key].label}
+                                    </Box>
+                                </MenuItem>
+                            ))}
+
+                            <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>TGI Keur Massar</ListSubheader>
+                            {['TGI_KEUR_MASSAR_CIVIL', 'TGI_KEUR_MASSAR_FDTR', 'TGI_KEUR_MASSAR_CORRECTIONNELLE', 'TGI_KEUR_MASSAR_INSTRUCTION'].map(key => (
                                 <MenuItem key={key} value={key} sx={{ pl: 4 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />
@@ -777,7 +890,7 @@ function Agenda() {
                             <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>
                                 Tribunal du Travail
                             </ListSubheader>
-                            {['TRAVAIL_DAKAR', 'TRAVAIL_PIKINE', 'TRAVAIL_GUEDIAWAYE', 'TRAVAIL_RUFISQUE'].map(key => (
+                            {['TRAVAIL_DAKAR', 'TRAVAIL_PIKINE', 'TRAVAIL_RUFISQUE'].map(key => (
                                 <MenuItem key={key} value={key} sx={{ pl: 4 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />
@@ -787,9 +900,21 @@ function Agenda() {
                             ))}
 
                             <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>
-                                Autres Jurisdictions
+                                Commerce
                             </ListSubheader>
-                            {['CA_CORRECTIONNEL', 'CA_CRIMINELLE', 'CA_SOCIAL', 'TRIBUNAL_COMMERCE', 'COUR_SUPREME', 'AUTRE'].map(key => (
+                            {['TRIBUNAL_COMMERCE_DAKAR'].map(key => (
+                                <MenuItem key={key} value={key} sx={{ pl: 4 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />
+                                        {CHAMBRE_COLORS[key].icon} {CHAMBRE_COLORS[key].label}
+                                    </Box>
+                                </MenuItem>
+                            ))}
+
+                            <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>
+                                Autres
+                            </ListSubheader>
+                            {['CA_CORRECTIONNEL', 'CA_CRIMINELLE', 'CA_SOCIAL', 'COUR_SUPREME', 'AUTRE'].map(key => (
                                 <MenuItem key={key} value={key} sx={{ pl: 4 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />

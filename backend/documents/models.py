@@ -871,29 +871,49 @@ class AgendaEvent(models.Model):
         TI_RUFISQUE = 'TI_RUFISQUE', "TI Rufisque"
         TI_KEUR_MASSAR = 'TI_KEUR_MASSAR', "TI Keur Massar"
         
-        # TGI (Tribunaux de Grande Instance)
+        # TGI Dakar
         TGI_DAKAR_CIVIL = 'TGI_DAKAR_CIVIL', "TGI Dakar - Civil"
         TGI_DAKAR_STATUT_PERSONNEL = 'TGI_DAKAR_STATUT_PERSONNEL', "TGI Dakar - Statut Personnel"
         TGI_DAKAR_FDTR = 'TGI_DAKAR_FDTR', "TGI Dakar - FDTR"
         TGI_DAKAR_CORRECTIONNELLE = 'TGI_DAKAR_CORRECTIONNELLE', "TGI Dakar - Correctionnelle"
-        TGI_DAKAR_INSTITUTIONNELLE = 'TGI_DAKAR_INSTITUTIONNELLE', "TGI Dakar - Institutionnelle"
+        TGI_DAKAR_INSTRUCTION = 'TGI_DAKAR_INSTRUCTION', "TGI Dakar - Instruction"
         
-        TGI_PIKINE = 'TGI_PIKINE', "TGI Pikine"
-        TGI_GUEDIAWAYE = 'TGI_GUEDIAWAYE', "TGI Guédiawaye"
-        TGI_RUFISQUE = 'TGI_RUFISQUE', "TGI Rufisque"
-        TGI_KEUR_MASSAR = 'TGI_KEUR_MASSAR', "TGI Keur Massar"
+        # TGI Pikine
+        TGI_PIKINE_CIVIL = 'TGI_PIKINE_CIVIL', "TGI Pikine - Civil"
+        TGI_PIKINE_FDTR = 'TGI_PIKINE_FDTR', "TGI Pikine - FDTR"
+        TGI_PIKINE_CORRECTIONNELLE = 'TGI_PIKINE_CORRECTIONNELLE', "TGI Pikine - Correctionnelle"
+        TGI_PIKINE_INSTRUCTION = 'TGI_PIKINE_INSTRUCTION', "TGI Pikine - Instruction"
+
+        # TGI Guédiawaye
+        TGI_GUEDIAWAYE_CIVIL = 'TGI_GUEDIAWAYE_CIVIL', "TGI Guédiawaye - Civil"
+        TGI_GUEDIAWAYE_FDTR = 'TGI_GUEDIAWAYE_FDTR', "TGI Guédiawaye - FDTR"
+        TGI_GUEDIAWAYE_CORRECTIONNELLE = 'TGI_GUEDIAWAYE_CORRECTIONNELLE', "TGI Guédiawaye - Correctionnelle"
+        TGI_GUEDIAWAYE_INSTRUCTION = 'TGI_GUEDIAWAYE_INSTRUCTION', "TGI Guédiawaye - Instruction"
+
+        # TGI Rufisque
+        TGI_RUFISQUE_CIVIL = 'TGI_RUFISQUE_CIVIL', "TGI Rufisque - Civil"
+        TGI_RUFISQUE_FDTR = 'TGI_RUFISQUE_FDTR', "TGI Rufisque - FDTR"
+        TGI_RUFISQUE_CORRECTIONNELLE = 'TGI_RUFISQUE_CORRECTIONNELLE', "TGI Rufisque - Correctionnelle"
+        TGI_RUFISQUE_INSTRUCTION = 'TGI_RUFISQUE_INSTRUCTION', "TGI Rufisque - Instruction"
+
+        # TGI Keur Massar
+        TGI_KEUR_MASSAR_CIVIL = 'TGI_KEUR_MASSAR_CIVIL', "TGI Keur Massar - Civil"
+        TGI_KEUR_MASSAR_FDTR = 'TGI_KEUR_MASSAR_FDTR', "TGI Keur Massar - FDTR"
+        TGI_KEUR_MASSAR_CORRECTIONNELLE = 'TGI_KEUR_MASSAR_CORRECTIONNELLE', "TGI Keur Massar - Correctionnelle"
+        TGI_KEUR_MASSAR_INSTRUCTION = 'TGI_KEUR_MASSAR_INSTRUCTION', "TGI Keur Massar - Instruction"
         
         # Tribunal du Travail
         TRAVAIL_DAKAR = 'TRAVAIL_DAKAR', "Tribunal du Travail Dakar"
         TRAVAIL_PIKINE = 'TRAVAIL_PIKINE', "Tribunal du Travail Pikine"
-        TRAVAIL_GUEDIAWAYE = 'TRAVAIL_GUEDIAWAYE', "Tribunal du Travail Guédiawaye"
         TRAVAIL_RUFISQUE = 'TRAVAIL_RUFISQUE', "Tribunal du Travail Rufisque"
+        
+        # Tribunal de Commerce
+        TRIBUNAL_COMMERCE_DAKAR = 'TRIBUNAL_COMMERCE_DAKAR', "Tribunal de Commerce de Dakar"
         
         # Cours d'Appel et Autres
         CA_CORRECTIONNEL = 'CA_CORRECTIONNEL', 'CA Correctionnel'
         CA_CRIMINELLE = 'CA_CRIMINELLE', 'CA Criminelle'
         CA_SOCIAL = 'CA_SOCIAL', 'CA Social'
-        TRIBUNAL_COMMERCE = 'TRIBUNAL_COMMERCE', 'Tribunal de Commerce'
         COUR_SUPREME = 'COUR_SUPREME', 'Cour Suprême'
         AUTRE = 'AUTRE', 'Autre'
 

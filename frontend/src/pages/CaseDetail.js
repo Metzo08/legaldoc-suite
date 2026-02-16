@@ -73,28 +73,49 @@ const CHAMBRE_COLORS = {
     TI_RUFISQUE: { label: 'TI Rufisque', color: '#795548', icon: '🏛️' },
     TI_KEUR_MASSAR: { label: 'TI Keur Massar', color: '#795548', icon: '🏛️' },
 
-    // TGI (Tribunaux de Grande Instance)
+    // TGI Dakar
     TGI_DAKAR_CIVIL: { label: 'TGI Dakar - Civil', color: '#3f51b5', icon: '⚖️' },
     TGI_DAKAR_STATUT_PERSONNEL: { label: 'TGI Dakar - Statut Personnel', color: '#3f51b5', icon: '👤' },
     TGI_DAKAR_FDTR: { label: 'TGI Dakar - FDTR', color: '#3f51b5', icon: '📋' },
     TGI_DAKAR_CORRECTIONNELLE: { label: 'TGI Dakar - Correctionnelle', color: '#3f51b5', icon: '👨‍⚖️' },
-    TGI_DAKAR_INSTITUTIONNELLE: { label: 'TGI Dakar - Institutionnelle', color: '#3f51b5', icon: '🏛️' },
-    TGI_PIKINE: { label: 'TGI Pikine', color: '#3f51b5', icon: '🏛️' },
-    TGI_GUEDIAWAYE: { label: 'TGI Guédiawaye', color: '#3f51b5', icon: '🏛️' },
-    TGI_RUFISQUE: { label: 'TGI Rufisque', color: '#3f51b5', icon: '🏛️' },
-    TGI_KEUR_MASSAR: { label: 'TGI Keur Massar', color: '#3f51b5', icon: '🏛️' },
+    TGI_DAKAR_INSTRUCTION: { label: 'TGI Dakar - Instruction', color: '#3f51b5', icon: '🔍' },
+
+    // TGI Pikine
+    TGI_PIKINE_CIVIL: { label: 'TGI Pikine - Civil', color: '#3f51b5', icon: '⚖️' },
+    TGI_PIKINE_FDTR: { label: 'TGI Pikine - FDTR', color: '#3f51b5', icon: '📋' },
+    TGI_PIKINE_CORRECTIONNELLE: { label: 'TGI Pikine - Correctionnelle', color: '#3f51b5', icon: '👨‍⚖️' },
+    TGI_PIKINE_INSTRUCTION: { label: 'TGI Pikine - Instruction', color: '#3f51b5', icon: '🔍' },
+
+    // TGI Guédiawaye
+    TGI_GUEDIAWAYE_CIVIL: { label: 'TGI Guédiawaye - Civil', color: '#3f51b5', icon: '⚖️' },
+    TGI_GUEDIAWAYE_FDTR: { label: 'TGI Guédiawaye - FDTR', color: '#3f51b5', icon: '📋' },
+    TGI_GUEDIAWAYE_CORRECTIONNELLE: { label: 'TGI Guédiawaye - Correctionnelle', color: '#3f51b5', icon: '👨‍⚖️' },
+    TGI_GUEDIAWAYE_INSTRUCTION: { label: 'TGI Guédiawaye - Instruction', color: '#3f51b5', icon: '🔍' },
+
+    // TGI Rufisque
+    TGI_RUFISQUE_CIVIL: { label: 'TGI Rufisque - Civil', color: '#3f51b5', icon: '⚖️' },
+    TGI_RUFISQUE_FDTR: { label: 'TGI Rufisque - FDTR', color: '#3f51b5', icon: '📋' },
+    TGI_RUFISQUE_CORRECTIONNELLE: { label: 'TGI Rufisque - Correctionnelle', color: '#3f51b5', icon: '👨‍⚖️' },
+    TGI_RUFISQUE_INSTRUCTION: { label: 'TGI Rufisque - Instruction', color: '#3f51b5', icon: '🔍' },
+
+    // TGI Keur Massar
+    TGI_KEUR_MASSAR_CIVIL: { label: 'TGI Keur Massar - Civil', color: '#3f51b5', icon: '⚖️' },
+    TGI_KEUR_MASSAR_FDTR: { label: 'TGI Keur Massar - FDTR', color: '#3f51b5', icon: '📋' },
+    TGI_KEUR_MASSAR_CORRECTIONNELLE: { label: 'TGI Keur Massar - Correctionnelle', color: '#3f51b5', icon: '👨‍⚖️' },
+    TGI_KEUR_MASSAR_INSTRUCTION: { label: 'TGI Keur Massar - Instruction', color: '#3f51b5', icon: '🔍' },
 
     // Travail
     TRAVAIL_DAKAR: { label: 'Travail Dakar', color: '#ff9800', icon: '👷' },
     TRAVAIL_PIKINE: { label: 'Travail Pikine', color: '#ff9800', icon: '👷' },
-    TRAVAIL_GUEDIAWAYE: { label: 'Travail Guédiawaye', color: '#ff9800', icon: '👷' },
     TRAVAIL_RUFISQUE: { label: 'Travail Rufisque', color: '#ff9800', icon: '👷' },
+
+    // Commerce
+    TRIBUNAL_COMMERCE_DAKAR: { label: 'Tribunal de Commerce de Dakar', color: '#00bcd4', icon: '💼' },
 
     // Cours d'Appel et Autres
     CA_CORRECTIONNEL: { label: 'CA Correctionnel', color: '#2196f3', icon: '⚖️' },
     CA_CRIMINELLE: { label: 'CA Criminelle', color: '#f44336', icon: '🔴' },
     CA_SOCIAL: { label: 'CA Social', color: '#4caf50', icon: '🤝' },
-    TRIBUNAL_COMMERCE: { label: 'Tribunal de Commerce', color: '#00bcd4', icon: '💼' },
     COUR_SUPREME: { label: 'Cour Suprême', color: '#b71c1c', icon: '🏛️' },
     AUTRE: { label: 'Autre', color: '#607d8b', icon: '📌' },
 };
