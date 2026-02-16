@@ -939,7 +939,7 @@ class AgendaEvent(models.Model):
         verbose_name="Type d'événement"
     )
     type_chambre = models.CharField(
-        max_length=30,
+        max_length=50,
         choices=TypeChambre.choices,
         default=TypeChambre.AUTRE,
         verbose_name='Type de chambre'
