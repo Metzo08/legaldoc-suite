@@ -899,7 +899,6 @@ function Documents() {
                             <MenuItem value="SOCIAL">Social</MenuItem>
                             <MenuItem value="PENAL">Pénal</MenuItem>
                             <MenuItem value="CORRECTIONNEL">Correctionnel</MenuItem>
-                            <MenuItem value="TI_FAMILLE">TI Famille</MenuItem>
                         </TextField>
                     </Box>
                 </DialogContent>
