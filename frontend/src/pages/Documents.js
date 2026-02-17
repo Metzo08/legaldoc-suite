@@ -74,7 +74,7 @@ function Documents() {
 
     // État pour la création rapide de dossier
     const [quickCaseDialog, setQuickCaseDialog] = useState(false);
-    const [newCaseData, setNewCaseData] = useState({ title: '', client: '' });
+    const [newCaseData, setNewCaseData] = useState({ title: '', client: '', category: 'CIVIL' });
 
     const [formData, setFormData] = useState({
         title: '',
@@ -323,6 +323,7 @@ function Documents() {
             const resp = await casesAPI.create({
                 title: newCaseData.title,
                 client: newCaseData.client,
+                category: newCaseData.category,
                 reference: `DOS-${Date.now()}`, // Simple auto-ref
                 status: 'OPEN',
                 description: 'Créé depuis l\'upload rapide'
@@ -331,7 +332,7 @@ function Documents() {
             setCases(prev => [newCase, ...prev]);
             setFormData(prev => ({ ...prev, case: newCase.id })); // Auto-select new case
             setQuickCaseDialog(false);
-            setNewCaseData({ title: '', client: '' });
+            setNewCaseData({ title: '', client: '', category: 'CIVIL' });
             showNotification("Dossier créé et sélectionné !");
         } catch (error) {
             console.error("Erreur création dossier:", error);
@@ -886,6 +887,20 @@ function Documents() {
                                 <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
                             ))}
                         </TextField>
+                        <TextField
+                            label="Catégorie"
+                            select
+                            value={newCaseData.category}
+                            onChange={(e) => setNewCaseData({ ...newCaseData, category: e.target.value })}
+                            fullWidth
+                        >
+                            <MenuItem value="CIVIL">Civil</MenuItem>
+                            <MenuItem value="COMMERCIAL">Commercial</MenuItem>
+                            <MenuItem value="SOCIAL">Social</MenuItem>
+                            <MenuItem value="PENAL">Pénal</MenuItem>
+                            <MenuItem value="CORRECTIONNEL">Correctionnel</MenuItem>
+                            <MenuItem value="TI_FAMILLE">TI Famille</MenuItem>
+                        </TextField>
                     </Box>
                 </DialogContent>
                 <DialogActions>
@@ -1113,17 +1128,19 @@ function Documents() {
             </Dialog>
 
             {/* AI CHAT DIALOG */}
-            {selectedCaseId && (
-                <AIChatDialog
-                    open={chatOpen}
-                    onClose={() => setChatOpen(false)}
-                    caseId={selectedCaseId}
-                    caseTitle={cases.find(c => c.id === selectedCaseId)?.title || "Dossier"}
-                />
-            )}
+            {
+                selectedCaseId && (
+                    <AIChatDialog
+                        open={chatOpen}
+                        onClose={() => setChatOpen(false)}
+                        caseId={selectedCaseId}
+                        caseTitle={cases.find(c => c.id === selectedCaseId)?.title || "Dossier"}
+                    />
+                )
+            }
 
             <DeleteConfirmDialog open={deleteDialog} onClose={() => setDeleteDialog(false)} onConfirm={handleConfirmDelete} title="ce document" itemName={docToDelete?.title} />
-        </Box>
+        </Box >
     );
 }
 

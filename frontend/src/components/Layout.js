@@ -55,6 +55,7 @@ const menuItems = [
     { text: 'Tâches', icon: <TaskIcon />, path: '/tasks' },
     { text: 'Clients', icon: <PeopleIcon />, path: '/clients' },
     { text: 'Dossiers', icon: <FolderIcon />, path: '/cases' },
+    { text: 'Échéances', icon: <HistoryIcon />, path: '/deadlines' },
     { text: 'Documents', icon: <DescriptionIcon />, path: '/documents' },
     { text: 'Étiquettes', icon: <LabelIcon />, path: '/tags', excludeClient: true },
     { text: 'Recherche avancée', icon: <SearchIcon />, path: '/search', excludeClient: true },

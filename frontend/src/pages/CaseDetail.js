@@ -328,7 +328,7 @@ const CaseDetail = () => {
                 <Box>
                     <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} sx={{ mb: 1 }}>
                         <Link underline="hover" color="inherit" onClick={() => navigate('/cases')} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                            <FolderIcon sx={{ mr: 0.5, color: ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(caseData.category) ? '#facc15' : '#1d4ed8' }} fontSize="inherit" />
+                            <FolderIcon sx={{ mr: 0.5, color: ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(caseData.category) ? '#facc15' : '#1d4ed8' }} fontSize="inherit" />
                             Dossiers
                         </Link>
                         <Typography color="text.primary">{caseData.reference}</Typography>
@@ -365,11 +365,11 @@ const CaseDetail = () => {
                                                 label={caseData.category}
                                                 size="small"
                                                 sx={{
-                                                    bgcolor: ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(caseData.category) ? '#fefce8' : '#eff6ff',
-                                                    color: ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(caseData.category) ? '#a16207' : '#1d4ed8',
+                                                    bgcolor: ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(caseData.category) ? '#fefce8' : '#eff6ff',
+                                                    color: ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(caseData.category) ? '#a16207' : '#1d4ed8',
                                                     fontWeight: 700,
                                                     border: '1px solid',
-                                                    borderColor: ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(caseData.category) ? '#facc15' : '#3b82f6'
+                                                    borderColor: ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(caseData.category) ? '#facc15' : '#3b82f6'
                                                 }}
                                             />
                                         </Box>

@@ -260,7 +260,7 @@ function Cases() {
             headerName: 'Numéro dossier',
             width: 160,
             renderCell: (params) => {
-                const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(params.row.category);
+                const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(params.row.category);
                 return (
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <FolderIcon sx={{ color: isYellow ? '#facc15' : '#1d4ed8', mr: 1, fontSize: 20 }} />
@@ -342,7 +342,7 @@ function Cases() {
     const totalCases = cases.length;
     const openCases = cases.filter(c => c.status === 'OUVERT').length;
     // Dossiers civils = civil + commercial + social (jaune)
-    const civilCases = cases.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(c.category)).length;
+    const civilCases = cases.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(c.category)).length;
     const penalCases = cases.filter(c => ['PENAL', 'CORRECTIONNEL'].includes(c.category)).length;
 
     const [filterMode, setFilterMode] = useState('ALL');
@@ -368,7 +368,7 @@ function Cases() {
             base = base.filter(c => c.status === 'OUVERT');
         } else if (filterMode === 'CIVIL') {
             // Jaune = civil, commercial, social
-            base = base.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(c.category));
+            base = base.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(c.category));
         } else if (filterMode === 'CORRECTIONNEL') {
             // Bleu = pénal, correctionnel
             base = base.filter(c => ['PENAL', 'CORRECTIONNEL'].includes(c.category));
@@ -513,6 +513,7 @@ function Cases() {
                                 <MenuItem value="SOCIAL">Social</MenuItem>
                                 <MenuItem value="PENAL">Pénal</MenuItem>
                                 <MenuItem value="CORRECTIONNEL">Correctionnel</MenuItem>
+                                <MenuItem value="TI_FAMILLE">TI Famille</MenuItem>
                             </TextField>
                         </Grid>
 
