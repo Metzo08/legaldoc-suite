@@ -60,7 +60,6 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
         logo: null
     };
 
-    const isDefault = false;
     const apiName = cabinetInfo?.branding?.name?.trim() || '';
     const isDefaultName = apiName === '' || apiName === 'Mon Cabinet';
     const hasApiData = !isDefaultName;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
     Box,
     Typography,
@@ -8,7 +8,6 @@ import {
     Button,
     Divider,
     Switch,
-    FormControlLabel,
     Dialog,
     DialogTitle,
     DialogContent,
@@ -18,10 +17,7 @@ import {
     CircularProgress
 } from '@mui/material';
 import {
-    Security as SecurityIcon,
-    Person as PersonIcon,
-    QrCode as QrCodeIcon,
-    VpnKey as KeyIcon
+    Security as SecurityIcon
 } from '@mui/icons-material';
 import { useNotification } from '../context/NotificationContext';
 import { usersAPI } from '../services/api';

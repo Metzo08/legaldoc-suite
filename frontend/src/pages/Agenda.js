@@ -33,6 +33,7 @@ const CHAMBRE_COLORS = {
     TI_GUEDIAWAYE: { label: 'TI Guédiawaye', color: '#795548', icon: '🏛️' },
     TI_RUFISQUE: { label: 'TI Rufisque', color: '#795548', icon: '🏛️' },
     TI_KEUR_MASSAR: { label: 'TI Keur Massar', color: '#795548', icon: '🏛️' },
+    TI_FAMILLE: { label: 'TI Famille', color: '#795548', icon: '👨‍👩‍👧‍👦' },
 
     // TGI Dakar
     TGI_DAKAR_CIVIL: { label: 'TGI Dakar - Civil', color: '#3f51b5', icon: '⚖️' },
@@ -492,7 +493,7 @@ function Agenda() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <GavelIcon sx={{ fontSize: 36, color: '#6366f1' }} />
                     <Box>
-                        <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: '-0.02em' }}>Agenda juridique</Typography>
+                        <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: '-0.02em' }}>Agenda du cabinet</Typography>
                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>Gestion des audiences et procès</Typography>
                     </Box>
                 </Box>
@@ -581,7 +582,7 @@ function Agenda() {
                             <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>
                                 TI (Tribunaux d'Instance)
                             </ListSubheader>
-                            {['TI_DAKAR', 'TI_PIKINE', 'TI_GUEDIAWAYE', 'TI_RUFISQUE', 'TI_KEUR_MASSAR'].map(key => (
+                            {['TI_DAKAR', 'TI_PIKINE', 'TI_GUEDIAWAYE', 'TI_RUFISQUE', 'TI_KEUR_MASSAR', 'TI_FAMILLE'].map(key => (
                                 <MenuItem key={key} value={key} sx={{ pl: 4 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />
@@ -826,7 +827,7 @@ function Agenda() {
                             <ListSubheader sx={{ fontWeight: 800, color: 'primary.main', bgcolor: 'background.paper', lineHeight: '36px' }}>
                                 TI (Tribunaux d'Instance)
                             </ListSubheader>
-                            {['TI_DAKAR', 'TI_PIKINE', 'TI_GUEDIAWAYE', 'TI_RUFISQUE', 'TI_KEUR_MASSAR'].map(key => (
+                            {['TI_DAKAR', 'TI_PIKINE', 'TI_GUEDIAWAYE', 'TI_RUFISQUE', 'TI_KEUR_MASSAR', 'TI_FAMILLE'].map(key => (
                                 <MenuItem key={key} value={key} sx={{ pl: 4 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <CircleIcon sx={{ fontSize: 10, color: CHAMBRE_COLORS[key].color }} />

@@ -1076,17 +1076,34 @@ class DecisionViewSet(viewsets.ModelViewSet):
     """
     serializer_class = DecisionSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [filters.OrderingFilter]
-    ordering = ['decision_type', 'date_decision']
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    search_fields = [
+        'case__reference', 'case__title', 'case__represented_party', 
+        'case__adverse_party', 'juridiction', 'numero_decision', 'resultat'
+    ]
+    ordering = ['-date_decision', 'decision_type']
 
     def get_queryset(self):
         """
-        Filtre les décisions par dossier si le paramètre 'case' est fourni.
+        Filtre les décisions par dossier, type ou juridiction.
         """
-        queryset = Decision.objects.select_related('case', 'created_by').all()
+        queryset = Decision.objects.select_related('case', 'case__client', 'created_by').all()
+        
+        # Filtrer par dossier
         case_id = self.request.query_params.get('case', None)
         if case_id and str(case_id).isdigit():
             queryset = queryset.filter(case_id=case_id)
+            
+        # Filtrer par type de décision
+        decision_type = self.request.query_params.get('decision_type', None)
+        if decision_type:
+            queryset = queryset.filter(decision_type=decision_type)
+            
+        # Filtrer par juridiction
+        juridiction = self.request.query_params.get('juridiction', None)
+        if juridiction:
+            queryset = queryset.filter(juridiction__icontains=juridiction)
+            
         return queryset
 
     def perform_create(self, serializer):

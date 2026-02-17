@@ -566,7 +566,7 @@ function Documents() {
             renderCell: (params) => {
                 const matchedCase = cases.find(c => c.id === params.row.case);
                 const category = matchedCase?.category || 'AUTRE';
-                const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(category);
+                const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(category);
                 const categoryLabel = category.charAt(0) + category.slice(1).toLowerCase();
 
                 return (
@@ -654,9 +654,6 @@ function Documents() {
             headerName: 'Actions',
             width: 200,
             getActions: (params) => {
-                const versions = params.row.versions || [];
-                const sortedVersions = [...versions].sort((a, b) => b.version_number - a.version_number);
-
                 const actions = [
                     <GridActionsCellItem icon={<PreviewIcon />} label="Aperçu" onClick={() => handlePreview(params.row)} color="info" />,
                     <GridActionsCellItem icon={<EditIcon />} label="Modifier" onClick={() => handleEditClick(params.row)} color="warning" />,

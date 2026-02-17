@@ -26,7 +26,6 @@ import {
     Description as DescriptionIcon,
     Search as SearchIcon,
     Person as PersonIcon,
-    Assignment as AssignmentIcon,
     Logout as LogoutIcon,
     Brightness4 as DarkModeIcon,
     Brightness7 as LightModeIcon,
@@ -50,8 +49,9 @@ const drawerWidth = 260;
 
 const menuItems = [
     { text: 'Tableau de bord', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Agenda', icon: <CalendarMonthIcon />, path: '/agenda' },
+    { text: 'Agenda du cabinet', icon: <CalendarMonthIcon />, path: '/agenda' },
     { text: 'Audiences', icon: <GavelIcon />, path: '/audiences' },
+    { text: 'Décisions rendues', icon: <GavelIcon />, path: '/decisions' },
     { text: 'Tâches', icon: <TaskIcon />, path: '/tasks' },
     { text: 'Clients', icon: <PeopleIcon />, path: '/clients' },
     { text: 'Dossiers', icon: <FolderIcon />, path: '/cases' },

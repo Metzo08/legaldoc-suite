@@ -122,7 +122,7 @@ function Dashboard() {
             });
 
             // Groupe Civil & Autres (Civil, Commercial, Social)
-            const civilCases = allCasesData.filter(c => c && ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(c.category));
+            const civilCases = allCasesData.filter(c => c && ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(c.category));
             // Groupe Pénal & Correctionnel
             const penalCases = allCasesData.filter(c => c && ['PENAL', 'CORRECTIONNEL'].includes(c.category));
             setCasesByCategory({

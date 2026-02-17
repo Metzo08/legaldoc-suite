@@ -238,13 +238,14 @@ function Cases() {
     // Fonction pour obtenir le label et la couleur de catégorie
     const getCategoryDisplay = (category) => {
         // Jaune pour civil/commercial/social, Bleu pour pénal/correctionnel
-        const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(category);
+        const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(category);
         const labels = {
             'CIVIL': 'Civil',
             'COMMERCIAL': 'Commercial',
             'SOCIAL': 'Social',
             'PENAL': 'Pénal',
-            'CORRECTIONNEL': 'Correctionnel'
+            'CORRECTIONNEL': 'Correctionnel',
+            'TI_FAMILLE': 'TI Famille'
         };
         return {
             label: labels[category] || category,

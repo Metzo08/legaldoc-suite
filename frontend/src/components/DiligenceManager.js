@@ -287,7 +287,7 @@ const DiligenceManager = ({ caseId = null, title = "Pense-bête", showCaseLink =
                                     </Typography>
                                     {!caseId && showCaseLink && item.case_reference && (() => {
                                         const category = item.case_category || 'CIVIL';
-                                        const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(category);
+                                        const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(category);
                                         const isBlue = ['PENAL', 'CORRECTIONNEL'].includes(category);
                                         return (
                                             <Chip

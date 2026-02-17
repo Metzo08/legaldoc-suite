@@ -81,6 +81,7 @@ class Case(models.Model):
         SOCIAL = 'SOCIAL', 'Social'
         PENAL = 'PENAL', 'Pénal'
         CORRECTIONNEL = 'CORRECTIONNEL', 'Correctionnel'
+        TI_FAMILLE = 'TI_FAMILLE', 'TI Famille'
     
     title = models.CharField(max_length=255, blank=True, verbose_name='Intitulé de l\'affaire')
     reference = models.CharField(
@@ -728,6 +729,10 @@ class Decision(models.Model):
         APPEL = 'APPEL', 'Appel'
         POURVOI = 'POURVOI', 'Pourvoi'
 
+    class Section(models.TextChoices):
+        GENERALE = 'GENERALE', 'Décisions Générales'
+        CABINET_INSTRUCTION = 'CABINET_INSTRUCTION', 'Cabinets d\'Instruction'
+
     case = models.ForeignKey(
         Case,
         on_delete=models.CASCADE,
@@ -761,6 +766,27 @@ class Decision(models.Model):
     observations = models.TextField(
         blank=True,
         verbose_name='Observations'
+    )
+    
+    # Nouveaux champs pour le module avancé
+    section = models.CharField(
+        max_length=50,
+        choices=Section.choices,
+        default=Section.GENERALE,
+        verbose_name='Section'
+    )
+    cabinet_number = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name='N° Cabinet'
+    )
+    infraction_motif = models.TextField(
+        blank=True,
+        verbose_name='Infraction / Motif'
+    )
+    mesure = models.TextField(
+        blank=True,
+        verbose_name='Mesure'
     )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -870,6 +896,7 @@ class AgendaEvent(models.Model):
         TI_GUEDIAWAYE = 'TI_GUEDIAWAYE', "TI Guédiawaye"
         TI_RUFISQUE = 'TI_RUFISQUE', "TI Rufisque"
         TI_KEUR_MASSAR = 'TI_KEUR_MASSAR', "TI Keur Massar"
+        TI_FAMILLE = 'TI_FAMILLE', "TI Famille"
         
         # TGI Dakar
         TGI_DAKAR_CIVIL = 'TGI_DAKAR_CIVIL', "TGI Dakar - Civil"

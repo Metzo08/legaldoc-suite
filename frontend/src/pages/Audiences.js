@@ -381,7 +381,7 @@ function Audiences() {
                     <Grid container spacing={2}>
                         {groupedAudiences[date].map((audience) => {
                             const category = getCaseCategory(audience.case);
-                            const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL'].includes(category);
+                            const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(category);
                             const isBlue = ['PENAL', 'CORRECTIONNEL'].includes(category);
                             const categoryLabel = category.charAt(0) + category.slice(1).toLowerCase();
 

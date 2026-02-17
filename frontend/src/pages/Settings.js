@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Box,
     Typography,
@@ -8,16 +8,12 @@ import {
     Button,
     Divider,
     CircularProgress,
-    Alert,
-    IconButton,
-    Tooltip
+    Alert
 } from '@mui/material';
 import {
-    Settings as SettingsIcon,
     Save as SaveIcon,
     Business as BusinessIcon,
-    Palette as PaletteIcon,
-    PhotoCamera as PhotoCameraIcon
+    Palette as PaletteIcon
 } from '@mui/icons-material';
 import { useNotification } from '../context/NotificationContext';
 import { cabinetAPI } from '../services/api';
@@ -37,11 +33,7 @@ function Settings() {
         secondary_color: '#c29b61'
     });
 
-    useEffect(() => {
-        loadSettings();
-    }, []);
-
-    const loadSettings = async () => {
+    const loadSettings = useCallback(async () => {
         try {
             setLoading(true);
             const response = await cabinetAPI.getSettings();
@@ -52,7 +44,11 @@ function Settings() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [showNotification]);
+
+    useEffect(() => {
+        loadSettings();
+    }, [loadSettings]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;

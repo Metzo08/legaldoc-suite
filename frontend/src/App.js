@@ -24,6 +24,7 @@ const AuditLog = lazy(() => import('./pages/AuditLog'));
 const Tags = lazy(() => import('./pages/Tags'));
 const Tasks = lazy(() => import('./pages/Tasks'));
 const Deadlines = lazy(() => import('./pages/Deadlines'));
+const Decisions = lazy(() => import('./pages/Decisions'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Agenda = lazy(() => import('./pages/Agenda'));
 const Settings = lazy(() => import('./pages/Settings'));
@@ -138,6 +139,7 @@ function App() {
                                                             <Route path="/cases/:id" element={<CaseDetail />} />
                                                             <Route path="/documents" element={<Documents />} />
                                                             <Route path="/audiences" element={<Audiences />} />
+                                                            <Route path="/decisions" element={<Decisions />} />
                                                             <Route path="/deadlines" element={<Deadlines />} />
                                                             <Route path="/tags" element={<Tags />} />
                                                             <Route path="/tasks" element={<Tasks />} />

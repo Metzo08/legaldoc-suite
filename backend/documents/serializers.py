@@ -306,14 +306,18 @@ class DecisionSerializer(serializers.ModelSerializer):
     Sérialiseur pour le modèle Decision.
     """
     case_reference = serializers.CharField(source='case.reference', read_only=True)
+    client_name = serializers.CharField(source='case.client.name', read_only=True)
+    case_details = serializers.SerializerMethodField()
     created_by_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Decision
         fields = (
-            'id', 'case', 'case_reference', 'decision_type', 'date_decision',
-            'juridiction', 'numero_decision', 'resultat', 'observations',
-            'created_by', 'created_by_name', 'created_at', 'updated_at'
+            'id', 'case', 'case_reference', 'client_name', 'case_details',
+            'decision_type', 'date_decision', 'juridiction', 'numero_decision',
+            'resultat', 'observations', 'section', 'cabinet_number',
+            'infraction_motif', 'mesure', 'created_by', 'created_by_name',
+            'created_at', 'updated_at'
         )
         read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
         extra_kwargs = {
@@ -322,6 +326,15 @@ class DecisionSerializer(serializers.ModelSerializer):
 
     def get_created_by_name(self, obj):
         return obj.created_by.get_full_name() if obj.created_by else None
+
+    def get_case_details(self, obj):
+        if not obj.case:
+            return None
+        return {
+            'title': obj.case.title,
+            'represented_party': obj.case.represented_party,
+            'adverse_party': obj.case.adverse_party,
+        }
 
 
 class DeadlineSerializer(serializers.ModelSerializer):
