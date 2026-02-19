@@ -632,8 +632,8 @@ function LandingPage() {
                                             }}
                                         >
                                             <Avatar size="small" sx={{ bgcolor: alpha(primaryColor, 0.1), color: primaryColor }}><MobileIcon /></Avatar>
-                                            <Box sx={{ mt: 6 }}>
-                                                <Typography variant="h6" sx={{ mb: 3, borderBottom: '2px solid rgba(255,255,255,0.3)', display: 'inline-block', pb: 1, color: '#ffffff !important' }}>Notre équipe</Typography>
+                                            <Box>
+                                                <Typography variant="caption" fontWeight="800" sx={{ color: '#4c6180', display: 'block' }}>Cellulaire</Typography>
                                                 <Typography variant="body2" sx={{ color: '#00255c', fontWeight: 700 }}>{cel}</Typography>
                                             </Box>
                                         </Paper>
