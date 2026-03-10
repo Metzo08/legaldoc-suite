@@ -56,6 +56,8 @@ class UserViewSet(viewsets.ModelViewSet):
         # Pour voir/modifier un profil spécifique, on pourrait affiner avec IsAdminOrSelf
         if self.action in ['list', 'create', 'destroy', 'update', 'partial_update']:
             return [IsAdminRole()]
+        elif self.action == 'verify_otp':
+            return [AllowAny()]
         return [IsAuthenticated()]
     
     @action(detail=False, methods=['GET'])
@@ -203,8 +205,8 @@ class UserViewSet(viewsets.ModelViewSet):
                 
                 totp = pyotp.TOTP(user.two_factor_secret)
                 if totp.verify(otp_code):
-                    # Générer les tokens JWT
-                    refresh = RefreshToken.for_user(user)
+                    # Générer les tokens JWT en incluant les claims personnalisés
+                    refresh = CustomTokenObtainPairSerializer.get_token(user)
                     
                     # Inclure les infos utilisateur comme dans le CustomTokenObtainPairSerializer
                     user_data = UserSerializer(user).data
