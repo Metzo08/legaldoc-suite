@@ -247,6 +247,24 @@ class RolePermissionViewSet(viewsets.ModelViewSet):
     serializer_class = RolePermissionSerializer
     permission_classes = [IsAuthenticated, IsAdminRole]
 
+    def update(self, request, *args, **kwargs):
+        """Override pour créer le rôle s'il n'existe pas (upsert)."""
+        pk = kwargs.get('pk')
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        except Exception:
+            # Si le rôle n'existe pas, on le crée
+            data = request.data.copy()
+            data['role'] = pk
+            serializer = self.get_serializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     @action(detail=False, methods=['POST'], url_path='init-defaults')
     def init_defaults(self, request):
         """Initialise les permissions par défaut si elles n'existent pas."""

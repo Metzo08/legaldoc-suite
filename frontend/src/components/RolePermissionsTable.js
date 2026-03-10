@@ -45,8 +45,9 @@ const RolePermissionsTable = () => {
                 let response = await usersAPI.getRolePermissions();
                 let data = response.data.results || response.data;
 
-                // Si aucune permission n'existe (après un flush), initialiser les défauts
-                if (!data || (Array.isArray(data) && data.length === 0)) {
+                // Si les permissions sont incomplètes (après un flush), initialiser les défauts
+                const items = Array.isArray(data) ? data : [];
+                if (items.length < ROLES.length) {
                     await usersAPI.initRolePermissions();
                     response = await usersAPI.getRolePermissions();
                     data = response.data.results || response.data;
@@ -54,8 +55,8 @@ const RolePermissionsTable = () => {
 
                 // Transformer la liste en objet map { ROLE: { perm: bool } }
                 const permMap = {};
-                const items = Array.isArray(data) ? data : [];
-                items.forEach(item => {
+                const finalItems = Array.isArray(data) ? data : [];
+                finalItems.forEach(item => {
                     permMap[item.role] = item.permissions;
                 });
                 setPermissions(permMap);
