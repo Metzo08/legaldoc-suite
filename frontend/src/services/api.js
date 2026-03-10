@@ -58,7 +58,8 @@ export const usersAPI = {
     confirm2FA: (data) => apiClient.post('/users/confirm_2fa/', data),
     disable2FA: (data) => apiClient.post('/users/disable_2fa/', data),
     getRolePermissions: () => apiClient.get('/users/roles/'),
-    updateRolePermissions: (role, data) => apiClient.patch(`/users/roles/${role}/`, data)
+    updateRolePermissions: (role, data) => apiClient.put(`/users/roles/${role}/`, data),
+    initRolePermissions: () => apiClient.post('/users/roles/init-defaults/')
 };
 
 // API Audit Logs

@@ -30,7 +30,7 @@ const PERMISSION_LABELS = {
     'can_access_audit_log': 'Accéder au journal d\'audit'
 };
 
-const ROLES = ['ADMIN', 'AVOCAT', 'COLLABORATEUR', 'SECRETAIRE', 'CLIENT'];
+const ROLES = ['ADMIN', 'AVOCAT', 'COLLABORATEUR', 'STAGIAIRE', 'SECRETAIRE', 'CLIENT'];
 
 const RolePermissionsTable = () => {
     const { showNotification } = useNotification();
@@ -42,10 +42,20 @@ const RolePermissionsTable = () => {
         const loadPermissions = async () => {
             try {
                 setLoading(true);
-                const response = await usersAPI.getRolePermissions();
+                let response = await usersAPI.getRolePermissions();
+                let data = response.data.results || response.data;
+
+                // Si aucune permission n'existe (après un flush), initialiser les défauts
+                if (!data || (Array.isArray(data) && data.length === 0)) {
+                    await usersAPI.initRolePermissions();
+                    response = await usersAPI.getRolePermissions();
+                    data = response.data.results || response.data;
+                }
+
                 // Transformer la liste en objet map { ROLE: { perm: bool } }
                 const permMap = {};
-                response.data.results.forEach(item => {
+                const items = Array.isArray(data) ? data : [];
+                items.forEach(item => {
                     permMap[item.role] = item.permissions;
                 });
                 setPermissions(permMap);
@@ -75,7 +85,7 @@ const RolePermissionsTable = () => {
             setSaving(true);
             // Envoyer chaque rôle modifié
             const promises = Object.entries(permissions).map(([role, perms]) =>
-                usersAPI.updateRolePermissions(role, { permissions: perms })
+                usersAPI.updateRolePermissions(role, { role: role, permissions: perms })
             );
             await Promise.all(promises);
             showNotification("Permissions mises à jour avec succès !", "success");

@@ -14,10 +14,6 @@ from .serializers import (
     UserUpdateSerializer,
     ChangePasswordSerializer,
     CustomTokenObtainPairSerializer,
-    UserCreateSerializer, 
-    UserUpdateSerializer,
-    ChangePasswordSerializer,
-    CustomTokenObtainPairSerializer,
     VerifyOTPSerializer
 )
 from .role_serializers import RolePermissionSerializer
@@ -236,7 +232,12 @@ class UserViewSet(viewsets.ModelViewSet):
         
         if not user.check_password(password):
             return Response({'password': 'Mot de passe incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
-            
+        
+        user.two_factor_enabled = False
+        user.two_factor_secret = None
+        user.save()
+        return Response({'detail': '2FA désactivée avec succès.'})
+
 class RolePermissionViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour gérer les permissions par rôle.
@@ -280,12 +281,22 @@ class RolePermissionViewSet(viewsets.ModelViewSet):
                 'can_view_dashboard_stats': False,
                 'can_access_audit_log': False
             },
+            'STAGIAIRE': {
+                'can_manage_users': False,
+                'can_view_fees': False,
+                'can_manage_cases': True,
+                'can_delete_cases': False,
+                'can_manage_documents': True,
+                'can_delete_documents': False,
+                'can_view_dashboard_stats': False,
+                'can_access_audit_log': False
+            },
             'SECRETAIRE': {
                 'can_manage_users': False,
                 'can_view_fees': False,
-                'can_manage_cases': True, # Peut créer/modifier dossiers
+                'can_manage_cases': True,
                 'can_delete_cases': False,
-                'can_manage_documents': True, # Peut ajouter docs
+                'can_manage_documents': True,
                 'can_delete_documents': False,
                 'can_view_dashboard_stats': False,
                 'can_access_audit_log': False
@@ -293,9 +304,9 @@ class RolePermissionViewSet(viewsets.ModelViewSet):
             'CLIENT': {
                 'can_manage_users': False,
                 'can_view_fees': False,
-                'can_manage_cases': False, # Lecture seule
+                'can_manage_cases': False,
                 'can_delete_cases': False,
-                'can_manage_documents': False, # Lecture seule
+                'can_manage_documents': False,
                 'can_delete_documents': False,
                 'can_view_dashboard_stats': False,
                 'can_access_audit_log': False
