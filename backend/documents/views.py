@@ -466,33 +466,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
                 page_number=1
             )
         
-        # Fonction interne pour le traitement OCR en tâche de fond
-        def run_ocr_background(doc_id):
-            try:
-                # Recharger le document dans ce thread
-                from .models import Document
-                from django.contrib.postgres.search import SearchVector
-                doc = Document.objects.get(pk=doc_id)
-                
-                process_document_ocr(doc)
-                
-                # Mettre à jour le vecteur de recherche
-                Document.objects.filter(pk=doc_id).update(
-                    search_vector=SearchVector('title', 'description', 'ocr_text', 'file_name')
-                )
-                logger.info(f"OCR et indexation terminés pour document {doc_id}")
-            except Exception as e:
-                logger.error(f"Erreur OCR Task Arrière-plan pour document {doc_id}: {str(e)}")
-
-        # Lancer l'OCR en thread séparé pour ne pas bloquer la réponse HTTP
-        # Utile si Celery n'est pas encore configuré/utilisé pour toutes les tâches
-        try:
-            thread = threading.Thread(target=run_ocr_background, args=(document.id,))
-            thread.daemon = True # Ne bloque pas l'arrêt du serveur
-            thread.start()
-            logger.info(f"Tâche OCR lancée en arrière-plan pour document {document.id}")
-        except Exception as e:
-            logger.error(f"Impossible de lancer le thread OCR pour {document.id}: {str(e)}")
+        self._launch_ocr_background(document.id)
         
         log_action(
             user=self.request.user,
@@ -540,14 +514,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
         document = serializer.save()
         
         if file_changed:
-            try:
-                process_document_ocr(document)
-                # Mettre à jour le vecteur de recherche
-                Document.objects.filter(pk=document.pk).update(
-                    search_vector=SearchVector('title', 'description', 'ocr_text', 'file_name')
-                )
-            except Exception as e:
-                logger.error(f"Erreur OCR après modification pour document {document.id}: {str(e)}")
+            self._launch_ocr_background(document.id)
 
         log_action(
             user=self.request.user,
@@ -573,6 +540,31 @@ class DocumentViewSet(viewsets.ModelViewSet):
             request=request
         )
         return super().retrieve(request, *args, **kwargs)
+
+    def _launch_ocr_background(self, doc_id):
+        """
+        Lance le traitement OCR dans un thread séparé.
+        """
+        def run_ocr_background(document_id):
+            try:
+                from .models import Document
+                from django.contrib.postgres.search import SearchVector
+                doc = Document.objects.get(pk=document_id)
+                process_document_ocr(doc)
+                Document.objects.filter(pk=document_id).update(
+                    search_vector=SearchVector('title', 'description', 'ocr_text', 'file_name')
+                )
+                logger.info(f"OCR et indexation terminés pour document {document_id}")
+            except Exception as e:
+                logger.error(f"Erreur OCR Task Arrière-plan pour document {document_id}: {str(e)}")
+
+        try:
+            thread = threading.Thread(target=run_ocr_background, args=(doc_id,))
+            thread.daemon = True
+            thread.start()
+            logger.info(f"Tâche OCR lancée en arrière-plan pour document {doc_id}")
+        except Exception as e:
+            logger.error(f"Impossible de lancer le thread OCR pour {doc_id}: {str(e)}")
 
     @action(detail=True, methods=['post'], url_path='reprocess-ocr')
     def reprocess_ocr(self, request, pk=None):

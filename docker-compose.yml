@@ -34,7 +34,7 @@ services:
     command: >
       sh -c "python manage.py migrate &&
              python manage.py collectstatic --noinput &&
-             gunicorn legaldoc.wsgi:application --bind 0.0.0.0:8000 --timeout 120"
+             gunicorn legaldoc.wsgi:application --bind 0.0.0.0:8000 --timeout 300"
     volumes:
       - ./backend:/app
       - ./frontend/public/images:/app/frontend_images:ro
