@@ -23,7 +23,7 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
     const navigate = useNavigate();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
+    const [showPassword, setShowPassword] = useState(true);
     const [loading, setLoading] = useState(false);
 
     // 2FA states
@@ -230,7 +230,13 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
                                                 value={username}
                                                 onChange={(e) => setUsername(e.target.value)}
                                                 required
-                                                InputProps={{ startAdornment: <InputAdornment position="start"><Person color="action" /></InputAdornment> }}
+                                                InputProps={{
+                                                    startAdornment: <InputAdornment position="start"><Person sx={{ color: '#1e293b' }} /></InputAdornment>,
+                                                    sx: { color: '#1e293b' } // Forcer la couleur du texte en sombre
+                                                }}
+                                                InputLabelProps={{
+                                                    sx: { color: '#64748b' } // Couleur du label
+                                                }}
                                             />
                                             <TextField
                                                 fullWidth
@@ -241,14 +247,18 @@ function Login({ setIsAuthenticated, cabinetInfo }) {
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 required
                                                 InputProps={{
-                                                    startAdornment: <InputAdornment position="start"><Lock color="action" /></InputAdornment>,
+                                                    startAdornment: <InputAdornment position="start"><Lock sx={{ color: '#1e293b' }} /></InputAdornment>,
                                                     endAdornment: (
                                                         <InputAdornment position="end">
-                                                            <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                                                            <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" sx={{ color: '#1e293b' }}>
                                                                 {showPassword ? <VisibilityOff /> : <Visibility />}
                                                             </IconButton>
                                                         </InputAdornment>
                                                     ),
+                                                    sx: { color: '#1e293b' } // Forcer la couleur du texte en sombre
+                                                }}
+                                                InputLabelProps={{
+                                                    sx: { color: '#64748b' } // Couleur du label
                                                 }}
                                             />
                                         </>
