@@ -38,6 +38,27 @@ class OCRProcessor:
             if hasattr(ImageOps, 'exif_transpose'):
                 image = ImageOps.exif_transpose(image)
                 
+            # 1b. Détecter l'orientation physique de l'image (si à l'envers) avec Tesseract OSD
+            try:
+                import re
+                temp_img = image.copy()
+                if temp_img.mode != 'L':
+                    temp_img = temp_img.convert('L')
+                
+                # psm 0 = Orientation and script detection
+                osd_data = pytesseract.image_to_osd(temp_img, config='--psm 0')
+                rotate_match = re.search(r'Rotate: (\d+)', osd_data)
+                
+                if rotate_match:
+                    angle = int(rotate_match.group(1))
+                    if angle != 0:
+                        # PIL rotate takes counter-clockwise degrees. Tesseract 'Rotate: 90' means rotate 90 degrees clockwise to fix it.
+                        # So we rotate -angle, which is equivalent to 360 - angle counter-clockwise.
+                        image = image.rotate(360 - angle, expand=True)
+                        logger.info(f"Image redressée: rotation de {-angle} degrés appliquée (OSD).")
+            except Exception as e:
+                logger.warning(f"Impossible d'utiliser OSD pour détecter l'orientation: {e}")
+                
             # 2. Upscaling (si l'image est trop petite, l'agrandir pour simuler ~300 DPI pour Tesseract)
             # Tesseract performe mieux sur des lettres d'environ 30px de hauteur.
             if image.width < 1500 or image.height < 1500:
