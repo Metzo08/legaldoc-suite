@@ -42,6 +42,8 @@ import {
     ZoomIn as ZoomInIcon,
     ZoomOut as ZoomOutIcon,
     RestartAlt as ResetIcon,
+    RotateRight as RotateRightIcon,
+    RotateLeft as RotateLeftIcon,
     Contrast as ContrastIcon,
     Description as FileIcon,
     Storage as StorageIcon,
@@ -412,7 +414,6 @@ function Documents() {
             const response = await documentsAPI.reprocessOcr(selectedDoc.id);
             if (response.data.status === 'success') {
                 showNotification("OCR relancé avec succès !");
-                // Mettre à jour le document sélectionné avec les nouveaux résultats (y compris les versions)
                 setSelectedDoc(prev => ({
                     ...prev,
                     ...response.data
@@ -424,6 +425,29 @@ function Documents() {
         } catch (error) {
             console.error('Erreur retraitement OCR:', error);
             showNotification("Erreur lors de la communication avec le serveur.", "error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRotate = async (angle) => {
+        if (!selectedDoc) return;
+        try {
+            setLoading(true);
+            const response = await documentsAPI.rotateImage(selectedDoc.id, angle);
+            if (response.data.status === 'success') {
+                showNotification(`Image pivotée de ${angle}° et OCR relancé avec succès !`);
+                setSelectedDoc(prev => ({
+                    ...prev,
+                    ...response.data
+                }));
+                loadData();
+            } else {
+                showNotification(response.data.message || "Erreur lors de la rotation.", "error");
+            }
+        } catch (error) {
+            console.error('Erreur rotation image:', error);
+            showNotification(error.response?.data?.detail || "Erreur lors de la communication avec le serveur.", "error");
         } finally {
             setLoading(false);
         }
@@ -1039,6 +1063,16 @@ function Documents() {
                     <Button onClick={handleReprocessOcr} startIcon={<ResetIcon />} color="primary" disabled={loading}>
                         {loading ? 'Traitement...' : 'Relancer l\'OCR'}
                     </Button>
+                    <Tooltip title="Pivoter à gauche (sens anti-horaire) et relancer">
+                        <IconButton onClick={() => handleRotate(90)} color="secondary" disabled={loading}>
+                            <RotateLeftIcon />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Pivoter à droite (sens horaire) et relancer">
+                        <IconButton onClick={() => handleRotate(270)} color="secondary" disabled={loading}>
+                            <RotateRightIcon />
+                        </IconButton>
+                    </Tooltip>
                     <Box sx={{ flex: 1 }} />
                     {selectedDoc?.versions?.some(v => v.file_name && v.file_name.toLowerCase().includes('searchable_')) && (
                         <Button

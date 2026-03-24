@@ -573,6 +573,11 @@ class DocumentViewSet(viewsets.ModelViewSet):
         """
         document = self.get_object()
         try:
+            # Vider l'ancien texte pour forcer le retraitement
+            document.ocr_text = ''
+            document.save(update_fields=['ocr_text'])
+            document.pages.all().update(ocr_text='')
+            
             from .ocr import process_document_ocr
             process_document_ocr(document)
             
@@ -597,6 +602,69 @@ class DocumentViewSet(viewsets.ModelViewSet):
                 'status': 'error',
                 'message': f'Erreur lors du retraitement: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=['post'], url_path='rotate-image')
+    def rotate_image(self, request, pk=None):
+        """
+        Pivote physiquement les images associées au document et relance l'OCR.
+        """
+        document = self.get_object()
+        angle = request.data.get('angle', 90)
+        try:
+            angle = int(angle)
+        except ValueError:
+            return Response({"detail": "L'angle doit être un entier."}, status=status.HTTP_400_BAD_REQUEST)
+
+        from PIL import Image
+        import os
+        
+        file_paths = []
+        if document.file and os.path.exists(document.file.path):
+            file_paths.append(document.file.path)
+            
+        for page in document.pages.all():
+            if page.file and os.path.exists(page.file.path) and page.file.path not in file_paths:
+                file_paths.append(page.file.path)
+                
+        rotated = False
+        for path in file_paths:
+            ext = os.path.splitext(path)[1].lower()
+            if ext in ['.jpg', '.jpeg', '.png', '.bmp', '.tiff']:
+                try:
+                    img = Image.open(path)
+                    rotated_img = img.rotate(-angle, expand=True) # Pil prend angle inverse (sens horaire vs trigo)
+                    rotated_img.save(path)
+                    rotated = True
+                except Exception as e:
+                    logger.error(f"Erreur rotation image {path}: {e}")
+                    
+        if not rotated:
+            return Response({"detail": "Aucune image pivotable trouvée (seules les images JPG, PNG, etc. sont supportées)."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            # Forcer la ré-extraction car on a modifié le fichier physiquement
+            document.ocr_text = ''
+            document.save(update_fields=['ocr_text'])
+            document.pages.all().update(ocr_text='')
+            
+            from .ocr import process_document_ocr
+            process_document_ocr(document)
+            
+            from django.contrib.postgres.search import SearchVector
+            Document.objects.filter(pk=document.pk).update(
+                search_vector=SearchVector('title', 'description', 'ocr_text', 'file_name')
+            )
+            
+            document.refresh_from_db()
+            serializer = self.get_serializer(document)
+            return Response({
+                'status': 'success',
+                'message': f'Image pivotée de {angle}° et OCR relancé.',
+                **serializer.data
+            })
+        except Exception as e:
+            logger.error(f"Erreur après rotation {document.id}: {str(e)}")
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=['post'], url_path='add-page')
     def add_page(self, request, pk=None):

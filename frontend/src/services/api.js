@@ -40,7 +40,8 @@ export const documentsAPI = {
     addPage: (id, formData) => apiClient.post(`/documents/documents/${id}/add-page/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),
-    reprocessOcr: (id) => apiClient.post(`/documents/documents/${id}/reprocess-ocr/`)
+    reprocessOcr: (id) => apiClient.post(`/documents/documents/${id}/reprocess-ocr/`),
+    rotateImage: (id, angle) => apiClient.post(`/documents/documents/${id}/rotate-image/`, { angle })
 };
 
 // API Users
