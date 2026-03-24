@@ -22,7 +22,8 @@ import {
     ListItem,
     ListItemText,
     Switch,
-    FormControlLabel
+    FormControlLabel,
+    Autocomplete
 } from '@mui/material';
 import {
     DataGrid,
@@ -145,6 +146,23 @@ function Documents() {
         // handles it via quickFilter. This avoids double-filtering issues.
         return base;
     }, [documents, filterType]);
+
+    const documentTypes = useMemo(() => {
+        const baseTypes = [
+            "CONTRAT", "COURRIER", "JUGEMENT", "PIECE", "NOTE", "MEMOIRE", 
+            "ASSIGNATION", "CONCLUSION", "REQUETE", "ACTE_HUISSIER", 
+            "DOSSIER_ADVERSE", "CITATION", "AUTRE",
+            "Lettres de constitution", "Facture", "Procès-verbal de constat", 
+            "Prestation de serment", "Photocopie carte d'identité", "Chèques", 
+            "Plan pour autorisation de construire", "Assignation en expulsion et démolition", 
+            "Procès-verbal de réunion", "Texte d'explication de la situation", 
+            "Mise en demeure", "Décharges"
+        ];
+        // Récupérer les types uniques déjà présents dans la base de données
+        const usedTypes = documents.map(d => d.document_type).filter(Boolean);
+        // Fusionner et nettoyer
+        return [...new Set([...baseTypes, ...usedTypes])].sort();
+    }, [documents]);
 
     useEffect(() => {
         loadData().then(() => {
@@ -828,21 +846,18 @@ function Documents() {
                                 </Button>
                             </Tooltip>
                         </Box>
-                        <TextField label="Type de document" select value={formData.document_type} onChange={(e) => setFormData({ ...formData, document_type: e.target.value })} fullWidth>
-                            <MenuItem value="CONTRAT">Contrat</MenuItem>
-                            <MenuItem value="COURRIER">Courrier</MenuItem>
-                            <MenuItem value="JUGEMENT">Jugement</MenuItem>
-                            <MenuItem value="PIECE">Pièce</MenuItem>
-                            <MenuItem value="NOTE">Note</MenuItem>
-                            <MenuItem value="MEMOIRE">Mémoire</MenuItem>
-                            <MenuItem value="ASSIGNATION">Assignation</MenuItem>
-                            <MenuItem value="CONCLUSION">Conclusion</MenuItem>
-                            <MenuItem value="REQUETE">Requête</MenuItem>
-                            <MenuItem value="ACTE_HUISSIER">Acte d’huissier</MenuItem>
-                            <MenuItem value="DOSSIER_ADVERSE">Dossier partie adverse</MenuItem>
-                            <MenuItem value="CITATION">Citation</MenuItem>
-                            <MenuItem value="AUTRE">Autre</MenuItem>
-                        </TextField>
+                        <Autocomplete
+                            freeSolo
+                            options={documentTypes}
+                            value={formData.document_type}
+                            onChange={(event, newValue) => {
+                                setFormData({ ...formData, document_type: newValue || 'AUTRE' });
+                            }}
+                            onInputChange={(event, newInputValue) => {
+                                setFormData({ ...formData, document_type: newInputValue });
+                            }}
+                            renderInput={(params) => <TextField {...params} label="Type de document" fullWidth />}
+                        />
                         <FormControlLabel
                             control={
                                 <Switch

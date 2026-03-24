@@ -31,12 +31,28 @@ class OCRProcessor:
     
     def preprocess_image(self, image):
         """
-        Prétraite l'image pour améliorer la qualité OCR.
+        Prétraite l'image pour améliorer la qualité OCR, spécialement pour les photos de téléphones.
         """
         try:
+            # 1. Corriger l'orientation basée sur les métadonnées EXIF (Crucial pour les photos de smartphone)
+            if hasattr(ImageOps, 'exif_transpose'):
+                image = ImageOps.exif_transpose(image)
+                
+            # 2. Upscaling (si l'image est trop petite, l'agrandir pour simuler ~300 DPI pour Tesseract)
+            # Tesseract performe mieux sur des lettres d'environ 30px de hauteur.
+            if image.width < 1500 or image.height < 1500:
+                scale_factor = max(1500 / image.width, 1500 / image.height)
+                new_size = (int(image.width * scale_factor), int(image.height * scale_factor))
+                # Utiliser LANCZOS pour un redimensionnement de haute qualité
+                image = image.resize(new_size, Image.Resampling.LANCZOS if hasattr(Image, 'Resampling') else Image.LANCZOS)
+            
+            # 3. Conversion en niveaux de gris
             if image.mode != 'L':
                 image = image.convert('L')
+                
+            # 4. Amélioration du contraste (utile contre les ombres légères)
             image = ImageOps.autocontrast(image)
+            
             return image
         except Exception as e:
             logger.warning(f"Erreur prétraitement image: {str(e)}")
