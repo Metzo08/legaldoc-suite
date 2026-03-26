@@ -655,6 +655,23 @@ function Documents() {
             )
         },
         {
+            field: 'pages_count',
+            headerName: 'Feuilles',
+            width: 100,
+            renderCell: (params) => {
+                const count = (params.row.is_multi_page && params.row.pages) ? params.row.pages.length : 1;
+                return (
+                    <Chip 
+                        label={`${count} page${count > 1 ? 's' : ''}`}
+                        size="small" 
+                        color={count > 1 ? "secondary" : "default"} 
+                        variant={count > 1 ? "filled" : "outlined"} 
+                        sx={{ fontWeight: count > 1 ? 'bold' : 'normal' }}
+                    />
+                );
+            }
+        },
+        {
             field: 'file_size',
             headerName: 'Taille',
             width: 100,
