@@ -194,7 +194,7 @@ function Clients() {
                     sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
                 >
                     <Avatar {...stringAvatar(params.value)} />
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>{params.value}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#ffffff' }}>{params.value}</Typography>
                 </Box>
             )
         },

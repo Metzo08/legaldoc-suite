@@ -175,9 +175,9 @@ ENCRYPTION_KEY = config('ENCRYPTION_KEY', default='changez-cette-cle-de-32-chars
 GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
 
 # Configuration des uploads
-MAX_UPLOAD_SIZE = 50 * 1024 * 1024  # 50 MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
-FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
+MAX_UPLOAD_SIZE = 200 * 1024 * 1024  # 200 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024
 ALLOWED_UPLOAD_EXTENSIONS = [
     'pdf', 'doc', 'docx', 'txt', 'rtf',
     'jpg', 'jpeg', 'png', 'gif', 'tiff', 'bmp'

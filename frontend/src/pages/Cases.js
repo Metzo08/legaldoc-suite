@@ -340,7 +340,7 @@ function Cases() {
     ];
 
     const totalCases = cases.length;
-    const openCases = cases.filter(c => c.status === 'OUVERT').length;
+    const openCases = cases.filter(c => c.status === 'OUVERT' || c.status === 'EN_COURS').length;
     // Dossiers civils = civil + commercial + social (jaune)
     const civilCases = cases.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(c.category)).length;
     const penalCases = cases.filter(c => ['PENAL', 'CORRECTIONNEL'].includes(c.category)).length;
@@ -377,7 +377,6 @@ function Cases() {
         return base;
     }, [cases, filterMode]);
 
-    // Initialiser le filtre depuis l'URL si présent
     useEffect(() => {
         const filterParam = searchParams.get('filter');
         if (filterParam && ['OUVERT', 'CIVIL', 'CORRECTIONNEL'].includes(filterParam)) {
@@ -396,7 +395,7 @@ function Cases() {
             </Box>
 
             <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={4} md={4}>
                     <Box onClick={() => setFilterMode('ALL')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterMode === 'ALL' ? 1 : 0.6 }}>
                         <StatCard
                             title="Total dossiers"
@@ -407,18 +406,7 @@ function Cases() {
                         />
                     </Box>
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                    <Box onClick={() => setFilterMode('OUVERT')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterMode === 'OUVERT' ? 1 : 0.6 }}>
-                        <StatCard
-                            title="Dossiers ouverts"
-                            value={openCases}
-                            icon={<FolderIcon color="success" />}
-                            color="success"
-                            sx={{ border: filterMode === 'OUVERT' ? '2px solid' : 'none', borderColor: 'success.main', borderRadius: 2 }}
-                        />
-                    </Box>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={4} md={4}>
                     <Box onClick={() => setFilterMode('CIVIL')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterMode === 'CIVIL' ? 1 : 0.6 }}>
                         <StatCard
                             title="Civil & autres"
@@ -429,7 +417,7 @@ function Cases() {
                         />
                     </Box>
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={4} md={4}>
                     <Box onClick={() => setFilterMode('CORRECTIONNEL')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterMode === 'CORRECTIONNEL' ? 1 : 0.6 }}>
                         <StatCard
                             title="Pénal & correctionnel"
