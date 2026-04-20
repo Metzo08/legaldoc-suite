@@ -246,22 +246,20 @@ function Cases() {
         }
     };
 
-    // Fonction pour obtenir le label et la couleur de catégorie
+    // Fonction pour obtenir le label, la couleur et l'icône de catégorie
     const getCategoryDisplay = (category) => {
-        // Jaune pour civil/commercial/social, Bleu pour pénal/correctionnel
-        const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(category);
-        const labels = {
-            'CIVIL': 'Civil',
-            'COMMERCIAL': 'Commercial',
-            'SOCIAL': 'Social',
-            'PENAL': 'Pénal',
-            'CORRECTIONNEL': 'Correctionnel',
-            'TI_FAMILLE': 'TI Famille'
+        const categories = {
+            'CIVIL': { label: 'Civil', color: '#1d4ed8', bg: '#eff6ff', border: '#3b82f6', icon: <FolderIcon sx={{ fontSize: 16 }} /> },
+            'CORRECTIONNEL': { label: 'Correctionnel', color: '#ea580c', bg: '#fff7ed', border: '#fb923c', icon: <FolderIcon sx={{ fontSize: 16 }} /> },
+            'PENAL': { label: 'Pénal', color: '#dc2626', bg: '#fef2f2', border: '#f87171', icon: <FolderIcon sx={{ fontSize: 16 }} /> },
+            'COMMERCIAL': { label: 'Commercial', color: '#15803d', bg: '#f0fdf4', border: '#4ade80', icon: <FolderIcon sx={{ fontSize: 16 }} /> },
+            'SOCIAL': { label: 'Social', color: '#7e22ce', bg: '#faf5ff', border: '#c084fc', icon: <FolderIcon sx={{ fontSize: 16 }} /> },
+            'TI_FAMILLE': { label: 'TI Famille', color: '#be185d', bg: '#fdf2f8', border: '#f472b6', icon: <FolderIcon sx={{ fontSize: 16 }} /> }
         };
-        return {
-            label: labels[category] || category,
-            isYellow
-        };
+
+        const config = categories[category] || { label: category, color: '#6b7280', bg: '#f9fafb', border: '#d1d5db', icon: <FolderIcon sx={{ fontSize: 16 }} /> };
+        
+        return config;
     };
 
     const columns = [
@@ -269,13 +267,13 @@ function Cases() {
         {
             field: 'reference',
             headerName: 'Numéro dossier',
-            width: 160,
+            width: 140,
             renderCell: (params) => {
-                const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(params.row.category);
+                const { color } = getCategoryDisplay(params.row.category);
                 return (
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <FolderIcon sx={{ color: isYellow ? '#facc15' : '#1d4ed8', mr: 1, fontSize: 20 }} />
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{params.value}</Typography>
+                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: color, mr: 1.5, boxShadow: `0 0 5px ${color}` }} />
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#1e293b' }}>{params.value}</Typography>
                     </Box>
                 );
             }
@@ -299,19 +297,22 @@ function Cases() {
         {
             field: 'category',
             headerName: 'Catégorie',
-            width: 130,
+            width: 150,
             renderCell: (params) => {
-                const { label, isYellow } = getCategoryDisplay(params.value);
+                const { label, color, bg, border, icon } = getCategoryDisplay(params.value);
                 return (
                     <Chip
+                        icon={icon}
                         label={label}
                         size="small"
                         sx={{
-                            bgcolor: isYellow ? '#fefce8' : '#eff6ff',
-                            color: isYellow ? '#a16207' : '#1d4ed8',
-                            fontWeight: 'bold',
+                            bgcolor: bg,
+                            color: color,
+                            fontWeight: 800,
+                            fontSize: '0.7rem',
                             border: '1px solid',
-                            borderColor: isYellow ? '#facc15' : '#3b82f6'
+                            borderColor: border,
+                            '& .MuiChip-icon': { color: color }
                         }}
                     />
                 );
