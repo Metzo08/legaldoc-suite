@@ -86,7 +86,7 @@ class Case(models.Model):
     title = models.CharField(max_length=255, blank=True, verbose_name='Intitulé de l\'affaire')
     reference = models.CharField(
         max_length=50,
-        unique=True,
+        unique=False,  # Supprimé l'unicité globale
         null=True,
         blank=True,
         verbose_name='Référence dossier'
@@ -163,6 +163,7 @@ class Case(models.Model):
         verbose_name = 'Dossier'
         verbose_name_plural = 'Dossiers'
         ordering = ['-created_at']
+        unique_together = [['reference', 'category']]
         indexes = [
             models.Index(fields=['reference']),
             models.Index(fields=['status']),
@@ -216,18 +217,20 @@ class Case(models.Model):
                 
                 self.reference = new_ref
             else:
-                # Logique Dossier Principal (PREFIX + Numéro)
+                # Logique Dossier Principal (Numéro simple par catégorie)
                 import re
                 
-                # On récupère TOUTES les références commençant par le préfixe ou étant purement numériques
-                # pour éviter les collisions avec les saisies manuelles comme "1607"
-                all_refs = Case.objects.filter(parent_case__isnull=True).values_list('reference', flat=True)
+                # On recherche les dossiers de la MÊME catégorie
+                category_refs = Case.objects.filter(
+                    category=self.category, 
+                    parent_case__isnull=True
+                ).values_list('reference', flat=True)
                 
                 max_num = 1000 
-                for ref in all_refs:
+                for ref in category_refs:
                     if not ref: continue
-                    # Essayer d'extraire n'importe quel nombre de la référence
-                    nums = re.findall(r'\d+', ref)
+                    # Extraire le nombre
+                    nums = re.findall(r'\d+', str(ref))
                     for n in nums:
                         try:
                             num = int(n)
@@ -237,12 +240,12 @@ class Case(models.Model):
                             continue
                 
                 next_num = max_num + 1
-                new_ref = f"{prefix}{next_num:04d}"
+                new_ref = str(next_num) # Numéro simple sans préfixe
                 
-                # Boucle de sécurité ultime
-                while Case.objects.filter(reference=new_ref).exists():
+                # Vérifier l'unicité au sein de la catégorie
+                while Case.objects.filter(category=self.category, reference=new_ref).exists():
                     next_num += 1
-                    new_ref = f"{prefix}{next_num:04d}"
+                    new_ref = str(next_num)
                 
                 self.reference = new_ref
         
