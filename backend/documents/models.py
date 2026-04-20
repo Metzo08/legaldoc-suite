@@ -87,6 +87,8 @@ class Case(models.Model):
     reference = models.CharField(
         max_length=50,
         unique=True,
+        null=True,
+        blank=True,
         verbose_name='Référence dossier'
     )
     client = models.ForeignKey(
@@ -172,9 +174,9 @@ class Case(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Surcharge pour générer automatiquement la référence.
-        Format principal : CIV1234 (CIV + 4 chiffres séquentiels)
-        Format sous-dossier : CIV1234.1 (Réf Principal + . + incrément)
+        Surcharge pour générer automatiquement la référence de manière robuste.
+        Format principal : PREFIX1234 (ex: CIV1000)
+        Format sous-dossier : PARENT.X (où X est le prochain numéro libre)
         """
         if not self.reference:
             # Préfixes par catégorie
@@ -183,44 +185,84 @@ class Case(models.Model):
                 'COMMERCIAL': 'COM',
                 'SOCIAL': 'SOC',
                 'PENAL': 'PEN',
-                'CORRECTIONNEL': 'COR'
+                'CORRECTIONNEL': 'COR',
+                'TI_FAMILLE': 'FAM'
             }
             prefix = prefix_map.get(self.category, 'CIV')
 
             if self.parent_case:
-                # C'est explicitement un sous-dossier
+                # Logique Sous-dossier (PARENT.X)
                 base_ref = self.parent_case.reference.split('.')[0]
-                # Compter les sous-dossiers existants pour ce parent
-                count = Case.objects.filter(parent_case=self.parent_case).count()
-                self.reference = f"{base_ref}.{count + 1}"
-            else:
-                # Dossier Principal - Logique existante améliorée
+                # Rechercher tous les sous-dossiers existants pour trouver le max suffixe
+                sub_cases = Case.objects.filter(parent_case=self.parent_case).values_list('reference', flat=True)
+                
+                max_suffix = 0
                 import re
-                principal_cases = Case.objects.filter(
-                    parent_case__isnull=True,
-                    category=self.category,
-                    reference__regex=rf'^{prefix}\d+$'
-                )
+                for ref in sub_cases:
+                    if ref and '.' in ref:
+                        try:
+                            suffix = int(ref.split('.')[-1])
+                            if suffix > max_suffix:
+                                max_suffix = suffix
+                        except (ValueError, IndexError):
+                            continue
                 
-                max_num = 0
-                for c in principal_cases:
-                    match = re.search(r'(\d+)', c.reference)
-                    if match:
-                        num = int(match.group(1))
-                        if num > max_num:
-                            max_num = num
+                new_ref = f"{base_ref}.{max_suffix + 1}"
                 
-                next_num = max(1000, max_num + 1)
-                self.reference = f"{prefix}{next_num:04d}"
-        
-        # Fallback pour le titre s'il est vide
-        if not self.title:
-            if self.reference:
-                self.title = self.reference
+                # Double vérification d'unicité
+                while Case.objects.filter(reference=new_ref).exists():
+                    max_suffix += 1
+                    new_ref = f"{base_ref}.{max_suffix + 1}"
+                
+                self.reference = new_ref
             else:
-                self.title = "Dossier sans intitulé"
+                # Logique Dossier Principal (PREFIX + Numéro)
+                import re
                 
-        super().save(*args, **kwargs)
+                # On récupère TOUTES les références commençant par le préfixe ou étant purement numériques
+                # pour éviter les collisions avec les saisies manuelles comme "1607"
+                all_refs = Case.objects.filter(parent_case__isnull=True).values_list('reference', flat=True)
+                
+                max_num = 1000 
+                for ref in all_refs:
+                    if not ref: continue
+                    # Essayer d'extraire n'importe quel nombre de la référence
+                    nums = re.findall(r'\d+', ref)
+                    for n in nums:
+                        try:
+                            num = int(n)
+                            if num > max_num:
+                                max_num = num
+                        except ValueError:
+                            continue
+                
+                next_num = max_num + 1
+                new_ref = f"{prefix}{next_num:04d}"
+                
+                # Boucle de sécurité ultime
+                while Case.objects.filter(reference=new_ref).exists():
+                    next_num += 1
+                    new_ref = f"{prefix}{next_num:04d}"
+                
+                self.reference = new_ref
+        
+        # Gestion du titre si vide
+        if not self.title:
+            self.title = self.reference if self.reference else "Dossier sans intitulé"
+        
+        # Limiter la longueur du titre
+        if self.title and len(self.title) > 255:
+            self.title = self.title[:252] + "..."
+                
+        try:
+            import logging
+            logger = logging.getLogger(__name__)
+            super().save(*args, **kwargs)
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Erreur sauvegarde dossier {self.reference}: {str(e)}")
+            raise e
 
 
 def document_upload_path(instance, filename):
