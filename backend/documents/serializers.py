@@ -46,6 +46,13 @@ class CaseListSerializer(serializers.ModelSerializer):
             'adverse_lawyer', 'external_reference', 'contact_name', 'contact_email',
             'contact_phone', 'our_lawyers', 'fees', 'parent_case'
         )
+        extra_kwargs = {
+            'reference': {
+                'required': False, 
+                'allow_blank': True, 
+                'validators': []
+            }
+        }
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -86,7 +93,23 @@ class CaseDetailSerializer(serializers.ModelSerializer):
             'parent_case', 'sub_cases', 'decisions'
         )
         read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
+        extra_kwargs = {
+            'reference': {
+                'required': False, 
+                'allow_blank': True,
+                'validators': []
+            }
+        }
     
+    def validate_reference(self, value):
+        """
+        Si la référence est vide, on retourne None pour éviter les collisions d'erreurs
+        Django UniqueValidator sur les chaînes vides.
+        """
+        if not value or value.strip() == "":
+            return None
+        return value
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         request = self.context.get('request')

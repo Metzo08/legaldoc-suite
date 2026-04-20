@@ -11,16 +11,21 @@ def fix_references():
     print("Début du nettoyage des références...")
     
     with transaction.atomic():
-        # 1. Convertir les chaînes vides en NULL
-        empty_refs = Case.objects.filter(reference='')
-        count = empty_refs.count()
-        print(f"Trouvé {count} dossiers avec une référence vide.")
+        # 1. Convertir les chaînes vides ou espaces en NULL
+        all_cases = Case.objects.all()
+        count = 0
+        for case in all_cases:
+            if case.reference and case.reference.strip() == "":
+                case.reference = None
+                case.save(update_fields=['reference'])
+                count += 1
         
-        for case in empty_refs:
-            case.reference = None
-            case.save(update_fields=['reference'])
+        # Aussi ceux qui sont déjà des chaines vides exactes ''
+        empty_exact = Case.objects.filter(reference='')
+        count += empty_exact.count()
+        empty_exact.update(reference=None)
         
-        print("Conversion terminée.")
+        print(f"Trouvé et corrigé {count} dossiers avec une référence vide ou invalide.")
         
         # 2. Re-générer les références pour ceux qui n'en ont pas
         null_refs = Case.objects.filter(reference__isnull=True).order_by('created_at')
