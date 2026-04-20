@@ -48,6 +48,7 @@ function Cases() {
     const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.is_staff || currentUser?.is_superuser || false;
 
     const [cases, setCases] = useState([]);
+    const [totalCount, setTotalCount] = useState(0);
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [openDialog, setOpenDialog] = useState(false);
@@ -90,8 +91,17 @@ function Cases() {
             ]);
             const fetchedCases = Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []);
             const fetchedClients = Array.isArray(clientsRes.data.results) ? clientsRes.data.results : (Array.isArray(clientsRes.data) ? clientsRes.data : []);
+            
             setCases(fetchedCases);
             setClients(fetchedClients);
+            
+            // Récupérer le compte total si disponible (Pagination DRF)
+            if (casesRes.data.count !== undefined) {
+                setTotalCount(casesRes.data.count);
+            } else {
+                setTotalCount(fetchedCases.length);
+            }
+            
             return { fetchedCases, fetchedClients };
         } catch (error) {
             console.error('Erreur chargement:', error);
@@ -209,7 +219,8 @@ function Cases() {
             loadData();
         } catch (error) {
             console.error('Erreur enregistrement dossier:', error);
-            showNotification("Erreur lors de l'enregistrement.", "error");
+            const errorMsg = error.response?.data ? JSON.stringify(error.response.data) : error.message;
+            showNotification(`Erreur lors de l'enregistrement: ${errorMsg}`, "error");
         }
     };
 
@@ -339,7 +350,7 @@ function Cases() {
         },
     ];
 
-    const totalCases = cases.length;
+    const totalCases = totalCount;
     const openCases = cases.filter(c => c.status === 'OUVERT' || c.status === 'EN_COURS').length;
     // Dossiers civils = civil + commercial + social (jaune)
     const civilCases = cases.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(c.category)).length;
@@ -529,7 +540,14 @@ function Cases() {
                                 onChange={(e) => setFormData({ ...formData, client: e.target.value })}
                                 required
                             >
-                                {clients.map((c) => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
+                                {clients.map((c) => (
+                                    <MenuItem key={c.id} value={c.id}>
+                                        {c.name} {c.email ? `(${c.email})` : `(ID: ${c.id})`}
+                                    </MenuItem>
+                                ))}
+                                <MenuItem onClick={() => navigate('/clients?new=true')} sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+                                    + Créer un nouveau client
+                                </MenuItem>
                             </TextField>
                         </Grid>
                         <Grid item xs={12} sm={6}>

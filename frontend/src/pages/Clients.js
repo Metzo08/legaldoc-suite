@@ -74,6 +74,7 @@ function Clients() {
     const initialSearch = searchParams.get('search') || '';
 
     const [clients, setClients] = useState([]);
+    const [totalCount, setTotalCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const [openDialog, setOpenDialog] = useState(false);
     const [currentClient, setCurrentClient] = useState(null);
@@ -98,7 +99,15 @@ function Clients() {
         try {
             setLoading(true);
             const response = await clientsAPI.getAll();
-            setClients(Array.isArray(response.data.results) ? response.data.results : (Array.isArray(response.data) ? response.data : []));
+            const fetchedClients = Array.isArray(response.data.results) ? response.data.results : (Array.isArray(response.data) ? response.data : []);
+            setClients(fetchedClients);
+            
+            // Récupérer le compte total si disponible (Pagination DRF)
+            if (response.data.count !== undefined) {
+                setTotalCount(response.data.count);
+            } else {
+                setTotalCount(fetchedClients.length);
+            }
         } catch (error) {
             console.error('Erreur chargement clients:', error);
             showNotification("Erreur lors du chargement des clients.", "error");
@@ -161,7 +170,8 @@ function Clients() {
             loadClients();
         } catch (error) {
             console.error('Erreur enregistrement client:', error);
-            showNotification("Erreur lors de l'enregistrement.", "error");
+            const errorMsg = error.response?.data ? JSON.stringify(error.response.data) : error.message;
+            showNotification(`Erreur lors de l'enregistrement: ${errorMsg}`, "error");
         }
     };
 
@@ -194,7 +204,16 @@ function Clients() {
                     sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
                 >
                     <Avatar {...stringAvatar(params.value)} />
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#ffffff' }}>{params.value}</Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                            {params.value}
+                        </Typography>
+                        {params.row.email && (
+                            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                                {params.row.email}
+                            </Typography>
+                        )}
+                    </Box>
                 </Box>
             )
         },
@@ -229,7 +248,7 @@ function Clients() {
 
     const [filterType, setFilterType] = useState('ALL');
 
-    const totalClients = clients.length;
+    const totalClients = totalCount;
     const individualClients = clients.filter(c => c.client_type === 'PARTICULIER').length;
     const businessClients = clients.filter(c => c.client_type === 'ENTREPRISE').length;
 

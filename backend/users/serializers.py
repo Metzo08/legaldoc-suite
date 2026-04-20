@@ -11,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
     Sérialiseur pour le modèle User.
     """
     full_name = serializers.SerializerMethodField()
-    is_admin = serializers.ReadOnlyField()
+    is_admin = serializers.BooleanField(source='is_admin', read_only=True)
     
     class Meta:
         model = User
@@ -24,6 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
     
     def get_full_name(self, obj):
         return obj.get_full_name()
+
 
 
 class UserCreateSerializer(serializers.ModelSerializer):

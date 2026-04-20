@@ -67,6 +67,7 @@ function Documents() {
     const { showNotification } = useNotification();
     const navigate = useNavigate();
     const [documents, setDocuments] = useState([]);
+    const [totalCount, setTotalCount] = useState(0);
     const [cases, setCases] = useState([]);
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -119,9 +120,18 @@ function Documents() {
                 casesAPI.getAll(),
                 clientsAPI.getAll()
             ]);
-            setDocuments(Array.isArray(docsRes.data.results) ? docsRes.data.results : (Array.isArray(docsRes.data) ? docsRes.data : []));
+            
+            const fetchedDocs = Array.isArray(docsRes.data.results) ? docsRes.data.results : (Array.isArray(docsRes.data) ? docsRes.data : []);
+            setDocuments(fetchedDocs);
             setCases(Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []));
             setClients(Array.isArray(clientsRes.data.results) ? clientsRes.data.results : (Array.isArray(clientsRes.data) ? clientsRes.data : []));
+            
+            // Récupérer le compte total si disponible (Pagination DRF)
+            if (docsRes.data.count !== undefined) {
+                setTotalCount(docsRes.data.count);
+            } else {
+                setTotalCount(fetchedDocs.length);
+            }
         } catch (error) {
             console.error('Erreur chargement:', error);
             showNotification("Erreur lors du chargement des documents.", "error");
@@ -328,7 +338,8 @@ function Documents() {
             handleCloseDialog();
         } catch (error) {
             console.error('Erreur soumission document:', error);
-            showNotification(`Erreur lors de ${isEditMode ? 'la mise à jour' : "l'upload"}.`, "error");
+            const errorMsg = error.response?.data ? JSON.stringify(error.response.data) : error.message;
+            showNotification(`Erreur lors de ${isEditMode ? 'la mise à jour' : "l'upload"}: ${errorMsg}`, "error");
         } finally {
             setLoading(false);
         }
@@ -728,7 +739,7 @@ function Documents() {
         },
     ];
 
-    const totalDocs = documents.length;
+    const totalDocs = totalCount;
     const ocrProcessed = documents.filter(d => d.ocr_processed).length;
 
     return (
