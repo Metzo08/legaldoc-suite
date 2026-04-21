@@ -91,6 +91,87 @@ class ClientViewSet(viewsets.ModelViewSet):
         )
         instance.delete()
 
+    @action(detail=False, methods=['get'], url_path='dashboard-stats')
+    def dashboard_stats(self, request):
+        """
+        Renvoie les statistiques globales pour le dashboard de manière performante.
+        """
+        is_client = hasattr(request.user, 'role') and request.user.role == 'CLIENT'
+        
+        if is_client:
+            # Stats restreintes pour un client
+            client_id = getattr(request.user, 'client_profile', None)
+            if not client_id:
+                return Response({
+                    'clients': 0, 'cases': 0, 'documents': 0, 'deadlines': 0, 'tags': 0
+                })
+            
+            client_id = client_id.id
+            return Response({
+                'clients': 1,
+                'cases': Case.objects.filter(client_id=client_id).count(),
+                'documents': Document.objects.filter(case__client_id=client_id).count(),
+                'deadlines': Deadline.objects.filter(case__client_id=client_id, is_completed=False).count(),
+                'tags': Tag.objects.filter(cases__client_id=client_id).distinct().count()
+            })
+        
+        # Stats globales pour les avocats/admins
+        return Response({
+            'clients': Client.objects.count(),
+            'cases': Case.objects.count(),
+            'civil_cases': Case.objects.filter(category__in=['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE']).count(),
+            'penal_cases': Case.objects.filter(category__in=['PENAL', 'CORRECTIONNEL']).count(),
+            'documents': Document.objects.count(),
+            'deadlines': Deadline.objects.filter(is_completed=False).count(),
+            'tags': Tag.objects.count()
+        })
+
+    @action(detail=False, methods=['get'], url_path='health-check')
+    def health_check(self, request):
+        """
+        Vérifie la santé du système (BD, Media, Config).
+        Accessible uniquement par les admins.
+        """
+        if not request.user.is_staff and not (hasattr(request.user, 'role') and request.user.role == 'ADMIN'):
+            return Response({"error": "Non autorisé"}, status=status.HTTP_403_FORBIDDEN)
+
+        health_status = {
+            'database': 'OK',
+            'storage': 'OK',
+            'configuration': 'OK',
+            'version': '1.0.1'
+        }
+        
+        # 1. Check DB
+        try:
+            from django.db import connection
+            connection.ensure_connection()
+        except Exception as e:
+            health_status['database'] = f'Erreur: {str(e)}'
+            
+        # 2. Check Storage
+        try:
+            from django.conf import settings
+            import os
+            test_file = os.path.join(settings.MEDIA_ROOT, '.health_check')
+            with open(test_file, 'w') as f:
+                f.write('check')
+            if os.path.exists(test_file):
+                os.remove(test_file)
+        except Exception as e:
+            health_status['storage'] = f'Erreur Permission: {str(e)}'
+            
+        # 3. Check Logic
+        try:
+            from .serializers import CaseListSerializer
+            # On teste l'instanciation pour intercepter les ImproperlyConfigured
+            CaseListSerializer()
+        except Exception as e:
+            health_status['configuration'] = f'Erreur Sérialiseur: {str(e)}'
+            
+        is_healthy = all(v == 'OK' or v.startswith('1.') for v in health_status.values())
+        return Response(health_status, status=status.HTTP_200_OK if is_healthy else status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class CaseViewSet(viewsets.ModelViewSet):
     """
@@ -439,7 +520,16 @@ class DocumentViewSet(viewsets.ModelViewSet):
         is_multi_page = self.request.data.get('is_multi_page', 'false').lower() == 'true'
         files = self.request.FILES.getlist('files')
 
-        document = serializer.save(uploaded_by=self.request.user, is_multi_page=is_multi_page)
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Début perform_create Document par {self.request.user}. Dossier ID: {self.request.data.get('case')}")
+
+        try:
+            document = serializer.save(uploaded_by=self.request.user, is_multi_page=is_multi_page)
+            logger.info(f"Document {document.id} créé avec succès (is_multi_page={is_multi_page})")
+        except Exception as e:
+            logger.error(f"CRITIQUE: Erreur lors de serializer.save() pour Document: {str(e)}")
+            raise e
         
         # Création des pages
         from .models import DocumentPage

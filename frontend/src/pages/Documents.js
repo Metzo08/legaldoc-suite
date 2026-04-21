@@ -338,7 +338,17 @@ function Documents() {
             handleCloseDialog();
         } catch (error) {
             console.error('Erreur soumission document:', error);
-            const errorMsg = error.response?.data ? JSON.stringify(error.response.data) : error.message;
+            
+            // Extraction minutieuse du message d'erreur (DETAIL)
+            let errorMsg = error.message;
+            if (error.response?.data) {
+                if (typeof error.response.data === 'object') {
+                    errorMsg = JSON.stringify(error.response.data);
+                } else {
+                    errorMsg = error.response.data;
+                }
+            }
+            
             showNotification(`Erreur lors de ${isEditMode ? 'la mise à jour' : "l'upload"}: ${errorMsg}`, "error");
         } finally {
             setLoading(false);
