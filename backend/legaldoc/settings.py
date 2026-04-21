@@ -182,7 +182,8 @@ DATA_UPLOAD_MAX_NUMBER_FILES = 1000
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 15000
 ALLOWED_UPLOAD_EXTENSIONS = [
     'pdf', 'doc', 'docx', 'txt', 'rtf',
-    'jpg', 'jpeg', 'png', 'gif', 'tiff', 'bmp'
+    'jpg', 'jpeg', 'png', 'gif', 'tiff', 'bmp',
+    'heic', 'heif', 'webp'
 ]
 
 # Configuration Celery (pour les tâches asynchrones OCR)
@@ -214,8 +215,10 @@ LOGGING = {
     'handlers': {
         'file': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': BASE_DIR / 'debug.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10 MB
+            'backupCount': 5,
             'formatter': 'verbose',
         },
         'console': {
