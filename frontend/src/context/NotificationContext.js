@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { Snackbar, Alert } from '@mui/material';
+import { Snackbar, Alert, Box, Button, IconButton, Typography } from '@mui/material';
+import { Close as CloseIcon } from '@mui/icons-material';
 
 const NotificationContext = createContext();
 
@@ -50,11 +51,53 @@ export const NotificationProvider = ({ children }) => {
             {children}
             <Snackbar
                 open={open}
-                autoHideDuration={6000}
+                autoHideDuration={severity === 'error' ? null : 6000}
                 onClose={handleClose}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             >
-                <Alert onClose={handleClose} severity={severity} sx={{ width: '100%', boxShadow: 3, borderRadius: 2 }}>
+                <Alert 
+                    onClose={handleClose} 
+                    severity={severity} 
+                    variant="filled"
+                    sx={{ 
+                        width: '100%', 
+                        boxShadow: 6, 
+                        borderRadius: 2,
+                        '& .MuiAlert-message': {
+                            wordBreak: 'break-all',
+                            maxWidth: '400px'
+                        }
+                    }}
+                    action={
+                        severity === 'error' ? (
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                <Button 
+                                    color="inherit" 
+                                    size="small" 
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(message);
+                                        showNotification("Copié dans le presse-papier !", "success");
+                                    }}
+                                >
+                                    COPIER
+                                </Button>
+                                <IconButton
+                                    aria-label="close"
+                                    color="inherit"
+                                    size="small"
+                                    onClick={handleClose}
+                                >
+                                    <CloseIcon fontSize="inherit" />
+                                </IconButton>
+                            </Box>
+                        ) : undefined
+                    }
+                >
+                    {severity === 'error' && (
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                            ERREUR SYSTÈME
+                        </Typography>
+                    )}
                     {message}
                 </Alert>
             </Snackbar>
