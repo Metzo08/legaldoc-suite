@@ -34,9 +34,11 @@ import {
 import { clientsAPI, casesAPI, documentsAPI, tagsAPI, agendaAPI, decisionsAPI } from '../services/api';
 import StatCard from '../components/StatCard';
 import DiligenceManager from '../components/DiligenceManager';
+import { useNotification } from '../context/NotificationContext';
 
 function Dashboard() {
     const navigate = useNavigate();
+    const { showNotification } = useNotification();
     const [stats, setStats] = useState({
         clients: 0,
         cases: 0,
@@ -102,11 +104,12 @@ function Dashboard() {
 
     const loadDashboardData = async () => {
         try {
-            const [statsRes, documentsRes, deadlinesRes, decisionsRes] = await Promise.all([
+            const [statsRes, documentsRes, deadlinesRes, decisionsRes, tagsRes] = await Promise.all([
                 clientsAPI.getDashboardStats(),
                 documentsAPI.getAll({ ordering: '-created_at', page_size: 5 }),
                 agendaAPI.getAll({ statut: 'PREVU', page_size: 5 }),
-                decisionsAPI.getAll({ ordering: '-date_decision', page_size: 5 })
+                decisionsAPI.getAll({ ordering: '-date_decision', page_size: 5 }),
+                tagsAPI.getAll({ ordering: '-created_at', page_size: 5 })
             ]);
 
             const dashboardStats = statsRes.data;
