@@ -273,7 +273,7 @@ function Cases() {
                 return (
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: color, mr: 1.5, boxShadow: `0 0 5px ${color}` }} />
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#1e293b' }}>{params.value}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>{params.value}</Typography>
                     </Box>
                 );
             }

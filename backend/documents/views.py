@@ -115,9 +115,8 @@ class ClientViewSet(viewsets.ModelViewSet):
                 'tags': Tag.objects.filter(cases__client_id=client_id).distinct().count()
             })
         
-        # Stats globales pour les avocats/admins
         return Response({
-            'clients': Client.objects.count(),
+            'clients': Client.objects.filter(cases__isnull=False).distinct().count(),
             'cases': Case.objects.count(),
             'civil_cases': Case.objects.filter(category__in=['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE']).count(),
             'penal_cases': Case.objects.filter(category__in=['PENAL', 'CORRECTIONNEL']).count(),
