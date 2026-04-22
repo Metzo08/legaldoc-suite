@@ -5,7 +5,11 @@ class IsAdminRole(permissions.BasePermission):
     Permission personnalisée pour vérifier si l'utilisateur a le rôle ADMIN.
     """
     def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and request.user.role == 'ADMIN')
+        return bool(
+            request.user and 
+            request.user.is_authenticated and 
+            (request.user.role == 'ADMIN' or request.user.is_superuser)
+        )
 
 class IsAdminOrSelf(permissions.BasePermission):
     """

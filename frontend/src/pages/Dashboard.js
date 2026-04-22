@@ -102,32 +102,26 @@ function Dashboard() {
 
     const loadDashboardData = async () => {
         try {
-            const [clientsRes, casesRes, documentsRes, deadlinesRes, tagsRes, decisionsRes] = await Promise.all([
-                clientsAPI.getAll(),
-                casesAPI.getAll(),
+            const [statsRes, documentsRes, deadlinesRes, decisionsRes] = await Promise.all([
+                clientsAPI.getDashboardStats(),
                 documentsAPI.getAll({ ordering: '-created_at', page_size: 5 }),
                 agendaAPI.getAll({ statut: 'PREVU', page_size: 5 }),
-                tagsAPI.getAll(),
                 decisionsAPI.getAll({ ordering: '-date_decision', page_size: 5 })
             ]);
 
-            const allCasesData = Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []);
+            const dashboardStats = statsRes.data;
 
             setStats({
-                clients: clientsRes.data.count || (Array.isArray(clientsRes.data) ? clientsRes.data.length : 0),
-                cases: casesRes.data.count || (Array.isArray(casesRes.data) ? casesRes.data.length : 0),
-                documents: documentsRes.data.count || (Array.isArray(documentsRes.data) ? documentsRes.data.length : 0),
-                deadlines: deadlinesRes.data.count || (Array.isArray(deadlinesRes.data) ? deadlinesRes.data.length : 0),
-                tags: tagsRes.data.count || (Array.isArray(tagsRes.data) ? tagsRes.data.length : 0)
+                clients: dashboardStats.clients,
+                cases: dashboardStats.cases,
+                documents: dashboardStats.documents,
+                deadlines: dashboardStats.deadlines,
+                tags: dashboardStats.tags
             });
 
-            // Groupe Civil & Autres (Civil, Commercial, Social)
-            const civilCases = allCasesData.filter(c => c && ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(c.category));
-            // Groupe Pénal & Correctionnel
-            const penalCases = allCasesData.filter(c => c && ['PENAL', 'CORRECTIONNEL'].includes(c.category));
             setCasesByCategory({
-                civil: civilCases.length,
-                penal: penalCases.length
+                civil: dashboardStats.civil_cases || 0,
+                penal: dashboardStats.penal_cases || 0
             });
 
             setRecentDocuments(Array.isArray(documentsRes.data.results) ? documentsRes.data.results : (Array.isArray(documentsRes.data) ? documentsRes.data : []));
@@ -144,6 +138,7 @@ function Dashboard() {
 
         } catch (error) {
             console.error('Erreur chargement dashboard:', error);
+            showNotification("Problème de connexion aux serveurs de statistiques. Vérifiez l'état de la plateforme.", "error");
         } finally {
             setLoading(false);
         }

@@ -9,7 +9,8 @@ export const clientsAPI = {
     getOne: (id) => apiClient.get(`/documents/clients/${id}/`),
     create: (data) => apiClient.post('/documents/clients/', data),
     update: (id, data) => apiClient.put(`/documents/clients/${id}/`, data),
-    delete: (id) => apiClient.delete(`/documents/clients/${id}/`)
+    delete: (id) => apiClient.delete(`/documents/clients/${id}/`),
+    getDashboardStats: () => apiClient.get('/documents/clients/dashboard-stats/')
 };
 
 // API Cases
