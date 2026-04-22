@@ -224,6 +224,20 @@ class DocumentSerializer(serializers.ModelSerializer):
         return obj.case.client.name if obj.case and obj.case.client else None
 
 
+class DocumentListSerializer(DocumentSerializer):
+    """
+    Sérialiseur léger pour la liste des documents (sans OCR ni versions pour les performances).
+    """
+    class Meta(DocumentSerializer.Meta):
+        fields = (
+            'id', 'title', 'description', 'case', 'case_title', 'case_reference', 'client_name',
+            'document_type', 'file', 'file_url', 'file_name', 'file_size',
+            'file_extension', 'ocr_processed', 'ocr_error',
+            'uploaded_by', 'uploaded_by_name', 'is_confidential', 'tags',
+            'tags_list', 'is_multi_page', 'created_at'
+        )
+
+
 class DocumentUploadSerializer(serializers.ModelSerializer):
     """
     Sérialiseur pour l'upload de documents.

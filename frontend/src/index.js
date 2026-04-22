@@ -5,6 +5,23 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import App from './App';
 
+// Correction automatique pour les erreurs de chargement après mise à jour (ChunkLoadError)
+window.addEventListener('error', (e) => {
+    if (e.message && (
+        e.message.includes('ChunkLoadError') || 
+        e.message.includes('Loading chunk') || 
+        e.message.includes('Loading CSS chunk')
+    )) {
+        const lastReload = localStorage.getItem('last_chunk_reload');
+        const now = Date.now();
+        // Éviter de boucler à l'infini (limite à 1 reload toutes les 10 secondes)
+        if (!lastReload || now - parseInt(lastReload) > 10000) {
+            localStorage.setItem('last_chunk_reload', now.toString());
+            window.location.reload();
+        }
+    }
+}, true);
+
 // Thème personnalisé pour LegalDoc Suite
 const theme = createTheme({
     palette: {

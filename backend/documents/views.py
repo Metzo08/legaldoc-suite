@@ -13,7 +13,7 @@ from django.db.models import Q
 from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence, Task, Decision, AgendaEvent, AgendaHistory, AgendaNotification
 from .serializers import (
     ClientSerializer, CaseListSerializer, CaseDetailSerializer,
-    DocumentSerializer, DocumentUploadSerializer, DocumentPermissionSerializer,
+    DocumentSerializer, DocumentListSerializer, DocumentUploadSerializer, DocumentPermissionSerializer,
     AuditLogSerializer, TagSerializer, DeadlineSerializer, DocumentVersionSerializer,
     NotificationSerializer, DiligenceSerializer, TaskSerializer, DecisionSerializer,
     AgendaEventSerializer, ReportAgendaSerializer, AgendaHistorySerializer
@@ -462,6 +462,8 @@ class DocumentViewSet(viewsets.ModelViewSet):
         """
         if self.action == 'create':
             return DocumentUploadSerializer
+        if self.action == 'list':
+            return DocumentListSerializer
         return DocumentSerializer
     
     def get_queryset(self):
