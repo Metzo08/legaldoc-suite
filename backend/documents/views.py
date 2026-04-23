@@ -118,8 +118,16 @@ class ClientViewSet(viewsets.ModelViewSet):
         return Response({
             'clients': Client.objects.filter(cases__isnull=False).distinct().count(),
             'cases': Case.objects.count(),
-            'civil_cases': Case.objects.filter(category__in=['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE']).count(),
-            'penal_cases': Case.objects.filter(category__in=['PENAL', 'CORRECTIONNEL']).count(),
+            'categories': {
+                'CIVIL': Case.objects.filter(category='CIVIL').count(),
+                'COMMERCIAL': Case.objects.filter(category='COMMERCIAL').count(),
+                'SOCIAL': Case.objects.filter(category='SOCIAL').count(),
+                'PENAL': Case.objects.filter(category='PENAL').count(),
+                'CORRECTIONNEL': Case.objects.filter(category='CORRECTIONNEL').count(),
+                'TI_FAMILLE': Case.objects.filter(category='TI_FAMILLE').count(),
+            },
+            'civil_cases': Case.objects.filter(category__in=['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE']).count(), # Compatibilité descendante
+            'penal_cases': Case.objects.filter(category__in=['PENAL', 'CORRECTIONNEL']).count(), # Compatibilité descendante
             'documents': Document.objects.count(),
             'deadlines': Deadline.objects.filter(is_completed=False).count(),
             'tags': Tag.objects.count()

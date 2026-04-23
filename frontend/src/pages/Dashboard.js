@@ -50,10 +50,7 @@ function Dashboard() {
     const [recentDocuments, setRecentDocuments] = useState([]);
     const [upcomingDeadlines, setUpcomingDeadlines] = useState([]);
     const [topTags, setTopTags] = useState([]);
-    const [casesByCategory, setCasesByCategory] = useState({
-        civil: 0,
-        penal: 0
-    });
+    const [casesByCategory, setCasesByCategory] = useState({});
     const [recentDecisions, setRecentDecisions] = useState([]);
 
     // État pour la prévisualisation
@@ -122,9 +119,9 @@ function Dashboard() {
                 tags: dashboardStats.tags
             });
 
-            setCasesByCategory({
-                civil: dashboardStats.civil_cases || 0,
-                penal: dashboardStats.penal_cases || 0
+            setCasesByCategory(dashboardStats.categories || {
+                'CIVIL': dashboardStats.civil_cases || 0,
+                'PENAL': dashboardStats.penal_cases || 0
             });
 
             setRecentDocuments(Array.isArray(documentsRes.data.results) ? documentsRes.data.results : (Array.isArray(documentsRes.data) ? documentsRes.data : []));
@@ -207,25 +204,52 @@ function Dashboard() {
                         <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, mb: 0.5 }}>Dossiers</Typography>
                         <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.02em', mb: 2 }}>{stats.cases}</Typography>
 
-                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                            <Chip
-                                label={`Civil & autres : ${casesByCategory.civil}`}
-                                size="small"
-                                onClick={(e) => { e.stopPropagation(); navigate('/cases?filter=CIVIL'); }}
-                                sx={{
-                                    bgcolor: '#fefce8', color: '#a16207', fontWeight: 800, border: '1px solid #facc15',
-                                    '&:hover': { bgcolor: '#fef9c3' }
-                                }}
-                            />
-                            <Chip
-                                label={`Pénal & corr. : ${casesByCategory.penal}`}
-                                size="small"
-                                onClick={(e) => { e.stopPropagation(); navigate('/cases?filter=CORRECTIONNEL'); }}
-                                sx={{
-                                    bgcolor: '#eff6ff', color: '#1d4ed8', fontWeight: 800, border: '1px solid #3b82f6',
-                                    '&:hover': { bgcolor: '#dbeafe' }
-                                }}
-                            />
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 'auto' }}>
+                            {Object.entries(casesByCategory).some(([_, count]) => count > 0) ? (
+                                Object.entries(casesByCategory)
+                                    .filter(([_, count]) => count > 0)
+                                    .map(([key, count]) => {
+                                        const labels = {
+                                            'CIVIL': 'Civil',
+                                            'COMMERCIAL': 'Comm.',
+                                            'SOCIAL': 'Social',
+                                            'PENAL': 'Pénal',
+                                            'CORRECTIONNEL': 'Corr.',
+                                            'TI_FAMILLE': 'Famille'
+                                        };
+                                        const colors = {
+                                            'CIVIL': { bg: '#fefce8', text: '#a16207', border: '#facc15' },
+                                            'COMMERCIAL': { bg: '#f0fdf4', text: '#15803d', border: '#4ade80' },
+                                            'SOCIAL': { bg: '#faf5ff', text: '#7e22ce', border: '#c084fc' },
+                                            'PENAL': { bg: '#fef2f2', text: '#dc2626', border: '#f87171' },
+                                            'CORRECTIONNEL': { bg: '#eff6ff', text: '#1d4ed8', border: '#3b82f6' },
+                                            'TI_FAMILLE': { bg: '#fdf2f8', text: '#be185d', border: '#f472b6' }
+                                        };
+                                        const config = colors[key] || { bg: '#f9fafb', text: '#6b7280', border: '#d1d5db' };
+                                        
+                                        return (
+                                            <Chip
+                                                key={key}
+                                                label={`${labels[key] || key} : ${count}`}
+                                                size="small"
+                                                onClick={(e) => { e.stopPropagation(); navigate(`/cases?category=${key}`); }}
+                                                sx={{
+                                                    bgcolor: config.bg,
+                                                    color: config.text,
+                                                    fontWeight: 800,
+                                                    border: `1px solid ${config.border}`,
+                                                    fontSize: '0.65rem',
+                                                    height: 22,
+                                                    '&:hover': { opacity: 0.8 }
+                                                }}
+                                            />
+                                        );
+                                    })
+                            ) : (
+                                <Typography variant="caption" sx={{ color: 'text.disabled', fontStyle: 'italic' }}>
+                                    Aucune catégorie active
+                                </Typography>
+                            )}
                         </Box>
                     </Paper>
                 </Grid>
