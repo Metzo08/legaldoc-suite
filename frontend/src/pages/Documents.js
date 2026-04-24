@@ -68,6 +68,7 @@ function Documents() {
     const navigate = useNavigate();
     const [documents, setDocuments] = useState([]);
     const [totalCount, setTotalCount] = useState(0);
+    const [docStats, setDocStats] = useState({ ocrCount: 0, heavySize: 0 });
     const [cases, setCases] = useState([]);
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -115,10 +116,11 @@ function Documents() {
     const loadData = useCallback(async () => {
         try {
             setLoading(true);
-            const [docsRes, casesRes, clientsRes] = await Promise.all([
+            const [docsRes, casesRes, clientsRes, statsRes] = await Promise.all([
                 documentsAPI.getAll(),
                 casesAPI.getAll(),
-                clientsAPI.getAll()
+                clientsAPI.getAll(),
+                clientsAPI.getDashboardStats()
             ]);
             
             const fetchedDocs = Array.isArray(docsRes.data.results) ? docsRes.data.results : (Array.isArray(docsRes.data) ? docsRes.data : []);
@@ -131,6 +133,13 @@ function Documents() {
                 setTotalCount(docsRes.data.count);
             } else {
                 setTotalCount(fetchedDocs.length);
+            }
+
+            if (statsRes.data) {
+                setDocStats({
+                    ocrCount: statsRes.data.ocr_documents || 0,
+                    heavySize: statsRes.data.heavy_documents_size || 0
+                });
             }
         } catch (error) {
             console.error('Erreur chargement:', error);
@@ -750,7 +759,8 @@ function Documents() {
     ];
 
     const totalDocs = totalCount;
-    const ocrProcessed = documents.filter(d => d.ocr_processed).length;
+    const ocrProcessed = docStats.ocrCount;
+    const heavyFilesSize = docStats.heavySize;
 
     return (
         <Box sx={{ width: '100%', pb: 3 }}>
@@ -809,7 +819,7 @@ function Documents() {
                     <Box onClick={() => setFilterType('STORAGE')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterType === 'STORAGE' ? 1 : 0.6 }}>
                         <StatCard
                             title="Gros fichiers (> 100 ko)"
-                            value={formatFileSize(documents.filter(d => d.file_size > 100 * 1024).reduce((acc, curr) => acc + curr.file_size, 0))}
+                            value={formatFileSize(heavyFilesSize)}
                             icon={<StorageIcon color="success" />}
                             color="success"
                             sx={{ border: filterType === 'STORAGE' ? '2px solid' : 'none', borderColor: 'success.main', borderRadius: 2 }}

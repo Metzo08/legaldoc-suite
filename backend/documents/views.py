@@ -9,7 +9,7 @@ from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 import logging
 import threading
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Sum
 from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence, Task, Decision, AgendaEvent, AgendaHistory, AgendaNotification
 from .serializers import (
     ClientSerializer, CaseListSerializer, CaseDetailSerializer,
@@ -133,6 +133,8 @@ class ClientViewSet(viewsets.ModelViewSet):
             'civil_cases': Case.objects.filter(category__in=['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE']).count(), # Compatibilité descendante
             'penal_cases': Case.objects.filter(category__in=['PENAL', 'CORRECTIONNEL']).count(), # Compatibilité descendante
             'documents': Document.objects.count(),
+            'ocr_documents': Document.objects.filter(ocr_processed=True).count(),
+            'heavy_documents_size': Document.objects.filter(file_size__gt=100*1024).aggregate(total=Sum('file_size'))['total'] or 0,
             'deadlines': Deadline.objects.filter(is_completed=False).count(),
             'tags': Tag.objects.count()
         })
