@@ -33,7 +33,7 @@ import {
     Gavel as GavelIcon,
     Schedule as UpcomingIcon
 } from '@mui/icons-material';
-import { deadlinesAPI, casesAPI } from '../services/api';
+import { deadlinesAPI, casesAPI, clientsAPI } from '../services/api';
 import StatCard from '../components/StatCard';
 import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
 
@@ -44,6 +44,7 @@ function Audiences() {
     const initialSearch = searchParams.get('search') || '';
 
     const [audiences, setAudiences] = useState([]);
+    const [auditStats, setAuditStats] = useState({ upcoming: 0, completed: 0, total: 0 });
     const [cases, setCases] = useState([]);
     const [openDialog, setOpenDialog] = useState(false);
     const [editingAudience, setEditingAudience] = useState(null);
@@ -76,16 +77,20 @@ function Audiences() {
     const [selectedJurisdiction, setSelectedJurisdiction] = useState('ALL');
     const [searchTerm, setSearchTerm] = useState(initialSearch);
 
-    const loadData = useCallback(async () => {
         try {
-            const [deadlinesRes, casesRes] = await Promise.all([
+            const [deadlinesRes, casesRes, statsRes] = await Promise.all([
                 deadlinesAPI.getAll(),
-                casesAPI.getAll()
+                casesAPI.getAll(),
+                clientsAPI.getDashboardStats()
             ]);
             // Filter only AUDIENCE type for this page
             const allDeadlines = Array.isArray(deadlinesRes.data.results) ? deadlinesRes.data.results : (Array.isArray(deadlinesRes.data) ? deadlinesRes.data : []);
             setAudiences(allDeadlines.filter(d => d.deadline_type === 'AUDIENCE'));
             setCases(Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []));
+            
+            if (statsRes.data?.audiences_stats) {
+                setAuditStats(statsRes.data.audiences_stats);
+            }
         } catch (error) {
             console.error('Erreur chargement:', error);
             showNotification("Erreur lors du chargement des audiences.", "error");
@@ -298,17 +303,17 @@ function Audiences() {
             <Grid container spacing={3} sx={{ mb: 4 }}>
                 <Grid item xs={12} sm={4}>
                     <Box onClick={() => { setFilterMode('ALL'); setSelectedCaseId('ALL'); setSelectedJurisdiction('ALL'); }} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterMode === 'ALL' && selectedCaseId === 'ALL' && selectedJurisdiction === 'ALL' ? 1 : 0.6 }}>
-                        <StatCard title="Total audiences" value={audiences.length} icon={<GavelIcon color="primary" />} color="primary" sx={{ border: (filterMode === 'ALL' && selectedCaseId === 'ALL' && selectedJurisdiction === 'ALL') ? '2px solid' : 'none', borderColor: 'primary.main', borderRadius: 2 }} />
+                        <StatCard title="Total audiences" value={auditStats.total} icon={<GavelIcon color="primary" />} color="primary" sx={{ border: (filterMode === 'ALL' && selectedCaseId === 'ALL' && selectedJurisdiction === 'ALL') ? '2px solid' : 'none', borderColor: 'primary.main', borderRadius: 2 }} />
                     </Box>
                 </Grid>
                 <Grid item xs={12} sm={4}>
                     <Box onClick={() => setFilterMode('UPCOMING')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterMode === 'UPCOMING' ? 1 : 0.6 }}>
-                        <StatCard title="Audiences à venir" value={audiences.filter(a => !a.is_completed).length} icon={<UpcomingIcon color="info" />} color="info" sx={{ border: filterMode === 'UPCOMING' ? '2px solid' : 'none', borderColor: 'info.main', borderRadius: 2 }} />
+                        <StatCard title="Audiences à venir" value={auditStats.upcoming} icon={<UpcomingIcon color="info" />} color="info" sx={{ border: filterMode === 'UPCOMING' ? '2px solid' : 'none', borderColor: 'info.main', borderRadius: 2 }} />
                     </ Box>
                 </Grid>
                 <Grid item xs={12} sm={4}>
                     <Box onClick={() => setFilterMode('COMPLETED')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterMode === 'COMPLETED' ? 1 : 0.6 }}>
-                        <StatCard title="Audiences terminées" value={audiences.filter(a => a.is_completed).length} icon={<CheckIcon color="success" />} color="success" sx={{ border: filterMode === 'COMPLETED' ? '2px solid' : 'none', borderColor: 'success.main', borderRadius: 2 }} />
+                        <StatCard title="Audiences terminées" value={auditStats.completed} icon={<CheckIcon color="success" />} color="success" sx={{ border: filterMode === 'COMPLETED' ? '2px solid' : 'none', borderColor: 'success.main', borderRadius: 2 }} />
                     </Box>
                 </Grid>
             </Grid>

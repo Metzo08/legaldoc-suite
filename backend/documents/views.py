@@ -136,10 +136,24 @@ class ClientViewSet(viewsets.ModelViewSet):
             'documents': Document.objects.count(),
             'ocr_documents': Document.objects.filter(ocr_processed=True).count(),
             'heavy_documents_size': Document.objects.filter(file_size__gt=100*1024).aggregate(total=Sum('file_size'))['total'] or 0,
+            
             'total_audit_logs': AuditLog.objects.count(),
             'today_audit_logs': AuditLog.objects.filter(timestamp__date=timezone.now().date()).count(),
             'security_audit_logs': AuditLog.objects.filter(action__in=['DELETE', 'PERMISSION']).count(),
-            'deadlines': Deadline.objects.filter(is_completed=False).count(),
+            
+            'deadlines_stats': {
+                'total': Deadline.objects.count(),
+                'overdue': Deadline.objects.filter(is_completed=False, due_date__lt=timezone.now()).count(),
+                'upcoming': Deadline.objects.filter(is_completed=False, due_date__gte=timezone.now()).count(),
+            },
+            'audiences_stats': {
+                'total': Deadline.objects.filter(deadline_type='AUDIENCE').count(),
+                'upcoming': Deadline.objects.filter(deadline_type='AUDIENCE', is_completed=False).count(),
+                'completed': Deadline.objects.filter(deadline_type='AUDIENCE', is_completed=True).count(),
+            },
+            'total_decisions': Decision.objects.count(),
+            
+            'deadlines': Deadline.objects.filter(is_completed=False).count(), # Compatibilité
             'tags': Tag.objects.count()
         })
 

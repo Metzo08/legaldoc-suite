@@ -36,6 +36,7 @@ import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
 function Deadlines() {
     const { showNotification } = useNotification();
     const [deadlines, setDeadlines] = useState([]);
+    const [stats, setStats] = useState({ total: 0, overdue: 0, upcoming: 0 });
     const [cases, setCases] = useState([]);
     const [loading, setLoading] = useState(true);
     const [openDialog, setOpenDialog] = useState(false);
@@ -88,12 +89,17 @@ function Deadlines() {
     const loadData = useCallback(async () => {
         try {
             setLoading(true);
-            const [deadlinesRes, casesRes] = await Promise.all([
+            const [deadlinesRes, casesRes, statsRes] = await Promise.all([
                 deadlinesAPI.getAll(),
-                casesAPI.getAll()
+                casesAPI.getAll(),
+                casesAPI.getDashboardStats()
             ]);
             setDeadlines(Array.isArray(deadlinesRes.data.results) ? deadlinesRes.data.results : (Array.isArray(deadlinesRes.data) ? deadlinesRes.data : []));
             setCases(Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []));
+            
+            if (statsRes.data?.deadlines_stats) {
+                setStats(statsRes.data.deadlines_stats);
+            }
         } catch (error) {
             console.error('Erreur chargement:', error);
             showNotification("Erreur lors du chargement des données.", "error");
@@ -253,7 +259,7 @@ function Deadlines() {
                     <Box onClick={() => setFilterMode('ALL')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterMode === 'ALL' ? 1 : 0.6 }}>
                         <StatCard
                             title="Total échéances"
-                            value={deadlines.length}
+                            value={stats.total}
                             icon={<EventIcon color="primary" />}
                             color="primary"
                             sx={{ border: filterMode === 'ALL' ? '2px solid' : 'none', borderColor: 'primary.main', borderRadius: 2 }}
@@ -264,7 +270,7 @@ function Deadlines() {
                     <Box onClick={() => setFilterMode('OVERDUE')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterMode === 'OVERDUE' ? 1 : 0.6 }}>
                         <StatCard
                             title="En retard"
-                            value={deadlines.filter(d => !d.is_completed && d.is_overdue).length}
+                            value={stats.overdue}
                             icon={<OverdueIcon color="error" />}
                             color="error"
                             sx={{ border: filterMode === 'OVERDUE' ? '2px solid' : 'none', borderColor: 'error.main', borderRadius: 2 }}
@@ -275,7 +281,7 @@ function Deadlines() {
                     <Box onClick={() => setFilterMode('UPCOMING')} sx={{ cursor: 'pointer', transition: '0.2s', '&:hover': { transform: 'translateY(-4px)' }, opacity: filterMode === 'UPCOMING' ? 1 : 0.6 }}>
                         <StatCard
                             title="À venir"
-                            value={deadlines.filter(d => !d.is_completed && !d.is_overdue).length}
+                            value={stats.upcoming}
                             icon={<UpcomingIcon color="info" />}
                             color="info"
                             sx={{ border: filterMode === 'UPCOMING' ? '2px solid' : 'none', borderColor: 'info.main', borderRadius: 2 }}

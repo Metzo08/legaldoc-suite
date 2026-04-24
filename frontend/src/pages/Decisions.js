@@ -52,6 +52,7 @@ function Decisions() {
 
     // States
     const [decisions, setDecisions] = useState([]);
+    const [totalCount, setTotalCount] = useState(0);
     const [cases, setCases] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -98,6 +99,7 @@ function Decisions() {
             ]);
 
             setDecisions(Array.isArray(decisionsRes.data.results) ? decisionsRes.data.results : (Array.isArray(decisionsRes.data) ? decisionsRes.data : []));
+            setTotalCount(decisionsRes.data.count || decisionsRes.data.length || 0);
             setCases(Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []));
         } catch (error) {
             console.error('Erreur chargement:', error);
@@ -297,7 +299,7 @@ function Decisions() {
                             </Button>
                         )}
                         <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                            {decisions.length} entrée(s) trouvée(s)
+                            {totalCount} entrée(s) trouvée(s)
                         </Typography>
                     </Grid>
                 </Grid>
