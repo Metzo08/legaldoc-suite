@@ -10,6 +10,7 @@ import logging
 import threading
 from django.db import transaction
 from django.db.models import Q, Sum
+from django.utils import timezone
 from .models import Client, Case, Document, DocumentPermission, AuditLog, Tag, Deadline, DocumentVersion, Notification, Diligence, Task, Decision, AgendaEvent, AgendaHistory, AgendaNotification
 from .serializers import (
     ClientSerializer, CaseListSerializer, CaseDetailSerializer,
@@ -135,6 +136,9 @@ class ClientViewSet(viewsets.ModelViewSet):
             'documents': Document.objects.count(),
             'ocr_documents': Document.objects.filter(ocr_processed=True).count(),
             'heavy_documents_size': Document.objects.filter(file_size__gt=100*1024).aggregate(total=Sum('file_size'))['total'] or 0,
+            'total_audit_logs': AuditLog.objects.count(),
+            'today_audit_logs': AuditLog.objects.filter(timestamp__date=timezone.now().date()).count(),
+            'security_audit_logs': AuditLog.objects.filter(action__in=['DELETE', 'PERMISSION']).count(),
             'deadlines': Deadline.objects.filter(is_completed=False).count(),
             'tags': Tag.objects.count()
         })

@@ -26,12 +26,13 @@ import {
     Security as SecurityIcon,
     Fingerprint as FingerprintIcon
 } from '@mui/icons-material';
-import { auditAPI } from '../services/api';
+import { auditAPI, clientsAPI } from '../services/api';
 import StatCard from '../components/StatCard';
 
 function AuditLog() {
     const { showNotification } = useNotification();
     const [logs, setLogs] = useState([]);
+    const [auditStats, setAuditStats] = useState({ total: 0, today: 0, security: 0 });
     const [loading, setLoading] = useState(true);
 
     // État pour le filtrage
@@ -42,9 +43,20 @@ function AuditLog() {
 
     const loadLogs = useCallback(async () => {
         try {
-            setLoading(true);
-            const response = await auditAPI.getAll();
+            const [response, statsRes] = await Promise.all([
+                auditAPI.getAll(),
+                clientsAPI.getDashboardStats()
+            ]);
+            
             setLogs(Array.isArray(response.data.results) ? response.data.results : (Array.isArray(response.data) ? response.data : []));
+            
+            if (statsRes.data) {
+                setAuditStats({
+                    total: statsRes.data.total_audit_logs || 0,
+                    today: statsRes.data.today_audit_logs || 0,
+                    security: statsRes.data.security_audit_logs || 0
+                });
+            }
         } catch (error) {
             console.error('Erreur chargement logs:', error);
             showNotification("Erreur lors du chargement des logs.", "error");
@@ -141,10 +153,10 @@ function AuditLog() {
         }
     ];
 
-    // Stats
-    const totalLogs = logs.length;
-    const todayLogs = logs.filter(log => new Date(log.timestamp).toDateString() === new Date().toDateString()).length;
-    const securityEvents = logs.filter(log => ['DELETE', 'PERMISSION'].includes(log.action)).length;
+    // Stats réelles du backend
+    const totalLogs = auditStats.total;
+    const todayLogs = auditStats.today;
+    const securityEvents = auditStats.security;
 
     const filteredLogs = useMemo(() => {
         return logs.filter(log => {
