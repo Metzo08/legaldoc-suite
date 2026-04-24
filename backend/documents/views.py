@@ -115,8 +115,12 @@ class ClientViewSet(viewsets.ModelViewSet):
                 'tags': Tag.objects.filter(cases__client_id=client_id).distinct().count()
             })
         
+        active_clients = Client.objects.filter(cases__isnull=False).distinct()
+        
         return Response({
-            'clients': Client.objects.filter(cases__isnull=False).distinct().count(),
+            'clients': active_clients.count(),
+            'particulier_clients': active_clients.filter(client_type='PARTICULIER').count(),
+            'entreprise_clients': active_clients.filter(client_type='ENTREPRISE').count(),
             'cases': Case.objects.count(),
             'categories': {
                 'CIVIL': Case.objects.filter(category='CIVIL').count(),

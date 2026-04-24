@@ -75,6 +75,7 @@ function Clients() {
 
     const [clients, setClients] = useState([]);
     const [totalCount, setTotalCount] = useState(0);
+    const [clientStats, setClientStats] = useState({ particuliers: 0, entreprises: 0 });
     const [loading, setLoading] = useState(true);
     const [openDialog, setOpenDialog] = useState(false);
     const [currentClient, setCurrentClient] = useState(null);
@@ -97,8 +98,11 @@ function Clients() {
 
     const loadClients = useCallback(async () => {
         try {
-            setLoading(true);
-            const response = await clientsAPI.getAll();
+            const [response, statsRes] = await Promise.all([
+                clientsAPI.getAll(),
+                clientsAPI.getDashboardStats()
+            ]);
+            
             const fetchedClients = Array.isArray(response.data.results) ? response.data.results : (Array.isArray(response.data) ? response.data : []);
             setClients(fetchedClients);
             
@@ -107,6 +111,14 @@ function Clients() {
                 setTotalCount(response.data.count);
             } else {
                 setTotalCount(fetchedClients.length);
+            }
+
+            // Mettre à jour les stats réelles du backend (ignorent la pagination)
+            if (statsRes.data) {
+                setClientStats({
+                    particuliers: statsRes.data.particulier_clients || 0,
+                    entreprises: statsRes.data.entreprise_clients || 0
+                });
             }
         } catch (error) {
             console.error('Erreur chargement clients:', error);
@@ -249,8 +261,8 @@ function Clients() {
     const [filterType, setFilterType] = useState('ALL');
 
     const totalClients = totalCount;
-    const individualClients = clients.filter(c => c.client_type === 'PARTICULIER').length;
-    const businessClients = clients.filter(c => c.client_type === 'ENTREPRISE').length;
+    const individualClients = clientStats.particuliers;
+    const businessClients = clientStats.entreprises;
 
     const [searchTerm, setSearchTerm] = useState(initialSearch);
 
