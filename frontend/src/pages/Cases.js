@@ -49,6 +49,7 @@ function Cases() {
 
     const [cases, setCases] = useState([]);
     const [totalCount, setTotalCount] = useState(0);
+    const [caseStats, setCaseStats] = useState({ civil: 0, penal: 0 });
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [openDialog, setOpenDialog] = useState(false);
@@ -85,9 +86,10 @@ function Cases() {
     const loadData = useCallback(async () => {
         try {
             setLoading(true);
-            const [casesRes, clientsRes] = await Promise.all([
+            const [casesRes, clientsRes, statsRes] = await Promise.all([
                 casesAPI.getAll(),
-                clientsAPI.getAll()
+                clientsAPI.getAll(),
+                clientsAPI.getDashboardStats()
             ]);
             const fetchedCases = Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []);
             const fetchedClients = Array.isArray(clientsRes.data.results) ? clientsRes.data.results : (Array.isArray(clientsRes.data) ? clientsRes.data : []);
@@ -100,6 +102,13 @@ function Cases() {
                 setTotalCount(casesRes.data.count);
             } else {
                 setTotalCount(fetchedCases.length);
+            }
+
+            if (statsRes.data) {
+                setCaseStats({
+                    civil: statsRes.data.civil_cases || 0,
+                    penal: statsRes.data.penal_cases || 0
+                });
             }
             
             return { fetchedCases, fetchedClients };
@@ -352,10 +361,9 @@ function Cases() {
     ];
 
     const totalCases = totalCount;
-    const openCases = cases.filter(c => c.status === 'OUVERT' || c.status === 'EN_COURS').length;
     // Dossiers civils = civil + commercial + social (jaune)
-    const civilCases = cases.filter(c => ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(c.category)).length;
-    const penalCases = cases.filter(c => ['PENAL', 'CORRECTIONNEL'].includes(c.category)).length;
+    const civilCases = caseStats.civil;
+    const penalCases = caseStats.penal;
 
     const [filterMode, setFilterMode] = useState('ALL');
     const [searchTerm, setSearchTerm] = useState(initialSearch);
