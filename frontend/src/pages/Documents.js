@@ -880,7 +880,7 @@ function Documents() {
                 <DialogTitle>{isEditMode ? 'Modifier le document' : 'Uploader un document'}</DialogTitle>
                 <DialogContent>
                     <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <Paper {...getRootProps()} sx={{ p: 4, textAlign: 'center', border: '2px dashed', borderColor: isDragActive ? 'primary.main' : 'divider', bgcolor: isDragActive ? 'action.hover' : 'background.paper', cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}>
+                        <Card {...getRootProps()} sx={{ p: 4, textAlign: 'center', border: '2px dashed', borderColor: isDragActive ? 'primary.main' : 'divider', bgcolor: isDragActive ? 'action.hover' : 'background.paper', cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}>
                             <input {...getInputProps()} />
                             <UploadIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
                             <Typography color="text.secondary">
@@ -891,7 +891,7 @@ function Documents() {
                         </Card>
 
                         {uploadFiles.length > 0 && (
-                            <Paper variant="outlined" sx={{ maxHeight: 150, overflow: 'auto', p: 1 }}>
+                            <Card variant="outlined" sx={{ maxHeight: 150, overflow: 'auto', p: 1 }}>
                                 <List dense>
                                     {uploadFiles.map((file, index) => (
                                         <ListItem key={index} secondaryAction={

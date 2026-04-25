@@ -338,7 +338,7 @@ function Users() {
                     </Grid>
 
 
-                    <Paper sx={{ height: 600, width: '100%', borderRadius: 3, overflow: 'hidden', boxShadow: 3 }}>
+                    <Card sx={{ height: 600, width: '100%', borderRadius: 3, overflow: 'hidden', boxShadow: 3 }}>
                         <DataGrid
                             rows={filteredUsers}
                             columns={columns}
