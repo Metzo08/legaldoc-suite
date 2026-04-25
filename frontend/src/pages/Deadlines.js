@@ -307,7 +307,9 @@ function Deadlines() {
                     const category = getCaseCategory(deadline.case);
                     const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(category);
                     const isBlue = ['PENAL', 'CORRECTIONNEL'].includes(category);
-                    const categoryLabel = category.charAt(0) + category.slice(1).toLowerCase();
+                    const categoryLabel = (typeof category === 'string' && category.length > 0) 
+                        ? (category.charAt(0).toUpperCase() + category.slice(1).toLowerCase()) 
+                        : 'Dossier';
 
                     return (
                         <Grid item xs={12} sm={6} md={4} key={deadline.id}>
