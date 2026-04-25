@@ -492,7 +492,7 @@ function Cases() {
                     localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
                     sx={{ border: 0, '& .MuiDataGrid-columnHeaders': { backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'background.paper' : '#f8fafc', fontWeight: 700 } }}
                 />
-            </Paper>
+            </Card>
 
             <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
                 <DialogTitle>{currentCase ? 'Modifier le dossier' : 'Nouveau dossier'}</DialogTitle>

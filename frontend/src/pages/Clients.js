@@ -359,7 +359,7 @@ function Clients() {
                         '& .MuiDataGrid-row:hover': { backgroundColor: 'action.hover' }
                     }}
                 />
-            </Paper>
+            </Card>
 
             <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
                 <DialogTitle>{currentClient ? 'Modifier le client' : 'Nouveau client'}</DialogTitle>

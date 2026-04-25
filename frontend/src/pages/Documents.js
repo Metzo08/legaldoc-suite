@@ -874,7 +874,7 @@ function Documents() {
                         '& .MuiDataGrid-row:hover': { backgroundColor: 'action.hover', cursor: 'pointer' }
                     }}
                 />
-            </Paper>
+            </Card>
 
             <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
                 <DialogTitle>{isEditMode ? 'Modifier le document' : 'Uploader un document'}</DialogTitle>
@@ -888,7 +888,7 @@ function Documents() {
                                     ? 'Glissez-déposez pour remplacer le fichier actuel (optionnel)'
                                     : 'Glissez-déposez vos fichiers ici ou cliquez pour sélectionner'}
                             </Typography>
-                        </Paper>
+                        </Card>
 
                         {uploadFiles.length > 0 && (
                             <Paper variant="outlined" sx={{ maxHeight: 150, overflow: 'auto', p: 1 }}>
@@ -908,7 +908,7 @@ function Documents() {
                                         </ListItem>
                                     ))}
                                 </List>
-                            </Paper>
+                            </Card>
                         )}
 
                         <TextField label="Titre (pour fichier unique ou préfixe)" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} fullWidth />
@@ -1070,7 +1070,7 @@ function Documents() {
                                 }}>
                                     {selectedDoc.pages.map((p) => (
                                         <Box key={p.id} sx={{ flexShrink: 0, textAlign: 'center' }}>
-                                            <Paper
+                                            <Card
                                                 elevation={2}
                                                 sx={{
                                                     width: 80,
@@ -1085,7 +1085,7 @@ function Documents() {
                                                 onClick={() => window.open(p.file_url, '_blank')}
                                             >
                                                 <img src={p.file_url} alt={`P${p.page_number}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                            </Paper>
+                                            </Card>
                                             <Typography variant="caption" sx={{ fontWeight: 600, mt: 0.5, display: 'block' }}>
                                                 Page {p.page_number}
                                             </Typography>
@@ -1213,7 +1213,7 @@ function Documents() {
                                         ) : (
                                             <div dangerouslySetInnerHTML={{ __html: wordContent }} style={{ textAlign: 'left' }} />
                                         )}
-                                    </Paper>
+                                    </Card>
                                 ) : (
                                     <Box sx={{ textAlign: 'center', p: 4, bgcolor: 'background.paper', borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
                                         <FileIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />

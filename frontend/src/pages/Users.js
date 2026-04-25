@@ -295,7 +295,7 @@ function Users() {
                     <Tab label="Liste des utilisateurs" icon={<UserIcon />} iconPosition="start" />
                     <Tab label="Gestion des permissions" icon={<SecurityIcon />} iconPosition="start" />
                 </Tabs>
-            </Paper>
+            </Card>
 
             {/* Contenu - Onglet Utilisateurs */}
             {tabValue === 0 && (
@@ -370,7 +370,7 @@ function Users() {
                                 }
                             }}
                         />
-                    </Paper>
+                    </Card>
                 </>
             )}
 
