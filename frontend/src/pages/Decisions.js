@@ -27,7 +27,8 @@ import {
     Autocomplete,
     alpha,
     Tabs,
-    Tab
+    Tab,
+    Card
 } from '@mui/material';
 import {
     Search as SearchIcon,
@@ -211,10 +212,16 @@ function Decisions() {
         <Box sx={{ flexGrow: 1 }}>
             <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
-                    <Typography variant="h4" sx={{ fontWeight: 900, color: 'primary.main', mb: 1, letterSpacing: '-0.02em' }}>
+                    <Typography variant="h2" sx={{ 
+                        fontWeight: 900, 
+                        mb: 1,
+                        background: (theme) => `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(theme.palette.text.primary, 0.6)} 100%)`,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                    }}>
                         Décisions rendues
                     </Typography>
-                    <Typography variant="body1" color="text.secondary">
+                    <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500, opacity: 0.8 }}>
                         Registre digitalisé des décisions de justice et instructions.
                     </Typography>
                 </Box>
@@ -222,7 +229,7 @@ function Decisions() {
                     variant="contained"
                     startIcon={<AddIcon />}
                     onClick={() => handleOpenDialog()}
-                    sx={{ borderRadius: 2, px: 3, fontWeight: 700, background: 'linear-gradient(135deg, #1a73e8, #0d47a1)' }}
+                    sx={{ borderRadius: '12px', px: 3, py: 1.5, fontWeight: 700 }}
                 >
                     Nouvelle entrée
                 </Button>
@@ -245,7 +252,7 @@ function Decisions() {
             </Tabs>
 
             {/* Barre de Filtres */}
-            <Paper sx={{ p: 2, mb: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }} elevation={0}>
+            <Card sx={{ p: 2, mb: 3, borderRadius: '16px', border: '1px solid', borderColor: 'divider', boxShadow: (theme) => theme.palette.mode === 'dark' ? '0 10px 40px rgba(0,0,0,0.4)' : '0 10px 40px rgba(99, 102, 241, 0.1)' }}>
                 <Grid container spacing={2} alignItems="center">
                     <Grid item xs={12} md={activeTab === 'CABINET_INSTRUCTION' ? 4 : 6}>
                         <TextField
@@ -303,10 +310,10 @@ function Decisions() {
                         </Typography>
                     </Grid>
                 </Grid>
-            </Paper>
+            </Card>
 
             {/* Tableau des Décisions */}
-            <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }} elevation={0}>
+            <TableContainer component={Card} sx={{ borderRadius: '16px', border: '1px solid', borderColor: 'divider', overflow: 'hidden', boxShadow: (theme) => theme.palette.mode === 'dark' ? '0 10px 40px rgba(0,0,0,0.4)' : '0 10px 40px rgba(99, 102, 241, 0.1)' }} elevation={0}>
                 <Table sx={{ minWidth: 650 }}>
                     <TableHead sx={{ bgcolor: alpha('#f8fafc', 0.8) }}>
                         <TableRow>

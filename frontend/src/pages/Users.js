@@ -8,7 +8,9 @@ import {
     Grid,
     Chip,
     Tabs,
-    Tab
+    Tab,
+    alpha,
+    Card
 } from '@mui/material';
 import {
     DataGrid,
@@ -257,10 +259,16 @@ function Users() {
                 mb: 3
             }}>
                 <Box>
-                    <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>
+                    <Typography variant="h2" sx={{ 
+                        fontWeight: 900, 
+                        mb: 1,
+                        background: (theme) => `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(theme.palette.text.primary, 0.6)} 100%)`,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                    }}>
                         Utilisateurs et rôles
                     </Typography>
-                    <Typography variant="body1" color="text.secondary">
+                    <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500, opacity: 0.8 }}>
                         Gérez les membres de votre cabinet, leurs accès et leurs permissions.
                     </Typography>
                 </Box>
@@ -269,14 +277,14 @@ function Users() {
                     variant="contained"
                     startIcon={<AddIcon />}
                     onClick={() => handleOpenDialog()}
-                    sx={{ borderRadius: 2, px: 3, py: 1 }}
+                    sx={{ borderRadius: '12px', px: 3, py: 1.5, fontWeight: 700 }}
                 >
                     Nouvel utilisateur
                 </Button>
             </Box>
 
             {/* Onglets de navigation */}
-            <Paper sx={{ mb: 3, borderRadius: 2 }}>
+            <Card sx={{ mb: 3, borderRadius: '16px', border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
                 <Tabs
                     value={tabValue}
                     onChange={(e, v) => setTabValue(v)}

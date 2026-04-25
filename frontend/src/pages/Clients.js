@@ -16,7 +16,8 @@ import {
     Grid,
     Chip,
     Avatar,
-    alpha
+    alpha,
+    Card
 } from '@mui/material';
 import {
     DataGrid,
@@ -325,7 +326,7 @@ function Clients() {
                 </Grid>
             </Grid>
 
-            <Paper sx={{ height: 600, width: '100%', borderRadius: 3, overflow: 'hidden', boxShadow: 3 }}>
+            <Card sx={{ height: 600, width: '100%', borderRadius: '16px', overflow: 'hidden', boxShadow: (theme) => theme.palette.mode === 'dark' ? '0 10px 40px rgba(0,0,0,0.4)' : '0 10px 40px rgba(99, 102, 241, 0.1)' }}>
                 <DataGrid
                     rows={filteredClients}
                     columns={columns}

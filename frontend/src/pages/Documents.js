@@ -23,7 +23,8 @@ import {
     ListItemText,
     Switch,
     FormControlLabel,
-    Autocomplete
+    Autocomplete,
+    Card
 } from '@mui/material';
 import {
     DataGrid,
@@ -766,8 +767,18 @@ function Documents() {
         <Box sx={{ width: '100%', pb: 3 }}>
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'start', sm: 'center' }, gap: 2, mb: 3 }}>
                 <Box>
-                    <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>Documents</Typography>
-                    <Typography variant="body1" color="text.secondary">Centralisez et gérez tous vos documents juridiques.</Typography>
+                    <Typography variant="h2" sx={{ 
+                        fontWeight: 900, 
+                        mb: 1,
+                        background: (theme) => `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(theme.palette.text.primary, 0.6)} 100%)`,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                    }}>
+                        Documents
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500, opacity: 0.8 }}>
+                        Centralisez et gérez tous vos documents juridiques.
+                    </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                     {selectedCaseId && (
@@ -788,7 +799,7 @@ function Documents() {
                             Assistant IA
                         </Button>
                     )}
-                    <Button variant="contained" startIcon={<UploadIcon />} onClick={handleOpenDialog} sx={{ borderRadius: 2, px: 3, py: 1, width: { xs: '100%', sm: 'auto' } }}>Uploader un document</Button>
+                    <Button variant="contained" startIcon={<UploadIcon />} onClick={handleOpenDialog} sx={{ borderRadius: '12px', px: 3, py: 1.5, fontWeight: 700, width: { xs: '100%', sm: 'auto' } }}>Uploader un document</Button>
                 </Box>
             </Box>
 
@@ -828,7 +839,7 @@ function Documents() {
                 </Grid>
             </Grid>
 
-            <Paper sx={{ height: 600, width: '100%', borderRadius: 3, overflow: 'hidden', boxShadow: 3 }}>
+            <Card sx={{ height: 600, width: '100%', borderRadius: '16px', overflow: 'hidden', boxShadow: (theme) => theme.palette.mode === 'dark' ? '0 10px 40px rgba(0,0,0,0.4)' : '0 10px 40px rgba(99, 102, 241, 0.1)' }}>
                 <DataGrid
                     rows={sortedDocuments}
                     columns={columns}

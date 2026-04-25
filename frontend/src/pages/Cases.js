@@ -14,7 +14,8 @@ import {
     MenuItem,
     Grid,
     Chip,
-    alpha
+    alpha,
+    Card
 } from '@mui/material';
 import {
     DataGrid,
@@ -461,7 +462,7 @@ function Cases() {
                 </Grid>
             </Grid>
 
-            <Paper sx={{ height: 600, width: '100%', mb: 4 }}>
+            <Card sx={{ height: 600, width: '100%', mb: 4, borderRadius: '16px', overflow: 'hidden', boxShadow: (theme) => theme.palette.mode === 'dark' ? '0 10px 40px rgba(0,0,0,0.4)' : '0 10px 40px rgba(99, 102, 241, 0.1)' }}>
                 <DataGrid
                     rows={filteredCases}
                     columns={columns}

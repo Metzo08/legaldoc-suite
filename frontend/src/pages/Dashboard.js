@@ -7,6 +7,7 @@ import {
     Typography,
     CircularProgress,
     Paper,
+    Card,
     Chip,
     LinearProgress,
     alpha,
