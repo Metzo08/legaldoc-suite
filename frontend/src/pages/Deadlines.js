@@ -30,7 +30,7 @@ import {
     Schedule as UpcomingIcon,
     Search as SearchIcon
 } from '@mui/icons-material';
-import { deadlinesAPI, casesAPI } from '../services/api';
+import { deadlinesAPI, casesAPI, clientsAPI } from '../services/api';
 import StatCard from '../components/StatCard';
 import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
 
@@ -93,7 +93,7 @@ function Deadlines() {
             const [deadlinesRes, casesRes, statsRes] = await Promise.all([
                 deadlinesAPI.getAll(),
                 casesAPI.getAll(),
-                casesAPI.getDashboardStats()
+                clientsAPI.getDashboardStats()
             ]);
             setDeadlines(Array.isArray(deadlinesRes.data.results) ? deadlinesRes.data.results : (Array.isArray(deadlinesRes.data) ? deadlinesRes.data : []));
             setCases(Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []));
@@ -312,46 +312,116 @@ function Deadlines() {
                     return (
                         <Grid item xs={12} sm={6} md={4} key={deadline.id}>
                             <Card sx={{
-                                borderRadius: 3, border: '1px solid', borderColor: 'divider', boxShadow: 'none',
-                                position: 'relative', overflow: 'hidden',
+                                borderRadius: 4,
+                                border: (theme) => theme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)',
+                                bgcolor: (theme) => theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.6) : '#fff',
+                                backdropFilter: 'blur(10px)',
+                                boxShadow: (theme) => theme.palette.mode === 'dark' 
+                                    ? '0 8px 32px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.05)'
+                                    : '0 8px 24px rgba(149, 157, 165, 0.1)',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                '&:hover': {
+                                    transform: 'translateY(-6px)',
+                                    boxShadow: (theme) => theme.palette.mode === 'dark'
+                                        ? `0 12px 40px ${alpha(theme.palette.primary.main, 0.15)}`
+                                        : `0 12px 30px ${alpha(theme.palette.primary.main, 0.1)}`,
+                                    '&:before': {
+                                        height: 8,
+                                    }
+                                },
                                 '&:before': {
-                                    content: '""', position: 'absolute', left: 0, top: 0, bottom: 0, width: 4,
-                                    bgcolor: isYellow ? '#facc15' : (isBlue ? '#1d4ed8' : 'primary.main')
+                                    content: '""',
+                                    position: 'absolute',
+                                    left: 0,
+                                    right: 0,
+                                    top: 0,
+                                    height: 4,
+                                    bgcolor: isYellow ? '#facc15' : (isBlue ? '#1d4ed8' : 'primary.main'),
+                                    transition: 'height 0.3s ease'
                                 }
                             }}>
-                                <CardContent>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                <CardContent sx={{ p: 3 }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                            <Chip label={getDeadlineTypeLabel(deadline.deadline_type)} size="small" variant="outlined" />
-                                            <Typography variant="caption" sx={{ color: isYellow ? '#a16207' : (isBlue ? '#1d4ed8' : 'primary.main'), fontWeight: 800 }}>
+                                            <Chip 
+                                                label={getDeadlineTypeLabel(deadline.deadline_type)} 
+                                                size="small" 
+                                                variant="outlined"
+                                                sx={{ 
+                                                    fontWeight: 700, 
+                                                    fontSize: '0.65rem',
+                                                    borderColor: alpha(theme => theme.palette.text.primary, 0.1),
+                                                    bgcolor: alpha(theme => theme.palette.text.primary, 0.02)
+                                                }}
+                                            />
+                                            <Typography variant="caption" sx={{ 
+                                                color: isYellow ? '#a16207' : (isBlue ? '#1d4ed8' : 'primary.main'), 
+                                                fontWeight: 800,
+                                                letterSpacing: '0.05em',
+                                                fontSize: '0.7rem'
+                                            }}>
                                                 {categoryLabel}
                                             </Typography>
                                         </Box>
-                                        <Box>
+                                        <Box sx={{ display: 'flex', gap: 0.5 }}>
                                             <Tooltip title="Marquer comme terminée">
-                                                <IconButton size="small" onClick={() => handleToggleComplete(deadline)} color={deadline.is_completed ? "success" : "default"}>
-                                                    <CheckIcon fontSize="small" />
+                                                <IconButton size="small" onClick={() => handleToggleComplete(deadline)} sx={{ bgcolor: alpha(deadline.is_completed ? '#10b981' : '#6b7280', 0.1), color: deadline.is_completed ? "#10b981" : "inherit" }}>
+                                                    <CheckIcon sx={{ fontSize: 18 }} />
                                                 </IconButton>
                                             </Tooltip>
-                                            <IconButton size="small" onClick={() => handleOpenDialog(deadline)} color="primary"><EditIcon fontSize="small" /></IconButton>
-                                            <IconButton size="small" onClick={() => handleDeleteClick(deadline)} color="error"><DeleteIcon fontSize="small" /></IconButton>
+                                            <IconButton size="small" onClick={() => handleOpenDialog(deadline)} sx={{ bgcolor: alpha(theme => theme.palette.primary.main, 0.1), color: 'primary.main' }}>
+                                                <EditIcon sx={{ fontSize: 18 }} />
+                                            </IconButton>
+                                            <IconButton size="small" onClick={() => handleDeleteClick(deadline)} sx={{ bgcolor: alpha(theme => theme.palette.error.main, 0.1), color: 'error.main' }}>
+                                                <DeleteIcon sx={{ fontSize: 18 }} />
+                                            </IconButton>
                                         </Box>
                                     </Box>
-                                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: deadline.is_completed ? 'text.disabled' : 'text.primary' }}>{deadline.title}</Typography>
+                                    <Typography variant="h6" sx={{ 
+                                        fontWeight: 800, 
+                                        mb: 1.5, 
+                                        color: deadline.is_completed ? 'text.disabled' : 'text.primary',
+                                        lineHeight: 1.3,
+                                        fontSize: '1.1rem'
+                                    }}>
+                                        {deadline.title}
+                                    </Typography>
                                     <Typography
                                         variant="body2"
                                         color="text.secondary"
                                         onClick={() => navigate(`/cases?search=${encodeURIComponent(deadline.case_reference)}`)}
-                                        sx={{ mb: 2, cursor: 'pointer', '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}
+                                        sx={{ 
+                                            mb: 3, 
+                                            cursor: 'pointer', 
+                                            fontWeight: 600,
+                                            fontSize: '0.85rem',
+                                            '&:hover': { color: 'primary.main', textDecoration: 'underline' } 
+                                        }}
                                     >
                                         Dossier : {deadline.case_reference}
                                     </Typography>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
-                                            <EventIcon sx={{ fontSize: 18, mr: 1 }} />
-                                            <Typography variant="caption">{new Date(deadline.due_date).toLocaleString('fr-FR')}</Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 'auto' }}>
+                                        <Box sx={{ 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            p: '6px 12px',
+                                            borderRadius: '12px',
+                                            bgcolor: alpha(theme => theme.palette.text.primary, 0.04)
+                                        }}>
+                                            <EventIcon sx={{ fontSize: 16, mr: 1, opacity: 0.6 }} />
+                                            <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                                                {new Date(deadline.due_date).toLocaleDateString('fr-FR')}
+                                            </Typography>
                                         </Box>
-                                        <Chip component="span" label={status.label} color={status.color} size="small" icon={status.icon} />
+                                        <Chip 
+                                            label={status.label} 
+                                            color={status.color} 
+                                            size="small" 
+                                            icon={React.cloneElement(status.icon, { sx: { fontSize: 16 } })}
+                                            sx={{ fontWeight: 800, px: 0.5 }}
+                                        />
                                     </Box>
                                 </CardContent>
                             </Card>
