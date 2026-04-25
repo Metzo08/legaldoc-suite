@@ -641,7 +641,9 @@ function Documents() {
                 const matchedCase = cases.find(c => c.id === params.row.case);
                 const category = matchedCase?.category || 'AUTRE';
                 const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(category);
-                const categoryLabel = category.charAt(0) + category.slice(1).toLowerCase();
+                const categoryLabel = (typeof category === 'string' && category.length > 0)
+                    ? (category.charAt(0).toUpperCase() + category.slice(1).toLowerCase())
+                    : 'Catégorie';
 
                 return (
                     <Box sx={{ width: '100%', overflow: 'hidden', py: 1 }}>

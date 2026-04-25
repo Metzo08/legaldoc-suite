@@ -399,7 +399,9 @@ function Audiences() {
                             const category = getCaseCategory(audience.case);
                             const isYellow = ['CIVIL', 'COMMERCIAL', 'SOCIAL', 'TI_FAMILLE'].includes(category);
                             const isBlue = ['PENAL', 'CORRECTIONNEL'].includes(category);
-                            const categoryLabel = category.charAt(0) + category.slice(1).toLowerCase();
+                            const categoryLabel = (typeof category === 'string' && category.length > 0)
+                                ? (category.charAt(0).toUpperCase() + category.slice(1).toLowerCase())
+                                : 'Dossier';
 
                             return (
                                 <Grid item xs={12} md={6} key={audience.id}>
