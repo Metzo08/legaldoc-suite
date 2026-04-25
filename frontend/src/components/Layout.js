@@ -16,7 +16,8 @@ import {
     Avatar,
     Menu,
     MenuItem,
-    Tooltip
+    Tooltip,
+    alpha
 } from '@mui/material';
 import {
     Menu as MenuIcon,

@@ -251,7 +251,8 @@ function Dashboard() {
                                 </Typography>
                             )}
                         </Box>
-                    </Card>
+                    </Box>
+                </Card>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <StatCard
@@ -355,6 +356,7 @@ function Dashboard() {
                                 </Typography>
                             </Box>
                         )}
+                        </Box>
                     </Card>
                 </Grid>
 
@@ -445,6 +447,7 @@ function Dashboard() {
                                 </Typography>
                             </Box>
                         )}
+                        </Box>
                     </Card>
                 </Grid>
 
@@ -524,6 +527,7 @@ function Dashboard() {
                                 </Typography>
                             </Box>
                         )}
+                        </Box>
                     </Card>
                 </Grid>
 
@@ -608,6 +612,7 @@ function Dashboard() {
                                 </Typography>
                             </Box>
                         )}
+                        </Box>
                     </Card>
                 </Grid>
             </Grid>

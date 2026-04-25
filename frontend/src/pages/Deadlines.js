@@ -17,7 +17,8 @@ import {
     Chip,
     IconButton,
     Tooltip,
-    CircularProgress
+    CircularProgress,
+    alpha
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -236,8 +237,18 @@ function Deadlines() {
         <Box sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Box>
-                    <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>Échéances</Typography>
-                    <Typography variant="body1" color="text.secondary">Suivez les délais critiques de vos dossiers.</Typography>
+                    <Typography variant="h2" sx={{ 
+                        fontWeight: 900, 
+                        mb: 1,
+                        background: (theme) => `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(theme.palette.text.primary, 0.6)} 100%)`,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                    }}>
+                        Échéances
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500, opacity: 0.8 }}>
+                        Suivez les délais critiques de vos dossiers.
+                    </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', width: { xs: '100%', sm: 'auto' } }}>
                     <TextField

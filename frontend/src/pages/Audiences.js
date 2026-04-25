@@ -21,7 +21,8 @@ import {
     Grid,
     Chip,
     IconButton,
-    Tooltip
+    Tooltip,
+    alpha
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -76,7 +77,7 @@ function Audiences() {
     const [selectedCaseId, setSelectedCaseId] = useState('ALL');
     const [selectedJurisdiction, setSelectedJurisdiction] = useState('ALL');
     const [searchTerm, setSearchTerm] = useState(initialSearch);
-
+    const loadData = useCallback(async () => {
         try {
             const [deadlinesRes, casesRes, statsRes] = await Promise.all([
                 deadlinesAPI.getAll(),
@@ -294,10 +295,20 @@ function Audiences() {
         <Box sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Box>
-                    <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>Audiences</Typography>
-                    <Typography variant="body1" color="text.secondary">Agenda des audiences et diligences judiciaires.</Typography>
+                    <Typography variant="h2" sx={{ 
+                        fontWeight: 900, 
+                        mb: 1,
+                        background: (theme) => `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(theme.palette.text.primary, 0.6)} 100%)`,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                    }}>
+                        Audiences
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500, opacity: 0.8 }}>
+                        Agenda des audiences et diligences judiciaires.
+                    </Typography>
                 </Box>
-                <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ borderRadius: 2 }}>Nouvelle audience</Button>
+                <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ borderRadius: '12px', px: 3, py: 1.5, fontWeight: 700 }}>Nouvelle audience</Button>
             </Box>
 
             <Grid container spacing={3} sx={{ mb: 4 }}>
