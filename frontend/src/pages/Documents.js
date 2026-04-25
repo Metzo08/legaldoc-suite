@@ -1207,7 +1207,7 @@ function Documents() {
                                         }}
                                     />
                                 ) : isWord ? (
-                                    <Paper sx={{ p: 4, width: '100%', maxWidth: '800px', mx: 'auto', minHeight: '100%', bgcolor: 'white', color: 'black', borderRadius: '4px', boxShadow: 3 }} elevation={2}>
+                                    <Card sx={{ p: 4, width: '100%', maxWidth: '800px', mx: 'auto', minHeight: '100%', bgcolor: 'white', color: 'black', borderRadius: '4px', boxShadow: 3 }} elevation={2}>
                                         {wordLoading ? (
                                             <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><Typography>Chargement du document Word...</Typography></Box>
                                         ) : (
