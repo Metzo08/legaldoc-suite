@@ -408,10 +408,20 @@ function Cases() {
         <Box sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Box>
-                    <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>Dossiers</Typography>
-                    <Typography variant="body1" color="text.secondary">Gérez vos dossiers juridiques et leur suivi.</Typography>
+                    <Typography variant="h2" sx={{ 
+                        fontWeight: 900, 
+                        mb: 1,
+                        background: (theme) => `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(theme.palette.text.primary, 0.6)} 100%)`,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                    }}>
+                        Dossiers
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500, opacity: 0.8 }}>
+                        Gérez vos dossiers juridiques et leur suivi.
+                    </Typography>
                 </Box>
-                <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ borderRadius: 2 }}>Nouveau dossier</Button>
+                <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ borderRadius: '12px', px: 3, py: 1.5, fontWeight: 700 }}>Nouveau dossier</Button>
             </Box>
 
             <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -450,7 +460,7 @@ function Cases() {
                 </Grid>
             </Grid>
 
-            <Paper sx={{ height: 600, width: '100%', borderRadius: 3, overflow: 'hidden', boxShadow: 3 }}>
+            <Paper sx={{ height: 600, width: '100%', mb: 4 }}>
                 <DataGrid
                     rows={filteredCases}
                     columns={columns}

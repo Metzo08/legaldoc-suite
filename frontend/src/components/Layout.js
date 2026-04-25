@@ -100,15 +100,19 @@ function Layout({ children }) {
             <Box sx={{
                 p: 3,
                 textAlign: 'center',
-                color: 'white',
+                background: (theme) => `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, transparent 100%)`,
                 borderBottom: '1px solid rgba(255,255,255,0.05)'
             }}>
-                {/* Logo removed as it was causing 404 */}
-                <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: '-0.02em', color: '#fff' }}>
+                <Typography variant="h5" sx={{ 
+                    fontWeight: 900, 
+                    letterSpacing: '-0.05em', 
+                    color: '#fff',
+                    textShadow: '0 0 20px rgba(99,102,241,0.5)'
+                }}>
                     LegalDoc
                 </Typography>
-                <Typography variant="overline" sx={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.2em', fontSize: '0.7rem', textTransform: 'none' }}>
-                    Suite
+                <Typography variant="overline" sx={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '0.3em', fontSize: '0.7rem', fontWeight: 800 }}>
+                    PREMIUM
                 </Typography>
             </Box>
 
@@ -160,10 +164,6 @@ function Layout({ children }) {
                 sx={{
                     width: { sm: `calc(100% - ${drawerWidth}px)` },
                     ml: { sm: `${drawerWidth}px` },
-                    borderBottom: 1,
-                    borderColor: 'divider',
-                    bgcolor: (theme) => theme.palette.mode === 'light' ? 'white' : 'background.paper',
-                    color: 'text.primary',
                 }}
             >
                 <Toolbar>

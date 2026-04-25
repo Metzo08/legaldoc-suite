@@ -290,10 +290,20 @@ function Clients() {
         <Box sx={{ width: '100%', pb: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Box>
-                    <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>Clients</Typography>
-                    <Typography variant="body1" color="text.secondary">Gérez votre base de clients et leurs dossiers associés.</Typography>
+                    <Typography variant="h2" sx={{ 
+                        fontWeight: 900, 
+                        mb: 1,
+                        background: (theme) => `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(theme.palette.text.primary, 0.6)} 100%)`,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                    }}>
+                        Clients
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500, opacity: 0.8 }}>
+                        Gérez votre base de clients et leurs dossiers associés.
+                    </Typography>
                 </Box>
-                <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ borderRadius: 2, px: 3, py: 1 }}>Nouveau client</Button>
+                <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()} sx={{ borderRadius: '12px', px: 3, py: 1.5, fontWeight: 700 }}>Nouveau client</Button>
             </Box>
 
             <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -343,7 +353,7 @@ function Clients() {
                     localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
                     sx={{
                         border: 0,
-                        '& .MuiDataGrid-columnHeaders': { backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'background.paper' : '#f8fafc', fontWeight: 700 },
+                        '& .MuiDataGrid-columnHeaders': { fontWeight: 700 },
                         '& .MuiDataGrid-row:hover': { backgroundColor: 'action.hover' }
                     }}
                 />

@@ -155,9 +155,19 @@ function Dashboard() {
     return (
         <Box sx={{ p: { xs: 2, md: 3 } }}>
             {/* Header */}
-            <Box sx={{ mb: 4 }}>
-                <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>Tableau de bord</Typography>
-                <Typography variant="body1" color="text.secondary">Bienvenue dans votre gestionnaire de cabinet juridique.</Typography>
+            <Box sx={{ mb: 4, position: 'relative' }}>
+                <Typography variant="h2" sx={{ 
+                    fontWeight: 900, 
+                    mb: 1,
+                    background: (theme) => `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(theme.palette.text.primary, 0.6)} 100%)`,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                }}>
+                    Tableau de bord
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 500, opacity: 0.8 }}>
+                    Bienvenue dans votre gestionnaire de cabinet juridique haut de gamme.
+                </Typography>
             </Box>
 
             {/* Statistiques principales */}
@@ -172,24 +182,14 @@ function Dashboard() {
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                    <Paper
-                        elevation={0}
+                    <Card
+                        onClick={() => navigate('/cases')}
                         sx={{
                             height: '100%',
                             p: 3,
-                            borderRadius: 4,
-                            border: '1px solid',
-                            borderColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                            transition: 'all 0.3s',
-                            cursor: 'pointer',
-                            '&:hover': {
-                                transform: 'translateY(-4px)',
-                                boxShadow: (theme) => theme.palette.mode === 'dark' ? '0 12px 24px -10px rgba(0,0,0,0.5)' : '0 12px 24px -10px rgba(0,0,0,0.1)'
-                            },
-                            position: 'relative',
-                            overflow: 'hidden'
+                            display: 'flex',
+                            flexDirection: 'column'
                         }}
-                        onClick={() => navigate('/cases')}
                     >
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                             <Box sx={{
@@ -251,7 +251,7 @@ function Dashboard() {
                                 </Typography>
                             )}
                         </Box>
-                    </Paper>
+                    </Card>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <StatCard
@@ -277,38 +277,37 @@ function Dashboard() {
             <Grid container spacing={3}>
                 {/* Échéances à venir */}
                 <Grid item xs={12} md={6}>
-                    <Paper sx={{
-                        p: 3,
+                    <Card sx={{
+                        p: 0,
                         height: 480,
-                        overflow: 'auto',
-                        borderRadius: 4,
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        boxShadow: 'none'
+                        overflow: 'hidden',
+                        display: 'flex',
+                        flexDirection: 'column'
                     }}>
                         <Box
                             onClick={() => navigate('/agenda')}
                             sx={{
+                                p: 3,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
-                                mb: 3,
                                 cursor: 'pointer',
-                                '&:hover': {
-                                    opacity: 0.8
-                                }
+                                background: (theme) => theme.palette.mode === 'dark' ? alpha(theme.palette.primary.main, 0.05) : alpha('#000', 0.02),
+                                borderBottom: '1px solid',
+                                borderColor: 'divider'
                             }}
                         >
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha('#fbc02d', 0.1), color: '#fbc02d', mr: 2 }}>
+                                <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha('#f59e0b', 0.15), color: '#f59e0b', mr: 2 }}>
                                     <EventIcon />
                                 </Box>
-                                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 800 }}>
                                     Échéances à venir
                                 </Typography>
                             </Box>
-                            <Chip label="7 jours" size="small" variant="outlined" />
+                            <Chip label="7 jours" size="small" variant="outlined" sx={{ fontWeight: 700 }} />
                         </Box>
+                        <Box sx={{ p: 3, flexGrow: 1, overflow: 'auto' }}>
 
                         {upcomingDeadlines.length > 0 ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -356,39 +355,38 @@ function Dashboard() {
                                 </Typography>
                             </Box>
                         )}
-                    </Paper>
+                    </Card>
                 </Grid>
 
                 {/* Tags populaires */}
                 <Grid item xs={12} md={6}>
-                    <Paper sx={{
-                        p: 3,
+                    <Card sx={{
+                        p: 0,
                         height: 480,
-                        overflow: 'auto',
-                        borderRadius: 4,
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        boxShadow: 'none'
+                        overflow: 'hidden',
+                        display: 'flex',
+                        flexDirection: 'column'
                     }}>
                         <Box
                             onClick={() => navigate('/tags')}
                             sx={{
+                                p: 3,
                                 display: 'flex',
                                 alignItems: 'center',
-                                mb: 3,
                                 cursor: 'pointer',
-                                '&:hover': {
-                                    opacity: 0.8
-                                }
+                                background: (theme) => theme.palette.mode === 'dark' ? alpha(theme.palette.primary.main, 0.05) : alpha('#000', 0.02),
+                                borderBottom: '1px solid',
+                                borderColor: 'divider'
                             }}
                         >
-                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha('#6366f1', 0.1), color: '#6366f1', mr: 2 }}>
+                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha('#6366f1', 0.15), color: '#6366f1', mr: 2 }}>
                                 <LabelIcon />
                             </Box>
-                            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 800 }}>
                                 Tags les plus utilisés
                             </Typography>
                         </Box>
+                        <Box sx={{ p: 3, flexGrow: 1, overflow: 'auto' }}>
 
                         {topTags.length > 0 ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -447,7 +445,7 @@ function Dashboard() {
                                 </Typography>
                             </Box>
                         )}
-                    </Paper>
+                    </Card>
                 </Grid>
 
                 {/* Pense-bête (Diligences) */}
@@ -457,21 +455,23 @@ function Dashboard() {
 
                 {/* Documents récents */}
                 <Grid item xs={12}>
-                    <Paper sx={{
-                        p: 3,
-                        borderRadius: 4,
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        boxShadow: 'none'
-                    }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha('#1a237e', 0.1), color: 'primary.main', mr: 2 }}>
+                    <Card sx={{ p: 0, overflow: 'hidden' }}>
+                        <Box sx={{
+                            p: 3,
+                            display: 'flex',
+                            alignItems: 'center',
+                            background: (theme) => theme.palette.mode === 'dark' ? alpha(theme.palette.primary.main, 0.05) : alpha('#000', 0.02),
+                            borderBottom: '1px solid',
+                            borderColor: 'divider'
+                        }}>
+                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha('#6366f1', 0.15), color: 'primary.main', mr: 2 }}>
                                 <DescriptionIcon />
                             </Box>
-                            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 800 }}>
                                 Documents récents
                             </Typography>
                         </Box>
+                        <Box sx={{ p: 3 }}>
 
                         {recentDocuments.length > 0 ? (
                             <Grid container spacing={2}>
@@ -524,26 +524,28 @@ function Dashboard() {
                                 </Typography>
                             </Box>
                         )}
-                    </Paper>
+                    </Card>
                 </Grid>
 
                 {/* Dernières décisions */}
                 <Grid item xs={12}>
-                    <Paper sx={{
-                        p: 3,
-                        borderRadius: 4,
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        boxShadow: 'none'
-                    }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha('#9c27b0', 0.1), color: 'secondary.main', mr: 2 }}>
+                    <Card sx={{ p: 0, overflow: 'hidden' }}>
+                        <Box sx={{
+                            p: 3,
+                            display: 'flex',
+                            alignItems: 'center',
+                            background: (theme) => theme.palette.mode === 'dark' ? alpha(theme.palette.secondary.main, 0.05) : alpha('#000', 0.02),
+                            borderBottom: '1px solid',
+                            borderColor: 'divider'
+                        }}>
+                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha('#f59e0b', 0.15), color: 'secondary.main', mr: 2 }}>
                                 <GavelIcon />
                             </Box>
-                            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 800 }}>
                                 Dernières décisions
                             </Typography>
                         </Box>
+                        <Box sx={{ p: 3 }}>
 
                         {recentDecisions.length > 0 ? (
                             <Box sx={{ overflowX: 'auto' }}>
@@ -606,7 +608,7 @@ function Dashboard() {
                                 </Typography>
                             </Box>
                         )}
-                    </Paper>
+                    </Card>
                 </Grid>
             </Grid>
 
