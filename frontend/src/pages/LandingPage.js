@@ -414,7 +414,7 @@ function LandingPage() {
                                                 borderColor: 'grey.300'
                                             }}
                                         >
-                                            {member.name?.charAt(0) || 'M'}
+                                            {(typeof member?.name === 'string' && member.name.length > 0) ? member.name.charAt(0) : 'M'}
                                         </Avatar>
                                     )}
                                     <Typography variant="h5" fontWeight="800" sx={{ color: '#1a1a1a', mb: 0.5 }}>

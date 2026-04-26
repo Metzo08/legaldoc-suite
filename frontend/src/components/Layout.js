@@ -205,7 +205,7 @@ function Layout({ children }) {
                             fontWeight: 700,
                             boxShadow: darkMode ? '0 0 10px rgba(194,155,97,0.3)' : 'none'
                         }}>
-                            {currentUser?.username?.charAt(0).toUpperCase() || 'U'}
+                            {typeof currentUser?.username === 'string' && currentUser.username.length > 0 ? currentUser.username.charAt(0).toUpperCase() : 'U'}
                         </Avatar>
                     </IconButton>
 

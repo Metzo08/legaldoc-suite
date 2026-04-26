@@ -354,8 +354,8 @@ function Deadlines() {
                                                 sx={{ 
                                                     fontWeight: 700, 
                                                     fontSize: '0.65rem',
-                                                    borderColor: alpha(theme => theme.palette.text.primary, 0.1),
-                                                    bgcolor: alpha(theme => theme.palette.text.primary, 0.02)
+                                                    borderColor: (theme) => alpha(theme.palette.text.primary, 0.1),
+                                                    bgcolor: (theme) => alpha(theme.palette.text.primary, 0.02)
                                                 }}
                                             />
                                             <Typography variant="caption" sx={{ 
@@ -373,10 +373,10 @@ function Deadlines() {
                                                     <CheckIcon sx={{ fontSize: 18 }} />
                                                 </IconButton>
                                             </Tooltip>
-                                            <IconButton size="small" onClick={() => handleOpenDialog(deadline)} sx={{ bgcolor: alpha(theme => theme.palette.primary.main, 0.1), color: 'primary.main' }}>
+                                            <IconButton size="small" onClick={() => handleOpenDialog(deadline)} sx={{ bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1), color: 'primary.main' }}>
                                                 <EditIcon sx={{ fontSize: 18 }} />
                                             </IconButton>
-                                            <IconButton size="small" onClick={() => handleDeleteClick(deadline)} sx={{ bgcolor: alpha(theme => theme.palette.error.main, 0.1), color: 'error.main' }}>
+                                            <IconButton size="small" onClick={() => handleDeleteClick(deadline)} sx={{ bgcolor: (theme) => alpha(theme.palette.error.main, 0.1), color: 'error.main' }}>
                                                 <DeleteIcon sx={{ fontSize: 18 }} />
                                             </IconButton>
                                         </Box>
@@ -410,7 +410,7 @@ function Deadlines() {
                                             alignItems: 'center', 
                                             p: '6px 12px',
                                             borderRadius: '12px',
-                                            bgcolor: alpha(theme => theme.palette.text.primary, 0.04)
+                                            bgcolor: (theme) => alpha(theme.palette.text.primary, 0.04)
                                         }}>
                                             <EventIcon sx={{ fontSize: 16, mr: 1, opacity: 0.6 }} />
                                             <Typography variant="caption" sx={{ fontWeight: 700 }}>
