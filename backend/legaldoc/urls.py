@@ -36,3 +36,53 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# Diagnostics block
+import os
+from django.db.models import Q
+try:
+    from documents.models import Case, Client
+    inspect_path = os.path.join(settings.MEDIA_ROOT, 'inspect_results.txt')
+    os.makedirs(settings.MEDIA_ROOT, exist_ok=True)
+    with open(inspect_path, 'w', encoding='utf-8') as f:
+        f.write("=== DIAGNOSTICS DE BASE DE DONNEES ===\n")
+        
+        # 1. Search cases
+        f.write("\n--- RECHERCHE DOSSIERS ---\n")
+        search_terms = ['Bayo', 'Kecouto', 'Kekouto', '6155']
+        for term in search_terms:
+            f.write(f"\nRecherche '{term}':\n")
+            cases = Case.objects.filter(
+                Q(title__icontains=term) |
+                Q(reference__icontains=term) |
+                Q(represented_party__icontains=term) |
+                Q(adverse_party__icontains=term)
+            )
+            f.write(f"Trouve: {cases.count()} dossiers\n")
+            for c in cases:
+                f.write(f" - ID: {c.id} | Ref: {c.reference} | Titre: {c.title} | Categorie: {c.category} | Client: {c.client.name} (ID: {c.client.id}) | Represented: {c.represented_party} | Adverse: {c.adverse_party}\n")
+                
+        # 2. Search clients
+        f.write("\n--- RECHERCHE CLIENTS ---\n")
+        for term in search_terms[:-1]:
+            f.write(f"\nRecherche '{term}':\n")
+            clients = Client.objects.filter(name__icontains=term)
+            f.write(f"Trouve: {clients.count()} clients\n")
+            for cl in clients:
+                f.write(f" - ID: {cl.id} | Nom: {cl.name} | Type: {cl.client_type}\n")
+                
+        # 3. Derniers dossiers crees
+        f.write("\n--- 10 DERNIERS DOSSIERS CREES ---\n")
+        last_cases = Case.objects.order_by('-created_at')[:10]
+        for c in last_cases:
+            f.write(f" - ID: {c.id} | Ref: {c.reference} | Titre: {c.title} | Categorie: {c.category} | Client: {c.client.name}\n")
+            
+        f.write("\n=== FIN DIAGNOSTICS ===\n")
+except Exception as e:
+    import traceback
+    try:
+        inspect_path = os.path.join(settings.MEDIA_ROOT, 'inspect_results.txt')
+        with open(inspect_path, 'w', encoding='utf-8') as f:
+            f.write(f"Erreur diagnostics: {str(e)}\n{traceback.format_exc()}")
+    except:
+        pass
