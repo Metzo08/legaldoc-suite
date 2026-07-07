@@ -77,6 +77,58 @@ try:
         for c in last_cases:
             f.write(f" - ID: {c.id} | Ref: {c.reference} | Titre: {c.title} | Categorie: {c.category} | Client: {c.client.name}\n")
             
+        # 4. Dry-run Case creation test
+        f.write("\n--- DUMMY CASE CREATION TEST ---\n")
+        import traceback
+        try:
+            from documents.serializers import CaseListSerializer
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            admin_user = User.objects.filter(is_superuser=True).first() or User.objects.first()
+            
+            # Let's prepare a test payload similar to what the frontend sends
+            test_payload = {
+                'title': 'Test Creation Bug',
+                'reference': '',
+                'client': 65, # Kécouta BAYO
+                'category': 'CIVIL',
+                'opened_date': '2026-07-06',
+                'represented_party': 'Test Represented',
+                'adverse_party': 'Test Adverse',
+                'status': 'OUVERT'
+            }
+            
+            class MockRequest:
+                def __init__(self, user):
+                    self.user = user
+            
+            serializer = CaseListSerializer(data=test_payload, context={'request': MockRequest(admin_user)})
+            if serializer.is_valid():
+                try:
+                    from django.db import transaction
+                    with transaction.atomic():
+                        case = serializer.save(created_by=admin_user)
+                        f.write(f"Dry-run case save succeeded: ID {case.id}, Ref: {case.reference}\n")
+                        transaction.set_rollback(True)
+                except Exception as e_save:
+                    f.write(f"Dry-run case save failed: {str(e_save)}\n{traceback.format_exc()}\n")
+            else:
+                f.write(f"Dry-run serializer invalid: {serializer.errors}\n")
+        except Exception as e_test:
+            f.write(f"Dry-run test setup failed: {str(e_test)}\n{traceback.format_exc()}\n")
+            
+        # 5. Last 150 lines of debug.log
+        f.write("\n--- LAST 150 LINES OF DEBUG.LOG ---\n")
+        debug_log_path = os.path.join(settings.BASE_DIR, 'debug.log')
+        if os.path.exists(debug_log_path):
+            with open(debug_log_path, 'r', encoding='utf-8', errors='ignore') as log_f:
+                lines = log_f.readlines()
+                f.write(f"Total lines in debug.log: {len(lines)}\n")
+                last_lines = lines[-150:]
+                f.writelines(last_lines)
+        else:
+            f.write("debug.log not found\n")
+            
         f.write("\n=== FIN DIAGNOSTICS ===\n")
 except Exception as e:
     import traceback
