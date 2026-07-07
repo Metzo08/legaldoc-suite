@@ -91,8 +91,8 @@ function Deadlines() {
         try {
             setLoading(true);
             const [deadlinesRes, casesRes, statsRes] = await Promise.all([
-                deadlinesAPI.getAll(),
-                casesAPI.getAll(),
+                deadlinesAPI.getAll({ page_size: 'all' }),
+                casesAPI.getAll({ page_size: 'all' }),
                 clientsAPI.getDashboardStats()
             ]);
             setDeadlines(Array.isArray(deadlinesRes.data.results) ? deadlinesRes.data.results : (Array.isArray(deadlinesRes.data) ? deadlinesRes.data : []));

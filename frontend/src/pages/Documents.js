@@ -118,9 +118,9 @@ function Documents() {
         try {
             setLoading(true);
             const [docsRes, casesRes, clientsRes, statsRes] = await Promise.all([
-                documentsAPI.getAll(),
-                casesAPI.getAll(),
-                clientsAPI.getAll(),
+                documentsAPI.getAll({ page_size: 'all' }),
+                casesAPI.getAll({ page_size: 'all' }),
+                clientsAPI.getAll({ page_size: 'all' }),
                 clientsAPI.getDashboardStats()
             ]);
             

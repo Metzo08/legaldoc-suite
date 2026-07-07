@@ -59,7 +59,7 @@ function Users() {
     const loadData = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await usersAPI.getAll();
+            const response = await usersAPI.getAll({ page_size: 'all' });
             setUsers(Array.isArray(response.data.results) ? response.data.results : (Array.isArray(response.data) ? response.data : []));
         } catch (err) {
             console.error(err);

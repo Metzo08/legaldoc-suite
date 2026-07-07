@@ -101,7 +101,7 @@ function Clients() {
     const loadClients = useCallback(async () => {
         try {
             const [response, statsRes] = await Promise.all([
-                clientsAPI.getAll(),
+                clientsAPI.getAll({ page_size: 'all' }),
                 clientsAPI.getDashboardStats()
             ]);
             

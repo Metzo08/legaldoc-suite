@@ -193,9 +193,9 @@ const Tasks = () => {
     const fetchData = useCallback(async () => {
         try {
             const [tasksRes, usersRes, casesRes] = await Promise.all([
-                tasksAPI.getAll(),
-                usersAPI.getAll(),
-                casesAPI.getAll()
+                tasksAPI.getAll({ page_size: 'all' }),
+                usersAPI.getAll({ page_size: 'all' }),
+                casesAPI.getAll({ page_size: 'all' })
             ]);
             setTasks(Array.isArray(tasksRes.data.results) ? tasksRes.data.results : (Array.isArray(tasksRes.data) ? tasksRes.data : []));
             setUsers(Array.isArray(usersRes.data.results) ? usersRes.data.results : (Array.isArray(usersRes.data) ? usersRes.data : []));

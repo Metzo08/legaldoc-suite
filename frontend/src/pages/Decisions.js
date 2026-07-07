@@ -96,7 +96,7 @@ function Decisions() {
 
             const [decisionsRes, casesRes] = await Promise.all([
                 decisionsAPI.getAll(params),
-                casesAPI.getAll()
+                casesAPI.getAll({ page_size: 'all' })
             ]);
 
             setDecisions(Array.isArray(decisionsRes.data.results) ? decisionsRes.data.results : (Array.isArray(decisionsRes.data) ? decisionsRes.data : []));

@@ -59,7 +59,7 @@ function Tags() {
     const loadTags = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await tagsAPI.getAll();
+            const response = await tagsAPI.getAll({ page_size: 'all' });
             setTags(Array.isArray(response.data.results) ? response.data.results : (Array.isArray(response.data) ? response.data : []));
         } catch (error) {
             console.error('Erreur chargement tags:', error);

@@ -89,8 +89,8 @@ function Cases() {
         try {
             setLoading(true);
             const [casesRes, clientsRes, statsRes] = await Promise.all([
-                casesAPI.getAll(),
-                clientsAPI.getAll(),
+                casesAPI.getAll({ page_size: 'all' }),
+                clientsAPI.getAll({ page_size: 'all' }),
                 clientsAPI.getDashboardStats()
             ]);
             const fetchedCases = Array.isArray(casesRes.data.results) ? casesRes.data.results : (Array.isArray(casesRes.data) ? casesRes.data : []);

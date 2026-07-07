@@ -80,8 +80,8 @@ function Audiences() {
     const loadData = useCallback(async () => {
         try {
             const [deadlinesRes, casesRes, statsRes] = await Promise.all([
-                deadlinesAPI.getAll(),
-                casesAPI.getAll(),
+                deadlinesAPI.getAll({ page_size: 'all' }),
+                casesAPI.getAll({ page_size: 'all' }),
                 clientsAPI.getDashboardStats()
             ]);
             // Filter only AUDIENCE type for this page
