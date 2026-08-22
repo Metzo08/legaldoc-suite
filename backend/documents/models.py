@@ -179,7 +179,7 @@ class Case(models.Model):
         Format principal : PREFIX1234 (ex: CIV1000)
         Format sous-dossier : PARENT.X (où X est le prochain numéro libre)
         """
-        if not self.reference:
+        if not self.reference or str(self.reference).strip() == "":
             # Préfixes par catégorie
             prefix_map = {
                 'CIVIL': 'CIV',

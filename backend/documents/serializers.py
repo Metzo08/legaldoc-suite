@@ -27,9 +27,7 @@ class ClientSerializer(serializers.ModelSerializer):
     
     def get_total_cases(self, obj):
         return obj.cases.count()
-
-
-class CaseListSerializer(serializers.ModelSerializer):
+class CaseListSerializer(serializers.ModelSerializer):
     """
     Sérialiseur simplifié pour la liste des dossiers.
     """
@@ -46,6 +44,7 @@ class CaseListSerializer(serializers.ModelSerializer):
             'adverse_lawyer', 'external_reference', 'contact_name', 'contact_email',
             'contact_phone', 'our_lawyers', 'fees', 'parent_case'
         )
+        validators = []  # Désactiver le UniqueTogetherValidator automatique de DRF
         extra_kwargs = {
             'reference': {
                 'required': False, 
@@ -53,6 +52,34 @@ class CaseListSerializer(serializers.ModelSerializer):
                 'validators': []
             }
         }
+    
+    def validate_reference(self, value):
+        """
+        Si la référence est vide ou ne contient que des espaces, on retourne None.
+        """
+        if not value or str(value).strip() == "":
+            return None
+        return str(value).strip()
+
+    def validate(self, attrs):
+        reference = attrs.get('reference')
+        category = attrs.get('category') or (self.instance.category if self.instance else 'CIVIL')
+        
+        # Si une référence manuelle est fournie, vérifier son unicité dans la catégorie
+        if reference and str(reference).strip():
+            ref_clean = str(reference).strip()
+            qs = Case.objects.filter(reference=ref_clean, category=category)
+            if self.instance:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise serializers.ValidationError({
+                    'reference': f"Un dossier avec la référence '{ref_clean}' existe déjà dans la catégorie '{category}'."
+                })
+            attrs['reference'] = ref_clean
+        else:
+            attrs['reference'] = None
+
+        return attrs
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -93,22 +120,42 @@ class CaseDetailSerializer(serializers.ModelSerializer):
             'parent_case', 'sub_cases', 'decisions'
         )
         read_only_fields = ('id', 'created_by', 'created_at', 'updated_at')
+        validators = []  # Désactiver le UniqueTogetherValidator automatique de DRF
         extra_kwargs = {
             'reference': {
                 'required': False, 
-                'allow_blank': True,
+                'allow_blank': True, 
                 'validators': []
             }
         }
     
     def validate_reference(self, value):
         """
-        Si la référence est vide, on retourne None pour éviter les collisions d'erreurs
-        Django UniqueValidator sur les chaînes vides.
+        Si la référence est vide ou ne contient que des espaces, on retourne None.
         """
-        if not value or value.strip() == "":
+        if not value or str(value).strip() == "":
             return None
-        return value
+        return str(value).strip()
+
+    def validate(self, attrs):
+        reference = attrs.get('reference')
+        category = attrs.get('category') or (self.instance.category if self.instance else 'CIVIL')
+        
+        # Si une référence manuelle est fournie, vérifier son unicité dans la catégorie
+        if reference and str(reference).strip():
+            ref_clean = str(reference).strip()
+            qs = Case.objects.filter(reference=ref_clean, category=category)
+            if self.instance:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise serializers.ValidationError({
+                    'reference': f"Un dossier avec la référence '{ref_clean}' existe déjà dans la catégorie '{category}'."
+                })
+            attrs['reference'] = ref_clean
+        else:
+            attrs['reference'] = None
+
+        return attrs
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

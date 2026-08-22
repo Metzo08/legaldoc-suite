@@ -209,6 +209,12 @@ function Cases() {
         try {
             // Préparer les données à envoyer (exclure les honoraires si non-admin)
             const dataToSend = { ...formData };
+            if (dataToSend.reference && typeof dataToSend.reference === 'string') {
+                dataToSend.reference = dataToSend.reference.trim();
+            } else {
+                dataToSend.reference = '';
+            }
+
             if (!(isAdmin || currentUser?.role === 'ADMIN')) {
                 delete dataToSend.fees;
             }
@@ -230,7 +236,16 @@ function Cases() {
             loadData();
         } catch (error) {
             console.error('Erreur enregistrement dossier:', error);
-            const errorMsg = error.response?.data ? JSON.stringify(error.response.data) : error.message;
+            let errorMsg = error.message;
+            if (error.response?.data) {
+                if (typeof error.response.data === 'object') {
+                    errorMsg = Object.entries(error.response.data)
+                        .map(([k, v]) => `${k !== 'detail' && k !== 'non_field_errors' ? k + ': ' : ''}${Array.isArray(v) ? v.join(', ') : v}`)
+                        .join(' | ');
+                } else {
+                    errorMsg = String(error.response.data);
+                }
+            }
             showNotification(`Erreur lors de l'enregistrement: ${errorMsg}`, "error");
         }
     };

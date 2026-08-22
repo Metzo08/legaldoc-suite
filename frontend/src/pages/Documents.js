@@ -375,8 +375,8 @@ function Documents() {
                 title: newCaseData.title,
                 client: newCaseData.client,
                 category: newCaseData.category,
-                reference: `DOS-${Date.now()}`, // Simple auto-ref
-                status: 'OPEN',
+                reference: '',
+                status: 'OUVERT',
                 description: 'Créé depuis l\'upload rapide'
             });
             const newCase = resp.data;
