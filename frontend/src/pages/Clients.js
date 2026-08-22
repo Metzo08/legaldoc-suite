@@ -41,6 +41,7 @@ import StatCard from '../components/StatCard';
 
 // Fonction utilitaire pour générer une couleur à partir du nom
 const stringToColor = (string) => {
+    if (!string || typeof string !== 'string') return '#6366f1';
     let hash = 0;
     for (let i = 0; i < string.length; i += 1) {
         hash = string.charCodeAt(i) + ((hash << 5) - hash);
@@ -54,18 +55,26 @@ const stringToColor = (string) => {
 };
 
 const stringAvatar = (name) => {
-    if (!name) return { sx: { bgcolor: '#ccc' }, children: '?' };
+    if (!name || typeof name !== 'string' || !name.trim()) {
+        return { sx: { bgcolor: '#94a3b8' }, children: '?' };
+    }
+    const cleanName = name.trim();
+    const parts = cleanName.split(/\s+/).filter(Boolean);
+    let initials = '?';
+    if (parts.length > 1 && parts[0]?.[0] && parts[1]?.[0]) {
+        initials = `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    } else if (parts.length > 0 && parts[0].length > 0) {
+        initials = parts[0].slice(0, 2).toUpperCase();
+    }
     return {
         sx: {
-            bgcolor: stringToColor(name),
+            bgcolor: stringToColor(cleanName),
             width: 32,
             height: 32,
             fontSize: 14,
             mr: 1
         },
-        children: name.split(' ').length > 1
-            ? `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`.toUpperCase()
-            : name.substr(0, 2).toUpperCase(),
+        children: initials,
     };
 };
 

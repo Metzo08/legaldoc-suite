@@ -1100,7 +1100,7 @@ class DeadlineViewSet(viewsets.ModelViewSet):
         
         # Filtrer les échéances à venir (prochains X jours)
         upcoming_days = self.request.query_params.get('upcoming_days', None)
-        if upcoming_days:
+        if upcoming_days and str(upcoming_days).isdigit():
             from django.utils import timezone
             from datetime import timedelta
             end_date = timezone.now() + timedelta(days=int(upcoming_days))
@@ -1376,12 +1376,12 @@ class AgendaViewSet(viewsets.ModelViewSet):
         dossier = self.request.query_params.get('dossier')
         search = self.request.query_params.get('search')
 
-        if year:
+        if year and str(year).isdigit():
             qs = qs.filter(year=int(year))
-        if month and year:
+        if month and str(month).isdigit() and year:
             qs = qs.filter(date_audience__month=int(month))
-        if case_id:
-            qs = qs.filter(case_id=case_id)
+        if case_id and str(case_id).isdigit():
+            qs = qs.filter(case_id=int(case_id))
         if event_type:
             qs = qs.filter(event_type=event_type)
         if type_chambre:

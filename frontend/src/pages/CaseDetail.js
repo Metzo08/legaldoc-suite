@@ -65,6 +65,17 @@ import { casesAPI, documentsAPI, decisionsAPI, agendaAPI } from '../services/api
 import authService from '../services/authService';
 import DiligenceManager from '../components/DiligenceManager';
 
+const safeFormatDate = (dateStr, formatPattern, options = {}) => {
+    if (!dateStr) return '';
+    try {
+        const parsed = typeof dateStr === 'string' ? parseISO(dateStr) : new Date(dateStr);
+        if (isNaN(parsed.getTime())) return '';
+        return format(parsed, formatPattern, options);
+    } catch {
+        return '';
+    }
+};
+
 const CHAMBRE_COLORS = {
     // TI (Tribunaux d'Instance)
     TI_DAKAR: { label: 'TI Dakar', color: '#795548', icon: '🏛️' },
@@ -489,10 +500,10 @@ const CaseDetail = () => {
                                                                     borderColor: alpha(cfg.color, 0.2)
                                                                 }}>
                                                                     <Typography sx={{ fontSize: '0.65rem', fontWeight: 800, color: cfg.color, textTransform: 'uppercase' }}>
-                                                                        {format(parseISO(hearing.date_audience), 'MMM', { locale: fr })}
+                                                                        {safeFormatDate(hearing.date_audience, 'MMM', { locale: fr })}
                                                                     </Typography>
                                                                     <Typography sx={{ fontSize: '1.1rem', fontWeight: 900, color: cfg.color, lineHeight: 1 }}>
-                                                                        {format(parseISO(hearing.date_audience), 'dd')}
+                                                                        {safeFormatDate(hearing.date_audience, 'dd')}
                                                                     </Typography>
                                                                 </Box>
                                                             </ListItemIcon>
@@ -504,7 +515,7 @@ const CaseDetail = () => {
                                                                             {hearing.title}
                                                                         </Typography>
                                                                         <Chip
-                                                                            label={hearing.heure_audience.slice(0, 5)}
+                                                                            label={hearing.heure_audience ? String(hearing.heure_audience).slice(0, 5) : '--:--'}
                                                                             size="small"
                                                                             variant="outlined"
                                                                             sx={{ height: 20, fontSize: '0.65rem', fontWeight: 700 }}
@@ -1038,7 +1049,7 @@ const CaseDetail = () => {
                                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <Box>
                                                         <Typography sx={{ fontWeight: 800, fontSize: '0.9rem' }}>
-                                                            {format(parseISO(entry.date_audience), 'eeee d MMMM yyyy', { locale: fr })}
+                                                            {safeFormatDate(entry.date_audience, 'eeee d MMMM yyyy', { locale: fr })}
                                                         </Typography>
                                                         <Typography variant="caption" color="text.secondary" display="block">
                                                             {entry.heure_audience?.substring(0, 5)} — {cfg.label}
@@ -1086,7 +1097,7 @@ const CaseDetail = () => {
                                             alignItems: 'center'
                                         }}>
                                             <Typography sx={{ fontSize: '0.65rem', color: 'text.disabled', minWidth: 100, fontWeight: 700 }}>
-                                                {h.date_action && format(parseISO(h.date_action), 'dd/MM/yy HH:mm')}
+                                                {safeFormatDate(h.date_action, 'dd/MM/yy HH:mm')}
                                             </Typography>
                                             <Chip label={h.type_action_display} size="small" sx={{ fontSize: '0.6rem', height: 18, fontWeight: 700 }} />
                                             <Typography sx={{ fontSize: '0.75rem', flex: 1, fontWeight: 500 }}>{h.commentaire}</Typography>
