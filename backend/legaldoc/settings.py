@@ -165,7 +165,9 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
 
 # Configuration OCR
-TESSERACT_CMD = config('TESSERACT_CMD', default='tesseract')
+import shutil as _shutil
+_default_tess = _shutil.which('tesseract') or next((c for c in (r'C:\Program Files\Tesseract-OCR\tesseract.exe', r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe') if os.path.exists(c)), 'tesseract')
+TESSERACT_CMD = config('TESSERACT_CMD', default=_default_tess)
 OCR_LANGUAGES = ['fra', 'eng']
 
 # Configuration de chiffrement
