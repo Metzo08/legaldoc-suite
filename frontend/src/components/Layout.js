@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
     Box,
     Drawer,
@@ -67,6 +67,7 @@ const menuItems = [
 
 function Layout({ children }) {
     const navigate = useNavigate();
+    const location = useLocation();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const { darkMode, toggleDarkMode } = useContext(ThemeContext);
@@ -133,6 +134,7 @@ function Layout({ children }) {
                     return (
                         <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
                             <ListItemButton
+                                selected={location.pathname === item.path || (item.path !== '/dashboard' && location.pathname.startsWith(item.path + '/'))}
                                 onClick={() => handleMenuClick(item.path)}
                                 sx={{
                                     // Styling is handled by theme.js MuiListItemButton override
@@ -178,7 +180,7 @@ function Layout({ children }) {
                     </IconButton>
 
                     <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
-                        {/* Le titre peut être dynamique selon la page */}
+                        {menuItems.find(m => location.pathname === m.path || (m.path !== '/dashboard' && location.pathname.startsWith(m.path + '/')))?.text || (location.pathname === '/profile' ? 'Mon profil' : 'LegalDoc Suite')}
                     </Typography>
 
                     {/* Notifications Center */}

@@ -1,6 +1,7 @@
 """
 Vues API pour la gestion documentaire.
 """
+from django.utils.dateparse import parse_date, parse_time
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -1382,6 +1383,14 @@ class AgendaViewSet(viewsets.ModelViewSet):
             qs = qs.filter(date_audience__month=int(month))
         if case_id and str(case_id).isdigit():
             qs = qs.filter(case_id=int(case_id))
+        # Plage de dates : vues semaine/mois a cheval sur deux mois,
+        # role des audiences a venir et audiences a regulariser.
+        date_from = parse_date(self.request.query_params.get('date_from') or '')
+        date_to = parse_date(self.request.query_params.get('date_to') or '')
+        if date_from:
+            qs = qs.filter(date_audience__gte=date_from)
+        if date_to:
+            qs = qs.filter(date_audience__lte=date_to)
         if event_type:
             qs = qs.filter(event_type=event_type)
         if type_chambre:
@@ -1514,20 +1523,72 @@ class AgendaViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def terminer(self, request, pk=None):
-        """Marque une audience comme terminée."""
+        """
+        Cloture une audience en enregistrant son issue.
+        Parametres optionnels :
+          - issue : PLAIDEE_DELIBERE | DECISION_RENDUE | RADIEE | AUTRE
+          - compte_rendu : texte libre ajoute aux notes
+          - date_delibere / heure_delibere : cree automatiquement l'audience
+            de delibere (statut PREVU) liee a cette audience.
+        """
         entry = self.get_object()
         old_data = self._serialize_entry(entry)
+
+        issues = {
+            'PLAIDEE_DELIBERE': 'Plaidée - mise en délibéré',
+            'DECISION_RENDUE': 'Décision rendue',
+            'RADIEE': 'Affaire radiée du rôle',
+            'AUTRE': 'Audience tenue',
+        }
+        issue = str(request.data.get('issue') or 'AUTRE').upper()
+        issue_label = issues.get(issue, issues['AUTRE'])
+        compte_rendu = str(request.data.get('compte_rendu') or '').strip()
+        date_delibere = parse_date(str(request.data.get('date_delibere') or ''))
+        heure_raw = str(request.data.get('heure_delibere') or '').strip()
+        heure_delibere = parse_time(heure_raw) if heure_raw else None
+
+        resume = f"Issue : {issue_label}"
+        if compte_rendu:
+            resume += f" - {compte_rendu}"
         entry.statut = 'TERMINE'
+        entry.notes = f"{entry.notes}\n{resume}".strip() if entry.notes else resume
         entry.save()
+
+        delibere_entry = None
+        if date_delibere:
+            delibere_entry = AgendaEvent.objects.create(
+                title=f"Délibéré - {entry.dossier_numero or entry.title}"[:255],
+                event_type=entry.event_type,
+                type_chambre=entry.type_chambre,
+                type_chambre_autre=entry.type_chambre_autre,
+                dossier_numero=entry.dossier_numero,
+                dossier_nom=entry.dossier_nom,
+                date_audience=date_delibere,
+                heure_audience=heure_delibere or entry.heure_audience,
+                statut='PREVU',
+                reporte_de=entry,
+                notes=f"Délibéré prorogé depuis l'audience du {entry.date_audience.strftime('%d/%m/%Y')}",
+                case=entry.case,
+                location=entry.location,
+                color=entry.color,
+                created_by=request.user,
+            )
+
+        commentaire = f"Audience terminée. {resume}"
+        if delibere_entry:
+            commentaire += f" Délibéré fixé au {date_delibere.strftime('%d/%m/%Y')}."
         AgendaHistory.objects.create(
             agenda_entry=entry,
             type_action='TERMINATION',
             ancienne_valeur=old_data,
             nouvelle_valeur=self._serialize_entry(entry),
             utilisateur=request.user,
-            commentaire="Audience marquée comme terminée"
+            commentaire=commentaire[:1000]
         )
-        return Response(AgendaEventSerializer(entry).data)
+        data = AgendaEventSerializer(entry).data
+        if delibere_entry:
+            data['delibere'] = AgendaEventSerializer(delibere_entry).data
+        return Response(data)
 
     @action(detail=True, methods=['post'])
     def annuler(self, request, pk=None):

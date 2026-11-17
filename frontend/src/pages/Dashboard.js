@@ -38,6 +38,7 @@ import DiligenceManager from '../components/DiligenceManager';
 import { useNotification } from '../context/NotificationContext';
 
 function Dashboard() {
+    const toISODate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     const navigate = useNavigate();
     const { showNotification } = useNotification();
     const [stats, setStats] = useState({
@@ -50,6 +51,7 @@ function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [recentDocuments, setRecentDocuments] = useState([]);
     const [upcomingDeadlines, setUpcomingDeadlines] = useState([]);
+    const [upcomingCount, setUpcomingCount] = useState(0);
     const [topTags, setTopTags] = useState([]);
     const [casesByCategory, setCasesByCategory] = useState({});
     const [recentDecisions, setRecentDecisions] = useState([]);
@@ -105,7 +107,7 @@ function Dashboard() {
             const [statsRes, documentsRes, deadlinesRes, decisionsRes, tagsRes] = await Promise.all([
                 clientsAPI.getDashboardStats(),
                 documentsAPI.getAll({ ordering: '-created_at', page_size: 5 }),
-                agendaAPI.getAll({ statut: 'PREVU', page_size: 5 }),
+                agendaAPI.getAll({ statut: 'PREVU', date_from: toISODate(new Date()), date_to: toISODate(new Date(Date.now() + 7 * 86400000)), page_size: 'all' }),
                 decisionsAPI.getAll({ ordering: '-date_decision', page_size: 5 }),
                 tagsAPI.getAll({ ordering: '-created_at', page_size: 5 })
             ]);
@@ -128,6 +130,7 @@ function Dashboard() {
             setRecentDocuments(Array.isArray(documentsRes.data.results) ? documentsRes.data.results : (Array.isArray(documentsRes.data) ? documentsRes.data : []));
             const deadlinesList = Array.isArray(deadlinesRes.data.results) ? deadlinesRes.data.results : (Array.isArray(deadlinesRes.data) ? deadlinesRes.data : []);
             setUpcomingDeadlines(deadlinesList.slice(0, 5));
+            setUpcomingCount(deadlinesList.length);
 
             const allTags = Array.isArray(tagsRes.data.results) ? tagsRes.data.results : (Array.isArray(tagsRes.data) ? tagsRes.data : []);
             const sortedTags = [...allTags]
@@ -265,8 +268,8 @@ function Dashboard() {
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <StatCard
-                        title="Échéances urgentes"
-                        value={upcomingDeadlines.length}
+                        title="Audiences à venir"
+                        value={upcomingCount}
                         icon={<EventIcon />}
                         color="warning"
                         secondaryValue="Prochains 7 jours"
@@ -317,7 +320,7 @@ function Dashboard() {
                                         key={deadline.id}
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            navigate(`/agenda?search=${encodeURIComponent(deadline.title)}`);
+                                            navigate(`/agenda?date=${encodeURIComponent(deadline.date_audience || '')}&eventId=${deadline.id}`);
                                         }}
                                         sx={{
                                             p: 2,
