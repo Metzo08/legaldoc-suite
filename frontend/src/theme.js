@@ -1,6 +1,6 @@
 /**
  * Système de thème Premium LegalDoc Suite
- * Design épuré, professionnel et moderne
+ * Design épuré, professionnel et moderne — Contraste optimisé clair & sombre
  */
 import { createTheme, alpha } from '@mui/material/styles';
 
@@ -17,7 +17,7 @@ const colors = {
         dark: '#030712' // Slate 950 pour un noir profond "spatial"
     },
     paper: {
-        light: 'rgba(255, 255, 255, 0.8)',
+        light: '#ffffff',
         dark: 'rgba(15, 23, 42, 0.75)' // Slate 900 semi-transparent
     }
 };
@@ -48,16 +48,20 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
                 paper: isLight ? colors.paper.light : colors.paper.dark,
             },
             text: {
-                primary: isLight ? '#1e293b' : '#f1f5f9',
-                secondary: isLight ? '#64748b' : '#94a3b8',
+                primary: isLight ? '#0f172a' : '#f1f5f9',
+                secondary: isLight ? '#334155' : '#94a3b8',
+                disabled: isLight ? '#475569' : '#64748b',
             },
-            divider: isLight ? alpha('#000000', 0.06) : 'rgba(255, 255, 255, 0.05)',
+            divider: isLight ? '#e2e8f0' : 'rgba(255, 255, 255, 0.08)',
         },
         typography: {
             fontFamily: "'Plus Jakarta Sans', 'Inter', 'Roboto', sans-serif",
-            h1: { fontWeight: 800, fontSize: '2.5rem', letterSpacing: '-0.04em', color: isLight ? '#1e293b' : '#fff' },
-            h2: { fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.03em', color: isLight ? '#1e293b' : '#fff' },
-            h3: { fontWeight: 700, fontSize: '1.5rem', letterSpacing: '-0.02em', color: isLight ? '#1e293b' : '#fff' },
+            h1: { fontWeight: 800, fontSize: '2.5rem', letterSpacing: '-0.04em', color: isLight ? '#0f172a' : '#fff' },
+            h2: { fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.03em', color: isLight ? '#0f172a' : '#fff' },
+            h3: { fontWeight: 700, fontSize: '1.5rem', letterSpacing: '-0.02em', color: isLight ? '#0f172a' : '#fff' },
+            h4: { fontWeight: 700, color: isLight ? '#0f172a' : '#fff' },
+            h5: { fontWeight: 700, color: isLight ? '#0f172a' : '#fff' },
+            h6: { fontWeight: 700, color: isLight ? '#0f172a' : '#fff' },
             body1: { fontSize: '1rem', lineHeight: 1.6 },
             body2: { fontSize: '0.875rem', lineHeight: 1.5 },
             button: { textTransform: 'none', fontWeight: 700, letterSpacing: '0.02em' },
@@ -68,20 +72,21 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
                 styleOverrides: {
                     body: {
                         transition: 'background-color 0.3s ease',
+                        color: isLight ? '#0f172a' : '#f1f5f9',
                         backgroundColor: isLight ? '#f8fafc' : '#030712',
-                        backgroundImage: isLight 
-                            ? 'radial-gradient(at 0% 0%, hsla(210,100%,98%,1) 0, transparent 50%), radial-gradient(at 100% 100%, hsla(210,100%,96%,1) 0, transparent 50%)'
+                        backgroundImage: isLight
+                            ? 'radial-gradient(at 0% 0%, hsla(210,100%,97%,1) 0, transparent 50%), radial-gradient(at 100% 100%, hsla(210,100%,95%,1) 0, transparent 50%)'
                             : `radial-gradient(at 0% 0%, ${alpha(activePrimary, 0.15)} 0, transparent 50%), 
                                radial-gradient(at 100% 0%, ${alpha(activeSecondary, 0.10)} 0, transparent 50%),
                                radial-gradient(at 50% 100%, ${alpha(activePrimary, 0.05)} 0, transparent 50%)`,
                         backgroundAttachment: 'fixed',
-                        scrollbarColor: isLight ? "#cbd5e1 #f1f5f9" : "#334155 #030712",
+                        scrollbarColor: isLight ? "#94a3b8 #f1f5f9" : "#334155 #030712",
                         "&::-webkit-scrollbar, & *::-webkit-scrollbar": {
                             width: "8px",
                             height: "8px",
                         },
                         "&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb": {
-                            backgroundColor: isLight ? "#cbd5e1" : "#334155",
+                            backgroundColor: isLight ? "#94a3b8" : "#334155",
                             borderRadius: "10px",
                             border: `2px solid ${isLight ? "#f1f5f9" : "#030712"}`,
                         },
@@ -92,13 +97,14 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
                 styleOverrides: {
                     root: {
                         backgroundImage: 'none',
-                        backdropFilter: 'blur(12px)',
-                        WebkitBackdropFilter: 'blur(12px)',
+                        color: isLight ? '#0f172a' : '#f1f5f9',
+                        backdropFilter: isLight ? 'none' : 'blur(12px)',
+                        WebkitBackdropFilter: isLight ? 'none' : 'blur(12px)',
                         boxShadow: isLight
-                            ? '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)'
+                            ? '0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.05)'
                             : '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                        border: isLight 
-                            ? '1px solid rgba(255, 255, 255, 0.3)' 
+                        border: isLight
+                            ? '1px solid #e2e8f0'
                             : '1px solid rgba(255, 255, 255, 0.08)',
                     },
                     elevation0: { boxShadow: 'none', border: 'none', background: 'transparent', backdropFilter: 'none' },
@@ -108,20 +114,21 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
                 styleOverrides: {
                     root: {
                         borderRadius: 24,
-                        background: isLight 
-                            ? 'rgba(255, 255, 255, 0.7)' 
+                        color: isLight ? '#0f172a' : '#f1f5f9',
+                        background: isLight
+                            ? '#ffffff'
                             : 'rgba(30, 41, 59, 0.4)',
-                        border: isLight 
-                            ? '1px solid rgba(255, 255, 255, 0.5)' 
+                        border: isLight
+                            ? '1px solid #e2e8f0'
                             : '1px solid rgba(255, 255, 255, 0.05)',
                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         '&:hover': {
                             transform: 'translateY(-4px) scale(1.01)',
                             boxShadow: isLight
-                                ? '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                                ? '0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 10px 10px -5px rgba(15, 23, 42, 0.04)'
                                 : `0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 0 20px ${alpha(activePrimary, 0.2)}`,
-                            border: isLight 
-                                ? '1px solid rgba(255, 255, 255, 0.8)' 
+                            border: isLight
+                                ? '1px solid #cbd5e1'
                                 : `1px solid ${alpha(activePrimary, 0.3)}`,
                         },
                     },
@@ -134,13 +141,13 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
                         padding: '10px 24px',
                         boxShadow: 'none',
                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        '&:hover': { 
+                        '&:hover': {
                             boxShadow: isLight ? 'none' : `0 0 15px ${alpha(activePrimary, 0.4)}`,
                             transform: 'translateY(-1px)',
                         },
                     },
                     containedPrimary: {
-                        background: `linear-gradient(135deg, ${activePrimary} 0%, ${alpha(activePrimary, 0.8)} 100%)`,
+                        background: `linear-gradient(135deg, ${activePrimary} 0%, ${alpha(activePrimary, 0.85)} 100%)`,
                         '&:hover': {
                             background: `linear-gradient(135deg, ${alpha(activePrimary, 0.9)} 0%, ${activePrimary} 100%)`,
                         },
@@ -151,7 +158,8 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
                 styleOverrides: {
                     paper: {
                         borderRadius: 24,
-                        background: isLight ? 'rgba(255, 255, 255, 0.9)' : 'rgba(15, 23, 42, 0.8)',
+                        background: isLight ? '#ffffff' : 'rgba(15, 23, 42, 0.92)',
+                        color: isLight ? '#0f172a' : '#f1f5f9',
                         backdropFilter: 'blur(20px)',
                     },
                 },
@@ -169,12 +177,13 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
                 styleOverrides: {
                     root: {
                         borderRadius: 12,
-                        backgroundColor: isLight ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.03)',
+                        color: isLight ? '#0f172a' : '#f1f5f9',
+                        backgroundColor: isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.03)',
                         '& .MuiOutlinedInput-notchedOutline': {
-                            borderColor: isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+                            borderColor: isLight ? '#cbd5e1' : 'rgba(255,255,255,0.12)',
                         },
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: alpha(activePrimary, 0.5),
+                            borderColor: alpha(activePrimary, 0.65),
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                             borderColor: activePrimary,
@@ -183,12 +192,58 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
                     },
                 },
             },
+            MuiInputLabel: {
+                styleOverrides: {
+                    root: {
+                        color: isLight ? '#334155' : '#94a3b8',
+                    },
+                },
+            },
+            MuiTableCell: {
+                styleOverrides: {
+                    root: {
+                        color: isLight ? '#0f172a' : '#f1f5f9',
+                        borderColor: isLight ? '#e2e8f0' : 'rgba(255,255,255,0.08)',
+                    },
+                    head: {
+                        fontWeight: 700,
+                        color: isLight ? '#0f172a' : '#f8fafc',
+                        backgroundColor: isLight ? '#f1f5f9' : 'rgba(255,255,255,0.03)',
+                    },
+                },
+            },
+            MuiToggleButton: {
+                styleOverrides: {
+                    root: {
+                        color: isLight ? '#334155' : '#cbd5e1',
+                        borderColor: isLight ? '#cbd5e1' : 'rgba(255,255,255,0.12)',
+                        '&.Mui-selected': {
+                            color: isLight ? '#3730a3' : '#ffffff',
+                            backgroundColor: isLight ? alpha(activePrimary, 0.14) : alpha(activePrimary, 0.25),
+                            '&:hover': {
+                                backgroundColor: isLight ? alpha(activePrimary, 0.22) : alpha(activePrimary, 0.35),
+                            },
+                        },
+                    },
+                },
+            },
+            MuiTab: {
+                styleOverrides: {
+                    root: {
+                        color: isLight ? '#475569' : '#94a3b8',
+                        '&.Mui-selected': {
+                            color: isLight ? activePrimary : '#ffffff',
+                        },
+                    },
+                },
+            },
             MuiAppBar: {
                 styleOverrides: {
                     root: {
-                        backgroundColor: isLight ? 'rgba(255, 255, 255, 0.7)' : 'rgba(3, 7, 18, 0.7)',
+                        backgroundColor: isLight ? 'rgba(255, 255, 255, 0.92)' : 'rgba(3, 7, 18, 0.7)',
+                        color: isLight ? '#0f172a' : '#f1f5f9',
                         backdropFilter: 'blur(12px)',
-                        borderBottom: `1px solid ${isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'}`,
+                        borderBottom: `1px solid ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.05)'}`,
                         boxShadow: 'none',
                     },
                 },
@@ -197,8 +252,9 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
                 styleOverrides: {
                     paper: {
                         backgroundColor: isLight ? '#ffffff' : 'rgba(3, 7, 18, 0.9)',
+                        color: isLight ? '#0f172a' : '#f1f5f9',
                         backdropFilter: 'blur(20px)',
-                        borderRight: `1px solid ${isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'}`,
+                        borderRight: `1px solid ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.05)'}`,
                     },
                 },
             },
@@ -207,20 +263,22 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
                     root: {
                         borderRadius: 12,
                         margin: '4px 12px',
+                        color: isLight ? '#1e293b' : '#e2e8f0',
                         transition: 'all 0.2s ease',
                         '&.Mui-selected': {
-                            background: `linear-gradient(135deg, ${alpha(activePrimary, 0.2)} 0%, ${alpha(activePrimary, 0.05)} 100%)`,
-                            color: isLight ? activePrimary : '#fff',
+                            background: `linear-gradient(135deg, ${alpha(activePrimary, 0.18)} 0%, ${alpha(activePrimary, 0.06)} 100%)`,
+                            color: isLight ? '#3730a3' : '#fff',
+                            fontWeight: 700,
                             '&:hover': {
-                                background: `linear-gradient(135deg, ${alpha(activePrimary, 0.3)} 0%, ${alpha(activePrimary, 0.1)} 100%)`,
+                                background: `linear-gradient(135deg, ${alpha(activePrimary, 0.28)} 0%, ${alpha(activePrimary, 0.1)} 100%)`,
                             },
                             '& .MuiListItemIcon-root': {
-                                color: activePrimary,
+                                color: isLight ? '#3730a3' : activePrimary,
                                 transform: 'scale(1.1)',
                             },
                         },
                         '&:hover': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            backgroundColor: isLight ? 'rgba(99, 102, 241, 0.08)' : 'rgba(255, 255, 255, 0.05)',
                         },
                     },
                 },
@@ -228,7 +286,7 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
             MuiListItemIcon: {
                 styleOverrides: {
                     root: {
-                        color: '#94a3b8',
+                        color: isLight ? '#475569' : '#94a3b8',
                         minWidth: 40,
                     },
                 },
@@ -239,4 +297,3 @@ export const createCustomTheme = (mode, primaryColor, secondaryColor) => {
 
 export const lightTheme = createCustomTheme('light');
 export const darkTheme = createCustomTheme('dark');
-

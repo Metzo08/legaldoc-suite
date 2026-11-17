@@ -108,12 +108,12 @@ function Layout({ children }) {
                 <Typography variant="h5" sx={{ 
                     fontWeight: 900, 
                     letterSpacing: '-0.05em', 
-                    color: '#fff',
-                    textShadow: '0 0 20px rgba(99,102,241,0.5)'
+                    color: (theme) => theme.palette.mode === 'dark' ? '#fff' : 'primary.main',
+                    textShadow: (theme) => theme.palette.mode === 'dark' ? '0 0 20px rgba(99,102,241,0.5)' : 'none'
                 }}>
                     LegalDoc
                 </Typography>
-                <Typography variant="overline" sx={{ color: 'rgba(255,255,255,0.6)', letterSpacing: '0.3em', fontSize: '0.7rem', fontWeight: 800 }}>
+                <Typography variant="overline" sx={{ color: 'text.secondary', letterSpacing: '0.3em', fontSize: '0.7rem', fontWeight: 800 }}>
                     PREMIUM
                 </Typography>
             </Box>
@@ -179,7 +179,7 @@ function Layout({ children }) {
                         <MenuIcon />
                     </IconButton>
 
-                    <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
+                    <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 700, color: 'text.primary' }}>
                         {menuItems.find(m => location.pathname === m.path || (m.path !== '/dashboard' && location.pathname.startsWith(m.path + '/')))?.text || (location.pathname === '/profile' ? 'Mon profil' : 'LegalDoc Suite')}
                     </Typography>
 

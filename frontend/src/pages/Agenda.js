@@ -652,7 +652,7 @@ th{background:#f1f5f9}tr.day td{background:#e0e7ff;font-weight:bold;text-transfo
                             borderRight: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9'}`,
                             borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9'}`,
                             bgcolor: isActive ? alpha('#6366f1', isDark ? 0.12 : 0.06) : !isCurrentMonth ? (isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)') : 'transparent',
-                            cursor: 'pointer', transition: 'background 0.15s', opacity: isCurrentMonth ? 1 : 0.55,
+                            cursor: 'pointer', transition: 'background 0.15s', opacity: isCurrentMonth ? 1 : 0.72,
                             '&:hover': { bgcolor: isDark ? 'rgba(99,102,241,0.08)' : 'rgba(99,102,241,0.04)' },
                         }}
                     >
@@ -1045,8 +1045,8 @@ th{background:#f1f5f9}tr.day td{background:#e0e7ff;font-weight:bold;text-transfo
                             onClick={() => setChambreFilter(chambreFilter === key ? 'ALL' : key)}
                             sx={{
                                 bgcolor: alpha(cfg.color, chambreFilter === key ? 0.4 : (isDark ? 0.2 : 0.12)),
-                                color: isDark ? alpha(cfg.color, 1) : cfg.color,
-                                fontWeight: 600, fontSize: '0.7rem', border: `1px solid ${alpha(cfg.color, 0.3)}`,
+                                color: isDark ? alpha(cfg.color, 1) : 'text.primary',
+                                fontWeight: 700, fontSize: '0.72rem', border: `1px solid ${alpha(cfg.color, 0.45)}`,
                                 cursor: 'pointer',
                             }} />
                     ))}
