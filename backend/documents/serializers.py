@@ -588,6 +588,7 @@ class AgendaEventSerializer(serializers.ModelSerializer):
     """
     case_reference = serializers.CharField(source='case.reference', read_only=True)
     case_title = serializers.CharField(source='case.title', read_only=True)
+    avocat_assigne_name = serializers.SerializerMethodField()
     created_by_name = serializers.SerializerMethodField()
     type_chambre_display = serializers.CharField(source='get_type_chambre_display', read_only=True)
     statut_display = serializers.CharField(source='get_statut_display', read_only=True)
@@ -607,13 +608,18 @@ class AgendaEventSerializer(serializers.ModelSerializer):
             'case', 'case_reference', 'case_title',
             'notes', 'location', 'color',
             'year', 'is_archived',
-            'created_by', 'created_by_name', 'created_at', 'updated_at'
+            'avocat_assigne', 'avocat_assigne_name', 'created_by', 'created_by_name', 'created_at', 'updated_at'
         )
         read_only_fields = ('id', 'start_datetime', 'created_by', 'created_at', 'updated_at', 'year', 'is_archived')
         extra_kwargs = {
             'year': {'required': False},
             'start_datetime': {'required': False},
         }
+
+    def get_avocat_assigne_name(self, obj):
+        if not obj.avocat_assigne:
+            return None
+        return obj.avocat_assigne.get_full_name() or obj.avocat_assigne.username
 
     def get_created_by_name(self, obj):
         return obj.created_by.get_full_name() if obj.created_by else None

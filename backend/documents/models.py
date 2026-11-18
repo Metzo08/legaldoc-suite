@@ -948,6 +948,8 @@ class AgendaEvent(models.Model):
         TGI_DAKAR_FDTR = 'TGI_DAKAR_FDTR', "TGI Dakar - FDTR"
         TGI_DAKAR_CORRECTIONNELLE = 'TGI_DAKAR_CORRECTIONNELLE', "TGI Dakar - Correctionnelle"
         TGI_DAKAR_INSTRUCTION = 'TGI_DAKAR_INSTRUCTION', "TGI Dakar - Instruction"
+        TGI_DAKAR_REFERES = 'TGI_DAKAR_REFERES', "TGI Dakar - Référés"
+        TGI_DAKAR_COMMERCE = 'TGI_DAKAR_COMMERCE', "TGI Dakar - Chambre Commerciale"
         
         # TGI Pikine
         TGI_PIKINE_CIVIL = 'TGI_PIKINE_CIVIL', "TGI Pikine - Civil"
@@ -981,11 +983,57 @@ class AgendaEvent(models.Model):
         # Tribunal de Commerce
         TRIBUNAL_COMMERCE_DAKAR = 'TRIBUNAL_COMMERCE_DAKAR', "Tribunal de Commerce de Dakar"
         
-        # Cours d'Appel et Autres
+        # Cours d'Appel et Hautes Juridictions
+        CA_DAKAR_CIVIL_COMM = 'CA_DAKAR_CIVIL_COMM', 'CA Dakar - Civile & Commerciale'
+        CA_DAKAR_REFERES = 'CA_DAKAR_REFERES', 'CA Dakar - Référés'
         CA_CORRECTIONNEL = 'CA_CORRECTIONNEL', 'CA Correctionnel'
         CA_CRIMINELLE = 'CA_CRIMINELLE', 'CA Criminelle'
         CA_SOCIAL = 'CA_SOCIAL', 'CA Social'
         COUR_SUPREME = 'COUR_SUPREME', 'Cour Suprême'
+        CONSEIL_CONSTITUTIONNEL = 'CONSEIL_CONSTITUTIONNEL', 'Conseil Constitutionnel'
+        COUR_DES_COMPTES = 'COUR_DES_COMPTES', 'Cour des Comptes'
+        PJF = 'PJF', 'Pool Judiciaire Financier (PJF)'
+        CCJA_OHADA = 'CCJA_OHADA', 'CCJA - OHADA (Abidjan)'
+
+        # Juridictions des Régions du Sénégal
+        TI_THIES = 'TI_THIES', 'TI Thiès'
+        TGI_THIES = 'TGI_THIES', 'TGI Thiès'
+        TRAVAIL_THIES = 'TRAVAIL_THIES', 'Tribunal du Travail Thiès'
+        CA_THIES = 'CA_THIES', 'CA Thiès'
+        TI_MBOUR = 'TI_MBOUR', 'TI Mbour'
+        TGI_MBOUR = 'TGI_MBOUR', 'TGI Mbour'
+        TI_SAINT_LOUIS = 'TI_SAINT_LOUIS', 'TI Saint-Louis'
+        TGI_SAINT_LOUIS = 'TGI_SAINT_LOUIS', 'TGI Saint-Louis'
+        TRAVAIL_SAINT_LOUIS = 'TRAVAIL_SAINT_LOUIS', 'Tribunal du Travail Saint-Louis'
+        CA_SAINT_LOUIS = 'CA_SAINT_LOUIS', 'CA Saint-Louis'
+        TI_KAOLACK = 'TI_KAOLACK', 'TI Kaolack'
+        TGI_KAOLACK = 'TGI_KAOLACK', 'TGI Kaolack'
+        TRAVAIL_KAOLACK = 'TRAVAIL_KAOLACK', 'Tribunal du Travail Kaolack'
+        CA_KAOLACK = 'CA_KAOLACK', 'CA Kaolack'
+        TI_ZIGUINCHOR = 'TI_ZIGUINCHOR', 'TI Ziguinchor'
+        TGI_ZIGUINCHOR = 'TGI_ZIGUINCHOR', 'TGI Ziguinchor'
+        TRAVAIL_ZIGUINCHOR = 'TRAVAIL_ZIGUINCHOR', 'Tribunal du Travail Ziguinchor'
+        CA_ZIGUINCHOR = 'CA_ZIGUINCHOR', 'CA Ziguinchor'
+        TI_TAMBACOUNDA = 'TI_TAMBACOUNDA', 'TI Tambacounda'
+        TGI_TAMBACOUNDA = 'TGI_TAMBACOUNDA', 'TGI Tambacounda'
+        CA_TAMBACOUNDA = 'CA_TAMBACOUNDA', 'CA Tambacounda'
+        TI_DIOURBEL = 'TI_DIOURBEL', 'TI Diourbel'
+        TGI_DIOURBEL = 'TGI_DIOURBEL', 'TGI Diourbel'
+        TI_MBACKE = 'TI_MBACKE', 'TI Mbacké'
+        TI_LOUGA = 'TI_LOUGA', 'TI Louga'
+        TGI_LOUGA = 'TGI_LOUGA', 'TGI Louga'
+        TI_FATICK = 'TI_FATICK', 'TI Fatick'
+        TGI_FATICK = 'TGI_FATICK', 'TGI Fatick'
+        TI_KOLDA = 'TI_KOLDA', 'TI Kolda'
+        TGI_KOLDA = 'TGI_KOLDA', 'TGI Kolda'
+        TI_MATAM = 'TI_MATAM', 'TI Matam'
+        TGI_MATAM = 'TGI_MATAM', 'TGI Matam'
+        TI_KAFFRINE = 'TI_KAFFRINE', 'TI Kaffrine'
+        TGI_KAFFRINE = 'TGI_KAFFRINE', 'TGI Kaffrine'
+        TI_KEDOUGOU = 'TI_KEDOUGOU', 'TI Kédougou'
+        TGI_KEDOUGOU = 'TGI_KEDOUGOU', 'TGI Kédougou'
+        TI_SEDHIOU = 'TI_SEDHIOU', 'TI Sédhiou'
+        TGI_SEDHIOU = 'TGI_SEDHIOU', 'TGI Sédhiou'
         AUTRE = 'AUTRE', 'Autre'
 
     class Statut(models.TextChoices):
@@ -1077,6 +1125,13 @@ class AgendaEvent(models.Model):
     is_archived = models.BooleanField(default=False, verbose_name='Archivé')
 
     # ── Traçabilité ──
+    avocat_assigne = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='audiences_assignees',
+        verbose_name='Avocat plaidant'
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

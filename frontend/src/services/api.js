@@ -162,6 +162,7 @@ export const agendaAPI = {
     terminer: (id, data) => apiClient.post(`/documents/agenda/${id}/terminer/`, data || {}),
     annuler: (id, data) => apiClient.post(`/documents/agenda/${id}/annuler/`, data),
     historiqueDossier: (params) => apiClient.get('/documents/agenda/historique_dossier/', { params }),
+    avocats: () => apiClient.get('/documents/agenda/avocats/'),
     stats: (params) => apiClient.get('/documents/agenda/stats/', { params }),
 };
 

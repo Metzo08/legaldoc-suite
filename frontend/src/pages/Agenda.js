@@ -15,7 +15,8 @@ import {
     Search as SearchIcon, Gavel as GavelIcon, EventRepeat as ReportIcon,
     CheckCircle as CheckIcon, Cancel as CancelIcon, History as HistoryIcon,
     Close as CloseIcon, FolderOpen as FolderOpenIcon, Print as PrintIcon,
-    WarningAmber as WarningIcon, EventAvailable as UpcomingIcon
+    WarningAmber as WarningIcon, EventAvailable as UpcomingIcon, ContentCopy as CopyIcon,
+    Person as PersonIcon
 } from '@mui/icons-material';
 import {
     format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths,
@@ -41,6 +42,8 @@ const CHAMBRE_COLORS = {
     TGI_DAKAR_FDTR: { label: 'TGI Dakar - FDTR', color: '#3f51b5', icon: '📋' },
     TGI_DAKAR_CORRECTIONNELLE: { label: 'TGI Dakar - Correctionnelle', color: '#3f51b5', icon: '👨‍⚖️' },
     TGI_DAKAR_INSTRUCTION: { label: 'TGI Dakar - Instruction', color: '#3f51b5', icon: '🔍' },
+    TGI_DAKAR_REFERES: { label: 'TGI Dakar - Référés', color: '#3f51b5', icon: '⚡' },
+    TGI_DAKAR_COMMERCE: { label: 'TGI Dakar - Chambre Commerciale', color: '#00bcd4', icon: '💼' },
 
     // TGI Pikine
     TGI_PIKINE_CIVIL: { label: 'TGI Pikine - Civil', color: '#3f51b5', icon: '⚖️' },
@@ -74,25 +77,76 @@ const CHAMBRE_COLORS = {
     // Commerce
     TRIBUNAL_COMMERCE_DAKAR: { label: 'Tribunal de Commerce de Dakar', color: '#00bcd4', icon: '💼' },
 
-    // Cours d'Appel et Autres
+    // Cours d'Appel & Hautes Juridictions
+    CA_DAKAR_CIVIL_COMM: { label: 'CA Dakar - Civile & Commerciale', color: '#2196f3', icon: '⚖️' },
+    CA_DAKAR_REFERES: { label: 'CA Dakar - Référés', color: '#2196f3', icon: '⚡' },
     CA_CORRECTIONNEL: { label: 'CA Correctionnel', color: '#2196f3', icon: '⚖️' },
     CA_CRIMINELLE: { label: 'CA Criminelle', color: '#f44336', icon: '🔴' },
     CA_SOCIAL: { label: 'CA Social', color: '#4caf50', icon: '🤝' },
     COUR_SUPREME: { label: 'Cour Suprême', color: '#b71c1c', icon: '🏛️' },
+    CONSEIL_CONSTITUTIONNEL: { label: 'Conseil Constitutionnel', color: '#880e4f', icon: '📜' },
+    COUR_DES_COMPTES: { label: 'Cour des Comptes', color: '#4a148c', icon: '🧮' },
+    PJF: { label: 'Pool Judiciaire Financier (PJF)', color: '#d84315', icon: '💼' },
+    CCJA_OHADA: { label: 'CCJA - OHADA (Abidjan)', color: '#00695c', icon: '🌍' },
+
+    // Régions du Sénégal
+    TI_THIES: { label: 'TI Thiès', color: '#6d4c41', icon: '🏛️' },
+    TGI_THIES: { label: 'TGI Thiès', color: '#3949ab', icon: '⚖️' },
+    TRAVAIL_THIES: { label: 'Travail Thiès', color: '#fb8c00', icon: '👷' },
+    CA_THIES: { label: 'CA Thiès', color: '#1e88e5', icon: '🏛️' },
+    TI_MBOUR: { label: 'TI Mbour', color: '#6d4c41', icon: '🏛️' },
+    TGI_MBOUR: { label: 'TGI Mbour', color: '#3949ab', icon: '⚖️' },
+    TI_SAINT_LOUIS: { label: 'TI Saint-Louis', color: '#6d4c41', icon: '🏛️' },
+    TGI_SAINT_LOUIS: { label: 'TGI Saint-Louis', color: '#3949ab', icon: '⚖️' },
+    TRAVAIL_SAINT_LOUIS: { label: 'Travail Saint-Louis', color: '#fb8c00', icon: '👷' },
+    CA_SAINT_LOUIS: { label: 'CA Saint-Louis', color: '#1e88e5', icon: '🏛️' },
+    TI_KAOLACK: { label: 'TI Kaolack', color: '#6d4c41', icon: '🏛️' },
+    TGI_KAOLACK: { label: 'TGI Kaolack', color: '#3949ab', icon: '⚖️' },
+    TRAVAIL_KAOLACK: { label: 'Travail Kaolack', color: '#fb8c00', icon: '👷' },
+    CA_KAOLACK: { label: 'CA Kaolack', color: '#1e88e5', icon: '🏛️' },
+    TI_ZIGUINCHOR: { label: 'TI Ziguinchor', color: '#6d4c41', icon: '🏛️' },
+    TGI_ZIGUINCHOR: { label: 'TGI Ziguinchor', color: '#3949ab', icon: '⚖️' },
+    TRAVAIL_ZIGUINCHOR: { label: 'Travail Ziguinchor', color: '#fb8c00', icon: '👷' },
+    CA_ZIGUINCHOR: { label: 'CA Ziguinchor', color: '#1e88e5', icon: '🏛️' },
+    TI_TAMBACOUNDA: { label: 'TI Tambacounda', color: '#6d4c41', icon: '🏛️' },
+    TGI_TAMBACOUNDA: { label: 'TGI Tambacounda', color: '#3949ab', icon: '⚖️' },
+    CA_TAMBACOUNDA: { label: 'CA Tambacounda', color: '#1e88e5', icon: '🏛️' },
+    TI_DIOURBEL: { label: 'TI Diourbel', color: '#6d4c41', icon: '🏛️' },
+    TGI_DIOURBEL: { label: 'TGI Diourbel', color: '#3949ab', icon: '⚖️' },
+    TI_MBACKE: { label: 'TI Mbacké', color: '#6d4c41', icon: '🏛️' },
+    TI_LOUGA: { label: 'TI Louga', color: '#6d4c41', icon: '🏛️' },
+    TGI_LOUGA: { label: 'TGI Louga', color: '#3949ab', icon: '⚖️' },
+    TI_FATICK: { label: 'TI Fatick', color: '#6d4c41', icon: '🏛️' },
+    TGI_FATICK: { label: 'TGI Fatick', color: '#3949ab', icon: '⚖️' },
+    TI_KOLDA: { label: 'TI Kolda', color: '#6d4c41', icon: '🏛️' },
+    TGI_KOLDA: { label: 'TGI Kolda', color: '#3949ab', icon: '⚖️' },
+    TI_MATAM: { label: 'TI Matam', color: '#6d4c41', icon: '🏛️' },
+    TGI_MATAM: { label: 'TGI Matam', color: '#3949ab', icon: '⚖️' },
+    TI_KAFFRINE: { label: 'TI Kaffrine', color: '#6d4c41', icon: '🏛️' },
+    TGI_KAFFRINE: { label: 'TGI Kaffrine', color: '#3949ab', icon: '⚖️' },
+    TI_KEDOUGOU: { label: 'TI Kédougou', color: '#6d4c41', icon: '🏛️' },
+    TGI_KEDOUGOU: { label: 'TGI Kédougou', color: '#3949ab', icon: '⚖️' },
+    TI_SEDHIOU: { label: 'TI Sédhiou', color: '#6d4c41', icon: '🏛️' },
+    TGI_SEDHIOU: { label: 'TGI Sédhiou', color: '#3949ab', icon: '⚖️' },
     AUTRE: { label: 'Autre', color: '#607d8b', icon: '📌' },
 };
 
 // Regroupement des juridictions pour les listes déroulantes (source unique)
 const CHAMBRE_GROUPS = [
     { label: "TI (Tribunaux d'Instance)", keys: ['TI_DAKAR', 'TI_PIKINE', 'TI_GUEDIAWAYE', 'TI_RUFISQUE', 'TI_KEUR_MASSAR', 'TI_FAMILLE'] },
-    { label: 'TGI Dakar', keys: ['TGI_DAKAR_CIVIL', 'TGI_DAKAR_STATUT_PERSONNEL', 'TGI_DAKAR_FDTR', 'TGI_DAKAR_CORRECTIONNELLE', 'TGI_DAKAR_INSTRUCTION'] },
+    { label: 'TGI Dakar', keys: ['TGI_DAKAR_CIVIL', 'TGI_DAKAR_STATUT_PERSONNEL', 'TGI_DAKAR_FDTR', 'TGI_DAKAR_CORRECTIONNELLE', 'TGI_DAKAR_INSTRUCTION', 'TGI_DAKAR_REFERES', 'TGI_DAKAR_COMMERCE'] },
     { label: 'TGI Pikine', keys: ['TGI_PIKINE_CIVIL', 'TGI_PIKINE_FDTR', 'TGI_PIKINE_CORRECTIONNELLE', 'TGI_PIKINE_INSTRUCTION'] },
     { label: 'TGI Guédiawaye', keys: ['TGI_GUEDIAWAYE_CIVIL', 'TGI_GUEDIAWAYE_FDTR', 'TGI_GUEDIAWAYE_CORRECTIONNELLE', 'TGI_GUEDIAWAYE_INSTRUCTION'] },
     { label: 'TGI Rufisque', keys: ['TGI_RUFISQUE_CIVIL', 'TGI_RUFISQUE_FDTR', 'TGI_RUFISQUE_CORRECTIONNELLE', 'TGI_RUFISQUE_INSTRUCTION'] },
     { label: 'TGI Keur Massar', keys: ['TGI_KEUR_MASSAR_CIVIL', 'TGI_KEUR_MASSAR_FDTR', 'TGI_KEUR_MASSAR_CORRECTIONNELLE', 'TGI_KEUR_MASSAR_INSTRUCTION'] },
     { label: 'Tribunal du Travail', keys: ['TRAVAIL_DAKAR', 'TRAVAIL_PIKINE', 'TRAVAIL_RUFISQUE'] },
     { label: 'Commerce', keys: ['TRIBUNAL_COMMERCE_DAKAR'] },
-    { label: 'Cours et autres', keys: ['CA_CORRECTIONNEL', 'CA_CRIMINELLE', 'CA_SOCIAL', 'COUR_SUPREME', 'AUTRE'] },
+    { label: "Cours d'Appel, Hautes Juridictions & OHADA", keys: ['CA_DAKAR_CIVIL_COMM', 'CA_DAKAR_REFERES', 'CA_CORRECTIONNEL', 'CA_CRIMINELLE', 'CA_SOCIAL', 'COUR_SUPREME', 'CONSEIL_CONSTITUTIONNEL', 'COUR_DES_COMPTES', 'PJF', 'CCJA_OHADA'] },
+    { label: 'Régions — Thiès & Mbour', keys: ['TI_THIES', 'TGI_THIES', 'TRAVAIL_THIES', 'CA_THIES', 'TI_MBOUR', 'TGI_MBOUR'] },
+    { label: 'Régions — Saint-Louis, Louga & Matam', keys: ['TI_SAINT_LOUIS', 'TGI_SAINT_LOUIS', 'TRAVAIL_SAINT_LOUIS', 'CA_SAINT_LOUIS', 'TI_LOUGA', 'TGI_LOUGA', 'TI_MATAM', 'TGI_MATAM'] },
+    { label: 'Régions — Kaolack, Fatick, Diourbel & Kaffrine', keys: ['TI_KAOLACK', 'TGI_KAOLACK', 'TRAVAIL_KAOLACK', 'CA_KAOLACK', 'TI_DIOURBEL', 'TGI_DIOURBEL', 'TI_MBACKE', 'TI_FATICK', 'TGI_FATICK', 'TI_KAFFRINE', 'TGI_KAFFRINE'] },
+    { label: 'Régions — Casamance & Sénégal Oriental', keys: ['TI_ZIGUINCHOR', 'TGI_ZIGUINCHOR', 'TRAVAIL_ZIGUINCHOR', 'CA_ZIGUINCHOR', 'TI_TAMBACOUNDA', 'TGI_TAMBACOUNDA', 'CA_TAMBACOUNDA', 'TI_KOLDA', 'TGI_KOLDA', 'TI_KEDOUGOU', 'TGI_KEDOUGOU', 'TI_SEDHIOU', 'TGI_SEDHIOU'] },
+    { label: 'Autre', keys: ['AUTRE'] },
 ];
 
 const STATUT_CONFIG = {
@@ -135,7 +189,7 @@ const HOURS = Array.from({ length: 11 }, (_, i) => i + 8); // 8h-18h
 const emptyForm = {
     title: '', event_type: 'AUDIENCE', type_chambre: 'TGI_DAKAR_CIVIL', type_chambre_autre: '',
     dossier_numero: '', dossier_nom: '', date_audience: '', heure_audience: '09:00',
-    case: '', notes: '', location: '', color: CHAMBRE_COLORS.TGI_DAKAR_CIVIL.color, statut: 'PREVU'
+    case: '', avocat_assigne: '', notes: '', location: '', color: CHAMBRE_COLORS.TGI_DAKAR_CIVIL.color, statut: 'PREVU'
 };
 
 // ── Helpers ──
@@ -179,6 +233,7 @@ function Agenda() {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(false);
     const [cases, setCases] = useState([]);
+    const [avocats, setAvocats] = useState([]);
     const [overdue, setOverdue] = useState([]);
     const [upcoming, setUpcoming] = useState([]);
     const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
@@ -208,6 +263,7 @@ function Agenda() {
     const [chambreFilter, setChambreFilter] = useState('ALL');
     const [statutFilter, setStatutFilter] = useState('ALL');
     const [typeFilter, setTypeFilter] = useState('ALL');
+    const [avocatFilter, setAvocatFilter] = useState('ALL');
 
     const currentYear = getYear(new Date());
     const years = useMemo(() => {
@@ -250,6 +306,7 @@ function Agenda() {
             if (chambreFilter !== 'ALL') params.type_chambre = chambreFilter;
             if (statutFilter !== 'ALL') params.statut = statutFilter;
             if (typeFilter !== 'ALL') params.event_type = typeFilter;
+            if (avocatFilter !== 'ALL') params.avocat_assigne = avocatFilter;
             const res = await agendaAPI.getAll(params);
             setEvents(extractList(res));
         } catch (err) {
@@ -258,7 +315,7 @@ function Agenda() {
         } finally {
             setLoading(false);
         }
-    }, [range, searchQuery, chambreFilter, statutFilter, typeFilter]);
+    }, [range, searchQuery, chambreFilter, statutFilter, typeFilter, avocatFilter]);
 
     // Audiences à venir (7 jours) et audiences passées sans issue (à régulariser)
     const loadFocus = useCallback(async () => {
@@ -282,10 +339,17 @@ function Agenda() {
         } catch (err) { console.error(err); }
     }, []);
 
+    const loadAvocats = useCallback(async () => {
+        try {
+            const res = await agendaAPI.avocats();
+            setAvocats(Array.isArray(res.data) ? res.data : []);
+        } catch (err) { console.error(err); }
+    }, []);
+
     const refreshAll = useCallback(() => { loadEvents(); loadFocus(); }, [loadEvents, loadFocus]);
 
     useEffect(() => { loadEvents(); }, [loadEvents]);
-    useEffect(() => { loadFocus(); loadCases(); }, [loadFocus, loadCases]);
+    useEffect(() => { loadFocus(); loadCases(); loadAvocats(); }, [loadFocus, loadCases, loadAvocats]);
 
     // ── Liens entrants depuis les autres pages (?caseId=, ?date=, ?search=) ──
     const urlHandled = useRef(false);
@@ -381,7 +445,7 @@ function Agenda() {
             type_chambre: ev.type_chambre || 'AUTRE', type_chambre_autre: ev.type_chambre_autre || '',
             dossier_numero: ev.dossier_numero || '', dossier_nom: ev.dossier_nom || '',
             date_audience: ev.date_audience || '', heure_audience: hhmm(ev.heure_audience) || '09:00',
-            case: ev.case || '', notes: ev.notes || '', location: ev.location || '',
+            case: ev.case || '', avocat_assigne: ev.avocat_assigne || '', notes: ev.notes || '', location: ev.location || '',
             color: ev.color || chambreCfg(ev).color, statut: ev.statut || 'PREVU'
         });
         setDialogOpen(true);
@@ -419,6 +483,7 @@ function Agenda() {
                 ...formData,
                 title: formData.title.trim() || formData.dossier_numero.trim() || formData.dossier_nom.trim(),
                 case: formData.case || null,
+                avocat_assigne: formData.avocat_assigne || null,
                 color: chambreCfg(formData).color,
             };
             if (editingEvent) {
@@ -539,20 +604,44 @@ function Agenda() {
             const dayHeader = ev.date_audience !== lastDay
                 ? `<tr class="day"><td colspan="6">${escapeHtml(formatFr(ev.date_audience))}</td></tr>` : '';
             lastDay = ev.date_audience;
-            return `${dayHeader}<tr><td>${escapeHtml(hhmm(ev.heure_audience))}</td><td>${escapeHtml(chambreLabel(ev))}</td><td>${escapeHtml(ev.dossier_numero)}</td><td>${escapeHtml(ev.dossier_nom || ev.title)}</td><td>${escapeHtml((STATUT_CONFIG[ev.statut] || STATUT_CONFIG.PREVU).label)}</td><td>${escapeHtml(ev.location)}</td></tr>`;
+            return `${dayHeader}<tr><td>${escapeHtml(hhmm(ev.heure_audience))}</td><td>${escapeHtml(chambreLabel(ev))}</td><td>${escapeHtml(ev.dossier_numero)}</td><td>${escapeHtml(ev.dossier_nom || ev.title)}</td><td>${escapeHtml(ev.avocat_assigne_name || '—')}</td><td>${escapeHtml((STATUT_CONFIG[ev.statut] || STATUT_CONFIG.PREVU).label)}</td><td>${escapeHtml(ev.location)}</td></tr>`;
         }).join('');
         const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Rôle des audiences</title>
 <style>body{font-family:Arial,Helvetica,sans-serif;padding:24px;color:#111}h1{font-size:20px;margin:0 0 4px}p{margin:0 0 16px;color:#555}
 table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #ccc;padding:6px;text-align:left;vertical-align:top}
 th{background:#f1f5f9}tr.day td{background:#e0e7ff;font-weight:bold;text-transform:capitalize}</style></head>
 <body><h1>Rôle des audiences du cabinet</h1><p>Période ${escapeHtml(periode)} — ${list.length} audience(s)</p>
-<table><thead><tr><th>Heure</th><th>Juridiction / chambre</th><th>N° dossier</th><th>Parties / objet</th><th>Statut</th><th>Lieu</th></tr></thead>
-<tbody>${rows || '<tr><td colspan="6">Aucune audience sur la période.</td></tr>'}</tbody></table></body></html>`;
+<table><thead><tr><th>Heure</th><th>Juridiction / chambre</th><th>N° dossier</th><th>Parties / objet</th><th>Avocat</th><th>Statut</th><th>Lieu</th></tr></thead>
+<tbody>${rows || '<tr><td colspan="7">Aucune audience sur la période.</td></tr>'}</tbody></table></body></html>`;
         const w = window.open('', '_blank');
         if (!w) { showNotif("Autorisez les fenêtres pop-up pour imprimer le rôle", 'warning'); return; }
         w.document.open(); w.document.write(html); w.document.close();
         w.focus();
         setTimeout(() => w.print(), 300);
+    };
+
+    // ── Copier le rôle pour WhatsApp ──
+    const copyWhatsAppRole = async () => {
+        const list = [...events].filter(e => e.statut !== 'ANNULE').sort(sortByDateTime);
+        if (list.length === 0) { showNotif('Aucune audience à copier sur cette période', 'warning'); return; }
+        let lastDay = '';
+        const lines = ['*⚖️ RÔLE DES AUDIENCES*', ''];
+        list.forEach(ev => {
+            if (ev.date_audience !== lastDay) {
+                lastDay = ev.date_audience;
+                lines.push(`*📅 ${formatFr(ev.date_audience).toUpperCase()}*`);
+            }
+            const av = ev.avocat_assigne_name ? ` | 👨‍⚖️ Me ${ev.avocat_assigne_name}` : '';
+            const loc = ev.location ? ` (${ev.location})` : '';
+            const dos = ev.dossier_numero ? `${ev.dossier_numero} — ` : '';
+            lines.push(`• *${hhmm(ev.heure_audience)}* · ${chambreLabel(ev)}${loc}\n  ${dos}${ev.dossier_nom || ev.title}${av}`);
+        });
+        try {
+            await navigator.clipboard.writeText(lines.join('\n'));
+            showNotif(`Rôle copié (${list.length} audience(s)) — prêt à coller sur WhatsApp`);
+        } catch {
+            showNotif('Copie impossible : autorisez le presse-papiers dans le navigateur', 'error');
+        }
     };
 
     // ── Stats ──
@@ -866,6 +955,9 @@ th{background:#f1f5f9}tr.day td{background:#e0e7ff;font-weight:bold;text-transfo
                     </Box>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    <Button variant="outlined" startIcon={<CopyIcon />} onClick={copyWhatsAppRole} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}>
+                        Copier pour WhatsApp
+                    </Button>
                     <Button variant="outlined" startIcon={<PrintIcon />} onClick={printRole} sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}>
                         Imprimer le rôle
                     </Button>
@@ -972,7 +1064,7 @@ th{background:#f1f5f9}tr.day td{background:#e0e7ff;font-weight:bold;text-transfo
                         <ToggleButton value="day" aria-label="Jour"><DayIcon sx={{ mr: { sm: 0.5 }, fontSize: 18 }} /><Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Jour</Box></ToggleButton>
                     </ToggleButtonGroup>
                 </Box>
-                <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr 1fr', md: '2fr 1fr 1.4fr 1fr 1fr' } }}>
+                <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr 1fr', md: '2fr 0.9fr 1.3fr 1.1fr 1fr 1fr' } }}>
                     <TextField size="small" placeholder="N° dossier, parties, lieu…" value={searchInput}
                         onChange={(e) => setSearchInput(e.target.value)}
                         InputProps={{
@@ -1002,6 +1094,13 @@ th{background:#f1f5f9}tr.day td{background:#e0e7ff;font-weight:bold;text-transfo
                         </Select>
                     </FormControl>
                     <FormControl size="small">
+                        <InputLabel>Avocat</InputLabel>
+                        <Select value={avocatFilter} label="Avocat" onChange={(e) => setAvocatFilter(e.target.value)}>
+                            <MenuItem value="ALL">Tous</MenuItem>
+                            {avocats.map(a => <MenuItem key={a.id} value={String(a.id)}>👨‍⚖️ {a.name}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                    <FormControl size="small">
                         <InputLabel>Statut</InputLabel>
                         <Select value={statutFilter} label="Statut" onChange={(e) => setStatutFilter(e.target.value)}>
                             <MenuItem value="ALL">Tous</MenuItem>
@@ -1011,9 +1110,9 @@ th{background:#f1f5f9}tr.day td{background:#e0e7ff;font-weight:bold;text-transfo
                         </Select>
                     </FormControl>
                 </Box>
-                {(searchQuery || chambreFilter !== 'ALL' || statutFilter !== 'ALL' || typeFilter !== 'ALL') && (
+                {(searchQuery || chambreFilter !== 'ALL' || statutFilter !== 'ALL' || typeFilter !== 'ALL' || avocatFilter !== 'ALL') && (
                     <Box>
-                        <Button size="small" onClick={() => { setSearchInput(''); setChambreFilter('ALL'); setStatutFilter('ALL'); setTypeFilter('ALL'); }} sx={{ textTransform: 'none' }}>
+                        <Button size="small" onClick={() => { setSearchInput(''); setChambreFilter('ALL'); setStatutFilter('ALL'); setTypeFilter('ALL'); setAvocatFilter('ALL'); }} sx={{ textTransform: 'none' }}>
                             Réinitialiser les filtres
                         </Button>
                     </Box>
@@ -1093,6 +1192,7 @@ th{background:#f1f5f9}tr.day td{background:#e0e7ff;font-weight:bold;text-transfo
                                             {ev.location && <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.3 }}>
                                                 <LocationIcon sx={{ fontSize: 13 }} />{ev.location}
                                             </Typography>}
+                                            {ev.avocat_assigne_name && <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.3 }}><PersonIcon sx={{ fontSize: 13 }} />Me {ev.avocat_assigne_name}</Typography>}
                                             {ev.case_reference && <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>📁 {ev.case_reference}</Typography>}
                                         </Box>
                                         {ev.notes && <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5, whiteSpace: 'pre-line' }}>{ev.notes}</Typography>}
@@ -1197,8 +1297,15 @@ th{background:#f1f5f9}tr.day td{background:#e0e7ff;font-weight:bold;text-transfo
                         {!editingEvent && formData.date_audience && formData.date_audience < todayStr && (
                             <Alert severity="info">Date passée : pensez ensuite à renseigner l'issue (renvoi ou clôture).</Alert>
                         )}
-                        <TextField label="Salle / lieu" fullWidth value={formData.location}
-                            onChange={e => setFormData(p => ({ ...p, location: e.target.value }))} />
+                        <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
+                            <TextField label="Avocat plaidant" select fullWidth value={formData.avocat_assigne}
+                                onChange={e => setFormData(p => ({ ...p, avocat_assigne: e.target.value }))}>
+                                <MenuItem value="">— Non assigné —</MenuItem>
+                                {avocats.map(a => <MenuItem key={a.id} value={a.id}>👨‍⚖️ {a.name}</MenuItem>)}
+                            </TextField>
+                            <TextField label="Salle / lieu" fullWidth value={formData.location}
+                                onChange={e => setFormData(p => ({ ...p, location: e.target.value }))} />
+                        </Box>
                         {editingEvent && (
                             <TextField label="Statut" select fullWidth value={formData.statut}
                                 onChange={e => setFormData(p => ({ ...p, statut: e.target.value }))}

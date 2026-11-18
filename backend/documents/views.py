@@ -1367,7 +1367,7 @@ class AgendaViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = AgendaEvent.objects.select_related('case', 'created_by', 'reporte_de').all()
+        qs = AgendaEvent.objects.select_related('case', 'created_by', 'reporte_de', 'avocat_assigne').all()
         year = self.request.query_params.get('year')
         month = self.request.query_params.get('month')
         case_id = self.request.query_params.get('case')
@@ -1397,6 +1397,9 @@ class AgendaViewSet(viewsets.ModelViewSet):
             qs = qs.filter(type_chambre=type_chambre)
         if statut:
             qs = qs.filter(statut=statut)
+        avocat_id = self.request.query_params.get('avocat_assigne')
+        if avocat_id and str(avocat_id).isdigit():
+            qs = qs.filter(avocat_assigne_id=int(avocat_id))
         if dossier:
             qs = qs.filter(
                 Q(dossier_numero__icontains=dossier) |
@@ -1498,6 +1501,7 @@ class AgendaViewSet(viewsets.ModelViewSet):
             case=entry.case,
             location=entry.location,
             color=entry.color,
+            avocat_assigne=entry.avocat_assigne,
             created_by=request.user,
         )
         new_entry.save()
@@ -1571,6 +1575,7 @@ class AgendaViewSet(viewsets.ModelViewSet):
                 case=entry.case,
                 location=entry.location,
                 color=entry.color,
+                avocat_assigne=entry.avocat_assigne,
                 created_by=request.user,
             )
 
@@ -1633,6 +1638,21 @@ class AgendaViewSet(viewsets.ModelViewSet):
             'entries': AgendaEventSerializer(entries, many=True).data,
             'history': AgendaHistorySerializer(history, many=True).data,
         })
+
+    @action(detail=False, methods=['get'])
+    def avocats(self, request):
+        """Liste des avocats/collaborateurs actifs du cabinet pour l'assignation aux audiences."""
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        users = User.objects.filter(is_active=True).exclude(role='CLIENT').order_by('first_name', 'last_name', 'username')
+        return Response([
+            {
+                'id': u.id,
+                'name': (u.get_full_name() or u.username).strip(),
+                'role': getattr(u, 'role', ''),
+            }
+            for u in users
+        ])
 
     @action(detail=False, methods=['get'])
     def stats(self, request):
